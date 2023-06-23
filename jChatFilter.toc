@@ -1,0 +1,33 @@
+## Title: |cffffffffj|cfffed000ChatFilter|r
+## Notes: j's Chat Filter mod
+## X-Category: system
+
+## Author: jadissa
+## X-Realm: Emerald Dream/Grobbulus/Whitemane
+## X-Website: https://github.com/jadissa/jChatFilter
+
+## DefaultState: disabled
+## SavedVariables: jChatFilter
+
+#@retail@
+## Interface: 90001
+#@end-retail@
+#@non-retail@
+## Interface: 11403
+#/run print((select(4, GetBuildInfo())));
+#https://markdownlivepreview.com/
+#@end-non-retail@
+
+# Required libs
+Libs\LibStub\LibStub.lua
+Libs\AceAddon-3.0\AceAddon-3.0.xml
+Libs\AceDB-3.0\AceDB-3.0.xml
+Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
+Libs\AceConsole-3.0\AceConsole-3.0.xml
+Libs\AceGUI-3.0\AceGUI-3.0.xml
+Libs\AceConfig-3.0\AceConfig-3.0.xml
+Libs\AceHook-3.0\AceHook-3.0.xml
+Libs\AceEvent-3.0\AceEvent-3.0.xml
+Libs\jUILib\jUILib.xml
+
+jChatFilter.lua
