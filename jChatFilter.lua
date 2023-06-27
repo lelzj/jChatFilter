@@ -9,7 +9,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Get module defaults
         --
         --  @return table
-        ddon.CHAT.GetDefaults = function( self )
+        Addon.CHAT.GetDefaults = function( self )
             return {
                 AlertSound = false,
                 ChannelColor = {
