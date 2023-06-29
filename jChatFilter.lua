@@ -495,6 +495,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Play whisper sound
             if ( ChatType == 'WHISPER' ) then
+                PlayerAction = ' WHISPER ';
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
             end
 
