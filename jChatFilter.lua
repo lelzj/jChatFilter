@@ -487,7 +487,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Player action
             local PlayerAction = '';
             if( ChatType == 'YELL' ) then
-                PlayerAction = ' yells ';
+                PlayerAction = ' yells';
             end
 
             -- Player level
@@ -495,7 +495,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Play whisper sound
             if ( ChatType == 'WHISPER' ) then
-                PlayerAction = ' whispers ';
+                PlayerAction = ' whispers';
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
             end
 
