@@ -556,8 +556,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
-                if( Addon:Minify( OriginalText ):find( Addon:Minify( UnitName( 'player' ) ) ) ) then
-                    Watched = Watch;
+                local MyPlayerName,Realm = UnitName( 'player' );
+                if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
+                    Watched = MyPlayerName;
                 end
             end
 
