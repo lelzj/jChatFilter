@@ -667,6 +667,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_WARNING',Addon.CHAT.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT',Addon.CHAT.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT_LEADER',Addon.CHAT.Filter );
+            -- Chat color
+            for Group,Types in pairs( ChatTypeGroup ) do
+                ToggleChatColorNamesByClassGroup( true,Group );
+            end
         end
 
         --
