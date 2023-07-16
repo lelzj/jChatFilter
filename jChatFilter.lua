@@ -555,10 +555,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end
+            local MentionAlert = false;
             if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
                 local MyPlayerName,Realm = UnitName( 'player' );
                 if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
                     Watched = MyPlayerName;
+                    MentionAlert = true;
                 end
             end
 
@@ -578,7 +580,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             );
 
             if( Watched ) then
-                if( Addon.CHAT:GetValue( 'AlertSound' ) ) then
+                if( Addon.CHAT:GetValue( 'AlertSound' ) or MentionAlert ) then
                     PlaySound( SOUNDKIT.TELL_MESSAGE );
                 end
             end
@@ -630,6 +632,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             -- Fading
             Addon.CHAT.ChatFrame:SetFading( Addon.CHAT:GetValue( 'FadeOut' ) );
+            -- Scrolling
+            if( Addon.CHAT:GetValue( 'ScrollBack' ) ) then
+                Addon.CHAT.ChatFrame:SetMaxLines( 10000 );
+            end
         end;
 
         --
@@ -714,6 +720,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 --Addon:Dump( { lastTold = lastTold,lastToldType = lastToldType })
                 --self:SetTextColor( )
             --end );
+
+
+            hooksecurefunc( Addon.CHAT.ChatFrame, 'OnPreLoad', function()
+                print( 'preload' );
+            end );
+            
         end
 
         Addon.CHAT:Init();
