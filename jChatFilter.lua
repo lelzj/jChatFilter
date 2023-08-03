@@ -10,7 +10,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return table
         Addon.CHAT.GetDefaults = function( self )
-            return {
+            local Defaults = {
                 AlertSound = false,
                 ChannelColor = {
                     254 / 255,
@@ -20,6 +20,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 FadeOut = false,
                 GeneralColor = {
+                    254 / 255,
+                    191 / 255,
+                    191 / 255,
+                    1,
+                },
+                WorldColor = {
                     254 / 255,
                     191 / 255,
                     191 / 255,
@@ -41,7 +47,19 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 WatchList = {
                     'heal','voa',
                 },
+                Channels = {},
             };
+            for i,Channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                Defaults.Channels[ Channel ] = {
+                    Color = {
+                        254 / 255,
+                        191 / 255,
+                        191 / 255,
+                        1,
+                    },
+                };
+            end
+            return Defaults;
         end
 
         Addon.CHAT.SetValue = function( self,Index,Value )
@@ -61,7 +79,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return table
         Addon.CHAT.GetSettings = function( self )
-            return {
+            local Settings = {
                 type = 'group',
                 get = function( Info )
                     if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
@@ -76,145 +94,181 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = AddonName..' Settings',
                 desc = 'Simple chat filter',
                 args = {
-                    intro = {
-                        order = 1,
-                        type = 'description',
-                        name = 'A description goes here',
-                    },
-                    AlertSound = {
-                        type = 'toggle',
-                        name = 'AlertSound',
-                        desc = 'Enable/disable chat alert sound',
-                        arg = 'AlertSound',
-                    },
-                    ChannelColor = {
-                        type = 'color',
-                        get = function( Info )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                return unpack( Addon.CHAT.persistence[ Info.arg ] );
-                            end
-                        end,
-                        set = function( Info,R,G,B,A )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
-                            end
-                        end,
-                        name = 'ChannelColor',
-                        desc = 'Set the color of Channel chat',
-                        arg = 'ChannelColor',
-                    },
-                    FadeOut = {
-                        type = 'toggle',
-                        name = 'FadeOut',
-                        desc = 'Enable/disable chat fading',
-                        arg = 'FadeOut',
-                    },
-                    GeneralColor = {
-                        type = 'color',
-                        get = function( Info )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                return unpack( Addon.CHAT.persistence[ Info.arg ] );
-                            end
-                        end,
-                        set = function( Info,R,G,B,A )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
-                            end
-                        end,
-                        name = 'GeneralColor',
-                        desc = 'Set the color of General chat',
-                        arg = 'GeneralColor',
-                    },
-                    IgnoreList = {
-                        type = 'input',
-                        multiline = true,
-                        get = function( Info )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                return Addon:Implode( Addon.CHAT.persistence[ Info.arg ],',' );
-                            end
-                        end,
-                        set = function( Info,Value )
-                            Value = Addon:Explode( Value,',' );
-                            if( type( Value ) == 'table' ) then
-                                Addon.CHAT.persistence[ Info.arg ] = {};
-                                for i,v in pairs( Value ) do
-                                    table.insert( Addon.CHAT.persistence[ Info.arg ],Addon:Minify( v ) );
-                                end
-                            else
-                                Addon.CHAT.persistence[ Info.arg ] = {Addon:Minify( Value )};
-                            end
-                        end,
-                        name = 'IgnoreList',
-                        desc = 'Words or phrases which should be omitted in chat. Note that phrases contain no spaces',
-                        arg = 'IgnoreList',
-                        width = 'full',
-                    },
-                    MentionAlert = {
-                        type = 'toggle',
-                        name = 'MentionAlert',
-                        desc = 'Enable/disable alerting if anyone mentions your name while in joined channels',
-                        arg = 'MentionAlert',
-                    },
-                    ScrollBack = {
-                        type = 'toggle',
-                        name = 'ScrollBack',
-                        desc = 'Extend chat history to 10,000 lines',
-                        arg = 'ScrollBack',
-                    },
-                    TimeStamps = {
-                        type = 'toggle',
-                        name = 'TimeStamps',
-                        desc = 'Enable/disable chat timestamps',
-                        arg = 'TimeStamps',
-                    },
-                    QuestAlert = {
-                        type = 'toggle',
-                        name = 'QuestAlert',
-                        desc = 'Enable/disable quest alerts while in joined channels',
-                        arg = 'QuestAlert',
-                    },
-                    WatchColor = {
-                        type = 'color',
-                        get = function( Info )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                return unpack( Addon.CHAT.persistence[ Info.arg ] );
-                            end
-                        end,
-                        set = function( Info,R,G,B,A )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
-                            end
-                        end,
-                        name = 'WatchColor',
-                        desc = 'Set the color of Alerts chat',
-                        arg = 'WatchColor',
-                    },
-                    WatchList = {
-                        type = 'input',
-                        multiline = true,
-                        get = function( Info )
-                            if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                                return Addon:Implode( Addon.CHAT.persistence[ Info.arg ],',' );
-                            end
-                        end,
-                        set = function( Info,Value )
-                            Value = Addon:Explode( Value,',' );
-                            if( type( Value ) == 'table' ) then
-                                Addon.CHAT.persistence[ Info.arg ] = {};
-                                for i,v in pairs( Value ) do
-                                    table.insert( Addon.CHAT.persistence[ Info.arg ],Addon:Minify( v ) );
-                                end
-                            else
-                                Addon.CHAT.persistence[ Info.arg ] = {Addon:Minify( Value )};
-                            end
-                        end,
-                        name = 'WatchList',
-                        desc = 'Words or phrases to be alerted on when they are mentioned in chat. Note that phrases contain no spaces',
-                        arg = 'WatchList',
-                        width = 'full',
-                    },
-                }
+                },
             };
+
+            local Order = 1;
+            Settings.args.GeneralSettings = {
+                type = 'header',
+                order = Order,
+                name = 'General Settings',
+            }
+            Order = Order+1;
+            Settings.args.TimeStamps = {
+                type = 'toggle',
+                order = Order,
+                name = 'Time Stamps',
+                desc = 'Enable/disable chat timestamps',
+                arg = 'TimeStamps',
+            };
+            Order = Order+1;
+            Settings.args.ScrollBack = {
+                type = 'toggle',
+                order = Order,
+                name = 'Scroll Back',
+                desc = 'Extend chat history to 10,000 lines',
+                arg = 'ScrollBack',
+            };
+            Order = Order+1;
+            Settings.args.FadeOut = {
+                type = 'toggle',
+                order = Order,
+                name = 'Fade Out',
+                desc = 'Enable/disable chat fading',
+                arg = 'FadeOut',
+            };
+            Order = Order+1;
+            Settings.args.ChannelSettings = {
+                type = 'header',
+                order = Order,
+                name = 'Channel Settings',
+            };
+
+            local JoinedChannels = {};
+            for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                for ChannelName,ChannelData in pairs( Addon.CHAT.persistence.Channels ) do
+                    if( channel == ChannelName ) then
+                        JoinedChannels[ ChannelName ] = ChannelData;
+                    end
+                end
+            end
+            for ChannelName,ChannelData in pairs( JoinedChannels ) do
+                Order = Order+1;
+                Settings.args[ ChannelName..'Color' ] = {
+                    type = 'color',
+                    order = Order,
+                    get = function( Info )
+                        if( Addon.CHAT.persistence.Channels[ Info.arg ] ~= nil ) then
+                            return unpack( Addon.CHAT.persistence.Channels[ Info.arg ].Color );
+                        end
+                    end,
+                    set = function( Info,R,G,B,A )
+                        if( Addon.CHAT.persistence.Channels[ Info.arg ] ~= nil ) then
+                            Addon.CHAT.persistence.Channels[ Info.arg ].Color = { R,G,B,A };
+                        end
+                    end,
+                    name = ChannelName..' Color',
+                    desc = 'Set the color of '..ChannelName..' chat',
+                    arg = ChannelName,
+                }
+            end
+            Order = Order+1;
+            Settings.args.AlertSettings = {
+                type = 'header',
+                order = Order,
+                name = 'Alert Settings',
+            };
+            Order = Order+1;
+            Settings.args.AlertSettings = {
+                type = 'header',
+                order = Order,
+                name = 'Alert Settings',
+            };
+            Order = Order+1;
+            Settings.args.AlertSound = {
+                type = 'toggle',
+                order = Order,
+                name = 'Alert Sound',
+                desc = 'Enable/disable chat alert sound',
+                arg = 'AlertSound',
+            };
+            Order = Order+1;
+            Settings.args.AlertMention = {
+                type = 'toggle',
+                order = Order,
+                name = 'Alert Mention',
+                desc = 'Enable/disable alerting if anyone mentions your name while in joined channels',
+                arg = 'MentionAlert',
+            };
+            Order = Order+1;
+            Settings.args.AlertQuest = {
+                type = 'toggle',
+                order = Order,
+                name = 'Alert Quest',
+                desc = 'Enable/disable alerting if anyone mentions a quest you are on while in joined channels',
+                arg = 'QuestAlert',
+            };
+            Order = Order+1;
+            Settings.args.AlertColor = {
+                type = 'color',
+                order = Order,
+                get = function( Info )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        return unpack( Addon.CHAT.persistence[ Info.arg ] );
+                    end
+                end,
+                set = function( Info,R,G,B,A )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
+                    end
+                end,
+                name = 'Alert Color',
+                desc = 'Set the color of Alerts chat',
+                arg = 'WatchColor',
+            };
+            Order = Order+1;
+            Settings.args.AlertList = {
+                type = 'input',
+                order = Order,
+                multiline = true,
+                get = function( Info )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        return Addon:Implode( Addon.CHAT.persistence[ Info.arg ],',' );
+                    end
+                end,
+                set = function( Info,Value )
+                    Value = Addon:Explode( Value,',' );
+                    if( type( Value ) == 'table' ) then
+                        Addon.CHAT.persistence[ Info.arg ] = {};
+                        for i,v in pairs( Value ) do
+                            table.insert( Addon.CHAT.persistence[ Info.arg ],Addon:Minify( v ) );
+                        end
+                    else
+                        Addon.CHAT.persistence[ Info.arg ] = {Addon:Minify( Value )};
+                    end
+                end,
+                name = 'Alert List',
+                desc = 'Words or phrases to be alerted on when they are mentioned in chat. Note that phrases contain no spaces',
+                arg = 'WatchList',
+                width = 'full',
+            };
+            Order = Order+1;
+            Settings.args.IgnoreList = {
+                type = 'input',
+                order = Order,
+                multiline = true,
+                get = function( Info )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        return Addon:Implode( Addon.CHAT.persistence[ Info.arg ],',' );
+                    end
+                end,
+                set = function( Info,Value )
+                    Value = Addon:Explode( Value,',' );
+                    if( type( Value ) == 'table' ) then
+                        Addon.CHAT.persistence[ Info.arg ] = {};
+                        for i,v in pairs( Value ) do
+                            table.insert( Addon.CHAT.persistence[ Info.arg ],Addon:Minify( v ) );
+                        end
+                    else
+                        Addon.CHAT.persistence[ Info.arg ] = {Addon:Minify( Value )};
+                    end
+                end,
+                name = 'Ignore List',
+                desc = 'Words or phrases which should be omitted in chat. Note that phrases contain no spaces',
+                arg = 'IgnoreList',
+                width = 'full',
+            };
+            return Settings;
         end
 
         --
@@ -368,6 +422,38 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Addon.CHAT.Events:UnregisterEvent( 'QUEST_TURNED_IN' );
         end
 
+        Addon.CHAT.JoinChannel = function( self,... )
+            --[[
+            Addon.CHAT.persistence.Channels[ ChannelName ] = {
+                Color = {
+                    254 / 255,
+                    191 / 255,
+                    191 / 255,
+                    1,
+                },
+                Id = ChannelId,
+            };
+                    Addon:Dump( {
+                        ...
+                    })
+            ]]
+        end
+
+        Addon.CHAT.LeaveChannel = function( self,... )
+        --[[
+            local Index = 1;
+            for Name,ChannelData in pairs( Addon.CHAT.persistence.Channels ) do
+                if( Addon:Minify( Name ) == Addon:Minify( ChannelName ) ) then
+                    table.remove( Addon.CHAT.persistence.Channels,Index );
+                end
+                Index = Index+1;
+            end
+                    Addon:Dump( {
+                        ...
+                    })
+            ]]
+        end
+
         --
         --  Format Chat Message
         --
@@ -404,10 +490,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Chat color
             local r,g,b,a = Info.r,Info.g,Info.b,0;
             if( tonumber( ChannelId ) > 0 ) then
-                if( Addon:Minify( ChannelName ):find( 'general' ) ) then
-                    r,g,b,a = unpack( Addon.CHAT:GetValue( 'GeneralColor' ) );
-                else
-                    r,g,b,a = unpack( Addon.CHAT:GetValue( 'ChannelColor' ) );
+                if( Addon.CHAT.persistence.Channels[ ChannelName ] and Addon.CHAT.persistence.Channels[ ChannelName ].Color ) then
+                    r,g,b,a = unpack( Addon.CHAT.persistence.Channels[ ChannelName ].Color );
                 end
             end
             if( Watched ) then
@@ -527,10 +611,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             local PlayerId = select( 12,... );
             local IconReplacement = select( 17,... );
 
+            local MyPlayerName,MyRealm = UnitName( 'player' );
+
             -- Prevent ignored messages
-            for i,Ignore in ipairs( Addon.CHAT:GetIgnores() ) do
-                if( Addon:Minify( OriginalText ):find( Addon:Minify( Ignore ) ) ) then
-                    return true;
+            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                for i,Ignore in ipairs( Addon.CHAT:GetIgnores() ) do
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Ignore ) ) ) then
+                        return true;
+                    end
                 end
             end
 
@@ -543,24 +631,25 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Watch check
             local Watched;
-            for i,Watch in ipairs( Addon.CHAT:GetWatches() ) do
-                if( Addon:Minify( OriginalText ):find( Addon:Minify( Watch ) ) ) then
-                    Watched = Watch;
-                end
-            end
-            if( Addon.CHAT:GetValue( 'QuestAlert' ) ) then
-                for i,Watch in pairs( Addon.CHAT.ActiveQuests ) do
-                    if( Addon:Minify( OriginalText ):find( Watch ) ) then
+            local MentionAlert = false;
+            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                for i,Watch in ipairs( Addon.CHAT:GetWatches() ) do
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Watch ) ) ) then
                         Watched = Watch;
                     end
                 end
-            end
-            local MentionAlert = false;
-            if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
-                local MyPlayerName,Realm = UnitName( 'player' );
-                if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
-                    Watched = MyPlayerName;
-                    MentionAlert = true;
+                if( Addon.CHAT:GetValue( 'QuestAlert' ) ) then
+                    for i,Watch in pairs( Addon.CHAT.ActiveQuests ) do
+                        if( Addon:Minify( OriginalText ):find( Watch ) ) then
+                            Watched = Watch;
+                        end
+                    end
+                end
+                if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
+                        Watched = MyPlayerName;
+                        MentionAlert = true;
+                    end
                 end
             end
 
@@ -655,11 +744,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Addon.CHAT.ChatFrame.AddMessage = Addon.CHAT.SendMessage;
             end
             -- List channels
-            C_Timer.After( 2, function()
-                for i,v in pairs( Addon.CHAT.ChatFrame.channelList ) do
-                    print( 'You have joined '..v );
-                end
-            end );
+            for i,v in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                print( 'You have joined '..v );
+            end
             -- Chat filter
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',Addon.CHAT.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',Addon.CHAT.Filter );
@@ -673,6 +760,17 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_WARNING',Addon.CHAT.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT',Addon.CHAT.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT_LEADER',Addon.CHAT.Filter );
+            -- Chat events
+            Addon.CHAT.Events:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
+            Addon.CHAT.Events:SetScript( 'OnEvent', function( self, event, ... )
+                if( event == 'CHAT_MSG_CHANNEL_NOTICE' ) then
+                    if( SubEvent == 'YOU_CHANGED' ) then
+                        Addon.CHAT:JoinChannel( ... );
+                    elseif( SubEvent == 'YOU_LEFT' ) then
+                        Addon.CHAT:LeaveChannel( ... );
+                    end
+                end
+            end );
         end
 
         --
@@ -696,6 +794,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CHAT.Init = function( self )
+            -- Chat frame
+            Addon.CHAT.ChatFrame = DEFAULT_CHAT_FRAME;
             -- Database
             Addon.CHAT.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = Addon.CHAT:GetDefaults() },true );
             if( not Addon.CHAT.db ) then
@@ -705,29 +805,20 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not Addon.CHAT.persistence ) then
                 return;
             end
-            -- Chat frame
-            Addon.CHAT.ChatFrame = DEFAULT_CHAT_FRAME;
             -- Watch cache
             Addon.CHAT.Cache = {};
             -- Chat defaults
             Addon.CHAT.ChatFrame.DefaultSettings = {};
-            --Addon.CHAT.ChatFrame.editBox:SetScript( 'OnEditFocusGained',function( self )
-                --local lastTold, lastToldType = ChatEdit_GetLastToldTarget();
-                --Addon:Dump( { lastTold = lastTold,lastToldType = lastToldType })
-                --self:SetTextColor( )
-            --end );
-
-
-            hooksecurefunc( Addon.CHAT.ChatFrame, 'OnPreLoad', function()
-                print( 'preload' );
-            end );
-
+            -- Events frame
+            Addon.CHAT.Events = CreateFrame( 'Frame' );
         end
 
-        Addon.CHAT:Init();
-        Addon.CHAT:CreateFrames();
-        Addon.CHAT:Refresh();
-        Addon.CHAT:Run();
+        C_Timer.After( 2, function()
+            Addon.CHAT:Init();
+            Addon.CHAT:CreateFrames();
+            Addon.CHAT:Refresh();
+            Addon.CHAT:Run();
+        end );
         Addon.CHAT:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );
