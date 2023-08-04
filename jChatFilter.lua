@@ -82,14 +82,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Settings = {
                 type = 'group',
                 get = function( Info )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        return Addon.CHAT.persistence[ Info.arg ];
-                    end
+                    return self:GetValue( Info.arg );
                 end,
                 set = function( Info,Value )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        Addon.CHAT.persistence[ Info.arg ] = Value;
-                    end
+                    self:SetValue( Info.arg,Value );
                 end,
                 name = AddonName..' Settings',
                 desc = 'Simple chat filter',
@@ -222,20 +218,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 order = Order,
                 multiline = true,
                 get = function( Info )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        return Addon:Implode( Addon.CHAT.persistence[ Info.arg ],',' );
-                    end
+                    return Addon:Implode( self:GetWatches(),',' );
                 end,
                 set = function( Info,Value )
-                    Value = Addon:Explode( Value,',' );
-                    if( type( Value ) == 'table' ) then
-                        Addon.CHAT.persistence[ Info.arg ] = {};
-                        for i,v in pairs( Value ) do
-                            table.insert( Addon.CHAT.persistence[ Info.arg ],Addon:Minify( v ) );
-                        end
-                    else
-                        Addon.CHAT.persistence[ Info.arg ] = {Addon:Minify( Value )};
-                    end
+                    self:SetWatches( Value );
                 end,
                 name = 'Alert List',
                 desc = 'Words or phrases to be alerted on when they are mentioned in chat. Note that phrases contain no spaces',
@@ -248,20 +234,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 order = Order,
                 multiline = true,
                 get = function( Info )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        return Addon:Implode( Addon.CHAT.persistence[ Info.arg ],',' );
-                    end
+                    return Addon:Implode( self:GetIgnores(),',' );
                 end,
                 set = function( Info,Value )
-                    Value = Addon:Explode( Value,',' );
-                    if( type( Value ) == 'table' ) then
-                        Addon.CHAT.persistence[ Info.arg ] = {};
-                        for i,v in pairs( Value ) do
-                            table.insert( Addon.CHAT.persistence[ Info.arg ],Addon:Minify( v ) );
-                        end
-                    else
-                        Addon.CHAT.persistence[ Info.arg ] = {Addon:Minify( Value )};
-                    end
+                    self:SetIgnores( Value );
                 end,
                 name = 'Ignore List',
                 desc = 'Words or phrases which should be omitted in chat. Note that phrases contain no spaces',
@@ -295,7 +271,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( type( watch ) == 'table' ) then
                 Addon.CHAT.persistence.WatchList = {};
                 for i,v in pairs( watch ) do
-                    table.insert( Addon.CHAT.persistence.WatchList,Addon:Minify( v ) );
+                    if( string.len( v ) > 0 ) then
+                        table.insert( Addon.CHAT.persistence.WatchList,Addon:Minify( v ) );
+                    else
+                        Addon.CHAT.persistence.WatchList = {};
+                    end
                 end
             else
                 Addon.CHAT.persistence.WatchList = {Addon:Minify( watch )};
@@ -321,7 +301,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( type( ignore ) == 'table' ) then
                 Addon.CHAT.persistence.IgnoreList = {};
                 for i,v in pairs( ignore ) do
-                    table.insert( Addon.CHAT.persistence.IgnoreList,Addon:Minify( v ) );
+                    if( string.len( v ) > 0 ) then
+                        table.insert( Addon.CHAT.persistence.IgnoreList,Addon:Minify( v ) );
+                    else
+                        Addon.CHAT.persistence.IgnoreList = {};
+                    end
                 end
             else
                 Addon.CHAT.persistence.IgnoreList = {Addon:Minify( ignore )};
@@ -615,9 +599,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Prevent ignored messages
             if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                for i,Ignore in ipairs( Addon.CHAT:GetIgnores() ) do
-                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Ignore ) ) ) then
-                        return true;
+                local IgnoredMessages = Addon.CHAT:GetIgnores();
+                if( #IgnoredMessages > 0 ) then
+                    for i,IgnoredMessage in ipairs( IgnoredMessages ) do
+                        if( Addon:Minify( OriginalText ):find( Addon:Minify( IgnoredMessage ) ) ) then
+                            return true;
+                        end
                     end
                 end
             end
@@ -633,15 +620,18 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Watched;
             local MentionAlert = false;
             if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                for i,Watch in ipairs( Addon.CHAT:GetWatches() ) do
-                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Watch ) ) ) then
-                        Watched = Watch;
+                local WatchedMessages = Addon.CHAT:GetWatches();
+                if( #WatchedMessages > 0 ) then
+                    for i,WatchedMessage in ipairs( WatchedMessages ) do
+                        if( Addon:Minify( OriginalText ):find( Addon:Minify( WatchedMessage ) ) ) then
+                            Watched = WatchedMessage;
+                        end
                     end
                 end
                 if( Addon.CHAT:GetValue( 'QuestAlert' ) ) then
-                    for i,Watch in pairs( Addon.CHAT.ActiveQuests ) do
-                        if( Addon:Minify( OriginalText ):find( Watch ) ) then
-                            Watched = Watch;
+                    for i,ActiveQuest in pairs( Addon.CHAT.ActiveQuests ) do
+                        if( Addon:Minify( OriginalText ):find( ActiveQuest ) ) then
+                            Watched = ActiveQuest;
                         end
                     end
                 end
@@ -743,10 +733,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Addon.CHAT.ChatFrame.DefaultSettings.AddMessage = Addon.CHAT.ChatFrame.AddMessage;
                 Addon.CHAT.ChatFrame.AddMessage = Addon.CHAT.SendMessage;
             end
-            -- List channels
-            for i,v in pairs( Addon.CHAT.ChatFrame.channelList ) do
-                print( 'You have joined '..v );
-            end
             -- Chat filter
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',Addon.CHAT.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',Addon.CHAT.Filter );
@@ -771,6 +757,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end );
+            -- List channels
+            for i,v in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                print( 'You have joined '..v );
+            end
         end
 
         --
