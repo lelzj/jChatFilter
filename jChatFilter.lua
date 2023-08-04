@@ -406,36 +406,40 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Addon.CHAT.Events:UnregisterEvent( 'QUEST_TURNED_IN' );
         end
 
+        --
+        --  Join channel
+        --
+        --  @return bool
         Addon.CHAT.JoinChannel = function( self,... )
-            --[[
-            Addon.CHAT.persistence.Channels[ ChannelName ] = {
-                Color = {
-                    254 / 255,
-                    191 / 255,
-                    191 / 255,
-                    1,
-                },
-                Id = ChannelId,
-            };
-                    Addon:Dump( {
-                        ...
-                    })
-            ]]
+            local ChannelId = select( 8,... );
+            local ChannelName = select( 9,... );
+            if( ChannelId and ChannelName ) then
+                Addon.CHAT.persistence.Channels[ ChannelName ] = {
+                    Color = {
+                        254 / 255,
+                        191 / 255,
+                        191 / 255,
+                        1,
+                    },
+                    Id = ChannelId,
+                };
+                return true;
+            end
+            return false;
         end
 
+        --
+        --  Leave channel
+        --
+        --  @return bool
         Addon.CHAT.LeaveChannel = function( self,... )
-        --[[
-            local Index = 1;
-            for Name,ChannelData in pairs( Addon.CHAT.persistence.Channels ) do
-                if( Addon:Minify( Name ) == Addon:Minify( ChannelName ) ) then
-                    table.remove( Addon.CHAT.persistence.Channels,Index );
-                end
-                Index = Index+1;
+            local ChannelId = select( 8,... );
+            local ChannelName = select( 9,... );
+            if( ChannelId and ChannelName ) then
+                Addon.CHAT.persistence.Channels[ ChannelName ] = nil;
+                return true;
             end
-                    Addon:Dump( {
-                        ...
-                    })
-            ]]
+            return false;
         end
 
         --
@@ -692,47 +696,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        --  Module refresh
-        --
-        --  @return void
-        Addon.CHAT.Refresh = function( self )
-            if( not Addon.CHAT.persistence ) then
-                return;
-            end
-            -- Color chat names
-            if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
-                for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
-                    ToggleChatColorNamesByClassGroup( true, 'CHANNEL' .. i );
-                end
-            else
-                for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
-                    ToggleChatColorNamesByClassGroup( false, 'CHANNEL' .. i );
-                end
-            end
-            -- Fading
-            Addon.CHAT.ChatFrame:SetFading( Addon.CHAT:GetValue( 'FadeOut' ) );
-            -- Scrolling
-            if( Addon.CHAT:GetValue( 'ScrollBack' ) ) then
-                Addon.CHAT.ChatFrame:SetMaxLines( 10000 );
-            end
-        end;
-
-        --
         --  Module run
         --
         --  @return void
         Addon.CHAT.Run = function( self )
-            -- Active quests
-            Addon.CHAT:RebuildQuests();
-            -- Chat text
-            Addon.CHAT.ChatFrame:SetFont( Addon.CHAT.ChatFrame:GetFont(),12,'THINOUTLINE' );
-            Addon.CHAT.ChatFrame:SetShadowOffset( 0,0 );
-            Addon.CHAT.ChatFrame:SetShadowColor( 0,0,0,0 );
-            -- Chat replacement
-            if( Addon:IsClassic() ) then
-                Addon.CHAT.ChatFrame.DefaultSettings.AddMessage = Addon.CHAT.ChatFrame.AddMessage;
-                Addon.CHAT.ChatFrame.AddMessage = Addon.CHAT.SendMessage;
-            end
             -- Chat filter
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',Addon.CHAT.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',Addon.CHAT.Filter );
@@ -748,8 +715,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT_LEADER',Addon.CHAT.Filter );
             -- Chat events
             Addon.CHAT.Events:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
-            Addon.CHAT.Events:SetScript( 'OnEvent', function( self, event, ... )
-                if( event == 'CHAT_MSG_CHANNEL_NOTICE' ) then
+            Addon.CHAT.Events:SetScript( 'OnEvent', function( self,Event,... )
+                if( Event == 'CHAT_MSG_CHANNEL_NOTICE' ) then
+                    local SubEvent = select( 1,... );
                     if( SubEvent == 'YOU_CHANGED' ) then
                         Addon.CHAT:JoinChannel( ... );
                     elseif( SubEvent == 'YOU_LEFT' ) then
@@ -801,12 +769,38 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Addon.CHAT.ChatFrame.DefaultSettings = {};
             -- Events frame
             Addon.CHAT.Events = CreateFrame( 'Frame' );
+            -- Color chat names
+            if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
+                for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                    ToggleChatColorNamesByClassGroup( true, 'CHANNEL' .. i );
+                end
+            else
+                for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                    ToggleChatColorNamesByClassGroup( false, 'CHANNEL' .. i );
+                end
+            end
+            -- Fading
+            Addon.CHAT.ChatFrame:SetFading( Addon.CHAT:GetValue( 'FadeOut' ) );
+            -- Scrolling
+            if( Addon.CHAT:GetValue( 'ScrollBack' ) ) then
+                Addon.CHAT.ChatFrame:SetMaxLines( 10000 );
+            end
+            -- Active quests
+            Addon.CHAT:RebuildQuests();
+            -- Chat text
+            Addon.CHAT.ChatFrame:SetFont( Addon.CHAT.ChatFrame:GetFont(),12,'THINOUTLINE' );
+            Addon.CHAT.ChatFrame:SetShadowOffset( 0,0 );
+            Addon.CHAT.ChatFrame:SetShadowColor( 0,0,0,0 );
+            -- Chat replacement
+            if( Addon:IsClassic() ) then
+                Addon.CHAT.ChatFrame.DefaultSettings.AddMessage = Addon.CHAT.ChatFrame.AddMessage;
+                Addon.CHAT.ChatFrame.AddMessage = Addon.CHAT.SendMessage;
+            end
         end
 
-        C_Timer.After( 2, function()
+        C_Timer.After( 5, function()
             Addon.CHAT:Init();
             Addon.CHAT:CreateFrames();
-            Addon.CHAT:Refresh();
             Addon.CHAT:Run();
         end );
         Addon.CHAT:UnregisterEvent( 'ADDON_LOADED' );
