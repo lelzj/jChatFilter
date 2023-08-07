@@ -18,6 +18,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     191 / 255,
                     1,
                 },
+                Font = {
+                    Family = 'ARIALN',
+                    Size = 12,
+                    Flags = 'THINOUTLINE',
+                },
                 FadeOut = false,
                 GeneralColor = {
                     254 / 255,
@@ -124,12 +129,61 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 arg = 'FadeOut',
             };
             Order = Order+1;
+            Settings.args.FontFamily = {
+                type = 'select',
+                get = function( Info )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        return Addon.CHAT.persistence.Font[ Info.arg ];
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        Addon.CHAT.persistence.Font[ Info.arg ] = Value;
+                    end
+                end,
+                values = {
+                    skurri = 'skurri',
+                    ARIALN = 'ARIALN',
+                    MORPHEUS = 'MORPHEUS',
+                    FRIZQT__ = 'FRIZQT__',
+                },
+                order = Order,
+                name = 'Font Family',
+                desc = 'Chat Font Family',
+                arg = 'Family',
+            };
+            Order = Order+1;
+            Settings.args.FontSize = {
+                type = 'select',
+                get = function( Info )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        return Addon.CHAT.persistence.Font[ Info.arg ];
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        Addon.CHAT.persistence.Font[ Info.arg ] = Value;
+                    end
+                end,
+                values = {
+                    [10] = 10,
+                    [12] = 12,
+                    [14] = 14,
+                    [16] = 16,
+                    [18] = 18,
+                },
+                order = Order,
+                name = 'Font Size',
+                desc = 'Chat Font Size',
+                arg = 'Size',
+            };
+
+            Order = Order+1;
             Settings.args.ChannelSettings = {
                 type = 'header',
                 order = Order,
                 name = 'Channel Settings',
             };
-
             local JoinedChannels = {};
             for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
                 for ChannelName,ChannelData in pairs( Addon.CHAT.persistence.Channels ) do
@@ -158,6 +212,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = ChannelName,
                 }
             end
+
             Order = Order+1;
             Settings.args.AlertSettings = {
                 type = 'header',
@@ -708,22 +763,22 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.CHAT.Run = function( self )
             -- Chat filter
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_YELL',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_GUILD',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY_LEADER',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_LEADER',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_WARNING',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT',Addon.CHAT.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT_LEADER',Addon.CHAT.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_YELL',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_GUILD',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY_LEADER',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_LEADER',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_WARNING',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT_LEADER',self.Filter );
 
             -- Chat events
-            Addon.CHAT.Events:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
-            Addon.CHAT.Events:SetScript( 'OnEvent', function( self,Event,... )
+            self.Events:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
+            self.Events:SetScript( 'OnEvent', function( self,Event,... )
                 if( Event == 'CHAT_MSG_CHANNEL_NOTICE' ) then
                     local SubEvent = select( 1,... );
                     if( SubEvent == 'YOU_CHANGED' ) then
@@ -735,7 +790,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
 
             -- List channels
-            for i,v in pairs( Addon.CHAT.ChatFrame.channelList ) do
+            for i,v in pairs( self.ChatFrame.channelList ) do
                 print( 'You have joined '..v );
             end
         end
@@ -745,15 +800,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CHAT.CreateFrames = function( self )
-            Addon.CHAT.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( AddonName ),AddonName );
-            Addon.CHAT.Config.okay = function( self )
+            self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( AddonName ),AddonName );
+            self.Config.okay = function( self )
                 Addon.CHAT:Refresh();
                 RestartGx();
             end
-            Addon.CHAT.Config.default = function( self )
+            self.Config.default = function( self )
                 Addon.CHAT.db:ResetDB();
             end
-            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( AddonName ),Addon.CHAT:GetSettings() );
+            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( AddonName ),self:GetSettings() );
         end
 
         --
@@ -762,66 +817,66 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.CHAT.Init = function( self )
             -- Chat frame
-            Addon.CHAT.ChatFrame = DEFAULT_CHAT_FRAME;
+            self.ChatFrame = DEFAULT_CHAT_FRAME;
 
             -- Database
-            Addon.CHAT.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = Addon.CHAT:GetDefaults() },true );
-            if( not Addon.CHAT.db ) then
+            self.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = Addon.CHAT:GetDefaults() },true );
+            if( not self.db ) then
                 return;
             end
-            Addon.CHAT.persistence = Addon.CHAT.db.char;
-            if( not Addon.CHAT.persistence ) then
+            self.persistence = Addon.CHAT.db.char;
+            if( not self.persistence ) then
                 return;
             end
 
             -- Watch cache
-            Addon.CHAT.Cache = {};
+            self.Cache = {};
 
             -- Chat defaults
-            Addon.CHAT.ChatFrame.DefaultSettings = {};
+            self.ChatFrame.DefaultSettings = {};
 
             -- Events frame
-            Addon.CHAT.Events = CreateFrame( 'Frame' );
+            self.Events = CreateFrame( 'Frame' );
 
             -- Color chat names
             if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
-                for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                for i,channel in pairs( self.ChatFrame.channelList ) do
                     ToggleChatColorNamesByClassGroup( true, 'CHANNEL' .. i );
                 end
             else
-                for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
+                for i,channel in pairs( self.ChatFrame.channelList ) do
                     ToggleChatColorNamesByClassGroup( false, 'CHANNEL' .. i );
                 end
             end
 
             -- Fading
-            Addon.CHAT.ChatFrame:SetFading( Addon.CHAT:GetValue( 'FadeOut' ) );
+            self.ChatFrame:SetFading( self:GetValue( 'FadeOut' ) );
 
             -- Scrolling
-            if( Addon.CHAT:GetValue( 'ScrollBack' ) ) then
-                Addon.CHAT.ChatFrame:SetMaxLines( 10000 );
+            if( self:GetValue( 'ScrollBack' ) ) then
+                self.ChatFrame:SetMaxLines( 10000 );
             end
 
             -- Active quests
-            Addon.CHAT:RebuildQuests();
+            self:RebuildQuests();
 
             -- Chat text
-            Addon.CHAT.ChatFrame:SetFont( Addon.CHAT.ChatFrame:GetFont(),12,'THINOUTLINE' );
-            Addon.CHAT.ChatFrame:SetShadowOffset( 0,0 );
-            Addon.CHAT.ChatFrame:SetShadowColor( 0,0,0,0 );
+            self.ChatFrame:SetFont( 'Fonts\\'..self:GetValue( 'Font' ).Family..'.ttf',self:GetValue( 'Font' ).Size,self:GetValue( 'Font' ).Flags );
+            self.ChatFrame:SetShadowOffset( 0,0 );
+            self.ChatFrame:SetShadowColor( 0,0,0,0 );
             
             -- Chat replacement
             if( Addon:IsClassic() ) then
-                Addon.CHAT.ChatFrame.DefaultSettings.AddMessage = Addon.CHAT.ChatFrame.AddMessage;
-                Addon.CHAT.ChatFrame.AddMessage = Addon.CHAT.SendMessage;
+                self.ChatFrame.DefaultSettings.AddMessage = self.ChatFrame.AddMessage;
+                self.ChatFrame.AddMessage = self.SendMessage;
             end
         end
 
         C_Timer.After( 5, function()
-            Addon.CHAT:Init();
-            Addon.CHAT:CreateFrames();
-            Addon.CHAT:Run();
+            self:Init();
+            self:CreateFrames();
+            self:Run();
         end );
-        Addon.CHAT:UnregisterEvent( 'ADDON_LOADED' );
+        self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );
