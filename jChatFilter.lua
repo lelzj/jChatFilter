@@ -766,7 +766,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_YELL',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
+            --ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_GUILD',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY_LEADER',self.Filter );
