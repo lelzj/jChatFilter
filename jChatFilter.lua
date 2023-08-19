@@ -44,9 +44,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 TimeStamps = true,
                 QuestAlert = true,
                 WatchColor = {
-                    242 / 255,
-                    63 / 255,
-                    0 / 255,
+                    204 / 255,
+                    89 / 255,
+                    241 / 255,
                     1,
                 },
                 WatchList = {
