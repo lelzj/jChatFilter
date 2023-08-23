@@ -10,7 +10,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return table
         Addon.CHAT.GetDefaults = function( self )
-            local Defaults = {
+            return {
                 AlertSound = false,
                 ChannelColor = {
                     254 / 255,
@@ -54,28 +54,17 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 Channels = {},
             };
-            for i,Channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
-                Defaults.Channels[ Channel ] = {
-                    Color = {
-                        254 / 255,
-                        191 / 255,
-                        191 / 255,
-                        1,
-                    },
-                };
-            end
-            return Defaults;
         end
 
         Addon.CHAT.SetValue = function( self,Index,Value )
-            if( Addon.CHAT.persistence[ Index ] ~= nil ) then 
-                Addon.CHAT.persistence[ Index ] = Value;
+            if( self.persistence[ Index ] ~= nil ) then 
+                self.persistence[ Index ] = Value;
             end
         end
 
         Addon.CHAT.GetValue = function( self,Index )
-            if( Addon.CHAT.persistence[ Index ] ~= nil ) then 
-                return Addon.CHAT.persistence[ Index ];
+            if( self.persistence[ Index ] ~= nil ) then 
+                return self.persistence[ Index ];
             end
         end
 
@@ -185,8 +174,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Channel Settings',
             };
             local JoinedChannels = {};
-            for i,channel in pairs( Addon.CHAT.ChatFrame.channelList ) do
-                for ChannelName,ChannelData in pairs( Addon.CHAT.persistence.Channels ) do
+            for i,channel in pairs( self.ChatFrame.channelList ) do
+                for ChannelName,ChannelData in pairs( self.persistence.Channels ) do
                     if( channel == ChannelName ) then
                         JoinedChannels[ ChannelName ] = ChannelData;
                     end
@@ -198,7 +187,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     type = 'color',
                     order = Order,
                     get = function( Info )
-                        if( Addon.CHAT.persistence.Channels[ Info.arg ] ~= nil ) then
+                        if( Addon.CHAT.persistence.Channels[ Info.arg ] ~= nil and Addon.CHAT.persistence.Channels[ Info.arg ].Color ~= nil ) then
                             return unpack( Addon.CHAT.persistence.Channels[ Info.arg ].Color );
                         end
                     end,
@@ -210,7 +199,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     name = ChannelName..' Color',
                     desc = 'Set the color of '..ChannelName..' chat',
                     arg = ChannelName,
-                }
+                };
             end
 
             Order = Order+1;
@@ -498,6 +487,21 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
+        --  Chat Config Color Toggle
+        --
+        --  @return void
+        Addon.CHAT.ToggleChatColorNamesByClassGroup = function( self,Checked,Group)
+            local Info = ChatTypeGroup[ Group ];
+            if ( Info ) then
+            for Key,Value in pairs( Info ) do
+                SetChatColorNameByClass( strsub( Value,10 ),Checked );  --strsub gets rid of CHAT_MSG_
+            end
+            else
+                SetChatColorNameByClass( Group,Checked );
+            end
+        end
+
+        --
         --  Format Chat Message
         --
         --  @param  string  Event
@@ -766,7 +770,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_YELL',self.Filter );
-            --ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
+            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_GUILD',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY_LEADER',self.Filter );
@@ -777,6 +781,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT_LEADER',self.Filter );
 
             -- Chat events
+            --[[
             self.Events:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
             self.Events:SetScript( 'OnEvent', function( self,Event,... )
                 if( Event == 'CHAT_MSG_CHANNEL_NOTICE' ) then
@@ -788,6 +793,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end );
+            ]]
 
             -- List channels
             for i,v in pairs( self.ChatFrame.channelList ) do
@@ -820,11 +826,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.ChatFrame = DEFAULT_CHAT_FRAME;
 
             -- Database
-            self.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = Addon.CHAT:GetDefaults() },true );
+            self.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = self:GetDefaults() },true );
             if( not self.db ) then
                 return;
             end
-            self.persistence = Addon.CHAT.db.char;
+            self.persistence = self.db.char;
             if( not self.persistence ) then
                 return;
             end
@@ -841,11 +847,32 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Color chat names
             if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
                 for i,channel in pairs( self.ChatFrame.channelList ) do
-                    ToggleChatColorNamesByClassGroup( true, 'CHANNEL' .. i );
+                    self:ToggleChatColorNamesByClassGroup( true,'CHANNEL'..i );
                 end
             else
                 for i,channel in pairs( self.ChatFrame.channelList ) do
-                    ToggleChatColorNamesByClassGroup( false, 'CHANNEL' .. i );
+                    self:ToggleChatColorNamesByClassGroup( false,'CHANNEL'..i );
+                end
+            end
+
+            -- Expired channels
+            --[[for ChannelName,ChannelData in pairs( self.persistence.Channels ) do
+                if( not self.ChatFrame.channelList[ ChannelName ] ) then
+                    self.persistence.Channels[ ChannelName ] = nil;
+                end
+            end]]
+
+            -- Color chat channels
+            for i,Channel in pairs( self.ChatFrame.channelList ) do
+                if( not self.persistence.Channels[ Channel ] ) then
+                    self.persistence.Channels[ Channel ] = {
+                        Color = {
+                            254 / 255,
+                            191 / 255,
+                            191 / 255,
+                            1,
+                        },
+                    };
                 end
             end
 
@@ -857,9 +884,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self.ChatFrame:SetMaxLines( 10000 );
             end
 
-            -- Active quests
-            self:RebuildQuests();
-
             -- Chat text
             self.ChatFrame:SetFont( 'Fonts\\'..self:GetValue( 'Font' ).Family..'.ttf',self:GetValue( 'Font' ).Size,self:GetValue( 'Font' ).Flags );
             self.ChatFrame:SetShadowOffset( 0,0 );
@@ -870,6 +894,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self.ChatFrame.DefaultSettings.AddMessage = self.ChatFrame.AddMessage;
                 self.ChatFrame.AddMessage = self.SendMessage;
             end
+
+            -- Active quests
+            self:RebuildQuests();
         end
 
         C_Timer.After( 5, function()
