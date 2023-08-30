@@ -1,0 +1,21 @@
+## Title: |cff009bffj|cffffffffUI|r
+## Notes: j's UI
+## X-Category: system
+
+## Author: jadissa
+## X-Realm: Emerald Dream/Grobbulus/Whitemane
+## X-Website: https://github.com/jadissa/jUI
+
+## DefaultState: disabled
+## SavedVariables: jUI
+
+#@retail@
+## Interface: 90001
+#@end-retail@
+#@non-retail@
+## Interface: 11404
+#/run print((select(4, GetBuildInfo())));
+#https://markdownlivepreview.com/
+#@end-non-retail@
+
+index.xml
