@@ -806,15 +806,22 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CHAT.CreateFrames = function( self )
-            self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( AddonName ),AddonName );
+
+            self.Name = AddonName;
+
+            self.Config = CreateFrame( 'Frame',self.Name);
+            self.Config.name = self.Name;
+
             self.Config.okay = function( self )
                 Addon.CHAT:Refresh();
                 RestartGx();
             end
+
             self.Config.default = function( self )
                 Addon.CHAT.db:ResetDB();
             end
-            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( AddonName ),self:GetSettings() );
+
+            InterfaceOptions_AddCategory( self.Config,self.Name );
         end
 
         --
