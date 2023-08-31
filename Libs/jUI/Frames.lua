@@ -111,7 +111,7 @@ Addon.FRAMES.AddModifiedTip = function( self,VarData,Parent )
         self.Label.Tip = CreateFrame( 'GameTooltip',self.DataKeys.Name..'ToolTip',UIParent,'GameTooltipTemplate' );
         GameTooltip:SetOwner( self.DataKeys.Parent,'ANCHOR_NONE',0,0 );
         GameTooltip:AddLine( self.DataKeys.DisplayText,nil,nil,nil,false );
-        GameTooltip:AddLine( self.DataKeys.Description,1,1,1,false );
+        GameTooltip:AddLine( self.DataKeys.Description,1,1,1,true );
         GameTooltip:SetPoint( 'topright',self.DataKeys.Parent,'bottomright',0,0 );
         GameTooltip:Show();
     end );
@@ -149,7 +149,7 @@ Addon.FRAMES.AddTip = function( self,VarData,Parent )
     Parent:SetScript( 'OnEnter',function( self )
         GameTooltip:SetOwner( self.DataKeys.Parent,'ANCHOR_NONE',0,0 );
         GameTooltip:AddLine( self.DataKeys.DisplayText,nil,nil,nil,false );
-        GameTooltip:AddLine( self.DataKeys.Description,1,1,1,false );
+        GameTooltip:AddLine( self.DataKeys.Description,1,1,1,true );
         GameTooltip:SetPoint( 'topright',self.DataKeys.Parent,'bottomright',0,0 );
         GameTooltip:Show();
     end );
