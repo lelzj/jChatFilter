@@ -271,6 +271,10 @@ Addon.FRAMES.AddEdit = function( self,VarData,Parent,Handler )
     local Frame = CreateFrame( 'EditBox',Key..'Edit',Parent,'InputBoxTemplate' );
     Frame:SetAutoFocus( false );
     Frame:ClearFocus();
+    Frame:SetTextInsets( 0,0,3,3 );
+    if( VarData.Flagged ) then
+        Frame:Disable();
+    end
     Frame:SetFont( Addon.Theme.Font.Family, Addon.Theme.Font.Normal, Addon.Theme.Font.Flags );
     Frame:SetText( VarData.Value );
     Frame.keyValue = Key;
