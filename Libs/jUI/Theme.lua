@@ -24,3 +24,9 @@ Addon.Theme = {
         Small = 8,
     },
 };
+
+for Key,Data in pairs( Addon.Theme ) do
+    if( Key ~= 'Font' ) then
+        Addon.Theme[ Key ].r,Addon.Theme[ Key ].g,Addon.Theme[ Key ].b = Addon:Hex2RGB( Data.Hex );
+    end
+end

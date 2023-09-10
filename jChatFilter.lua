@@ -897,13 +897,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Active quests
             self:RebuildQuests();
-
-            -- Theme
-            for Key,Data in pairs( Addon.Theme ) do
-                if( Key ~= 'Font' ) then
-                    Addon.Theme[ Key ].r,Addon.Theme[ Key ].g,Addon.Theme[ Key ].b = Addon:Hex2RGB( Data.Hex );
-                end
-            end
         end
 
         C_Timer.After( 5, function()
