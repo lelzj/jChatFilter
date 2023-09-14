@@ -173,6 +173,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 order = Order,
                 name = 'Channel Settings',
             };
+            
             local JoinedChannels = {};
             for i,channel in pairs( self.ChatFrame.channelList ) do
                 for ChannelName,ChannelData in pairs( self.persistence.Channels ) do
@@ -370,16 +371,18 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  list
         --  @return void
         Addon.CHAT.AcceptQuest = function( self,... )
-            local QuestTitle;
+            local QuestTitle,IsHeader;
             if( Addon:IsClassic() ) then
-                QuestTitle = Addon:Minify( select( 1, GetQuestLogTitle( select( 1, ... ) ) ) );
+                QuestTitle,_,_,IsHeader = Addon:Minify( select( 1, GetQuestLogTitle( select( 1, ... ) ) ) );
             else
                 QuestTitle = Addon:Minify( C_QuestLog.GetTitleForQuestID( select( 1, ... ) ) );
             end
             if( not Addon.CHAT.ActiveQuests ) then
                 Addon.CHAT.ActiveQuests = {};
             end
-            Addon.CHAT.ActiveQuests[ QuestTitle ] = QuestTitle;
+            if( QuestTitle and not IsHeader ) then
+                Addon.CHAT.ActiveQuests[ QuestTitle ] = QuestTitle;
+            end
         end
 
         --
@@ -412,15 +415,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 QuestHeaders,QuestEntries = C_QuestLog.GetNumQuestLogEntries();
             end
             for i=1, QuestEntries do
-                local QuestTitle;
+                local QuestTitle,IsHeader;
                 if( Addon:IsClassic() ) then
-                    QuestTitle = GetQuestLogTitle( i );
+                    QuestTitle,_,_,IsHeader = GetQuestLogTitle( i );
                 else
                     QuestTitle = C_QuestLog.GetTitleForQuestID( i );
                 end
-              if( QuestTitle ) then
-                Addon.CHAT.ActiveQuests[ Addon:Minify( QuestTitle ) ] = Addon:Minify( QuestTitle );
-              end
+                if( QuestTitle and not IsHeader ) then
+                    Addon.CHAT.ActiveQuests[ Addon:Minify( QuestTitle ) ] = Addon:Minify( QuestTitle );
+                end
             end
         end
 
@@ -726,6 +729,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             if( MentionAlert ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
+                FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
             end
             if( Watched ) then
                 if( Addon.CHAT:GetValue( 'AlertSound' ) ) then
@@ -856,23 +860,31 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Expired channels
-            --[[for ChannelName,ChannelData in pairs( self.persistence.Channels ) do
+            local Colors = {};
+            for ChannelName,ChannelData in pairs( self.persistence.Channels ) do
                 if( not self.ChatFrame.channelList[ ChannelName ] ) then
+                    Colors[ ChannelName ] = self.persistence.Channels[ ChannelName ].Color;
                     self.persistence.Channels[ ChannelName ] = nil;
                 end
-            end]]
+            end
 
             -- Color chat channels
             for i,Channel in pairs( self.ChatFrame.channelList ) do
                 if( not self.persistence.Channels[ Channel ] ) then
-                    self.persistence.Channels[ Channel ] = {
-                        Color = {
-                            254 / 255,
-                            191 / 255,
-                            191 / 255,
-                            1,
-                        },
-                    };
+                    if( Colors[ Channel ] ) then
+                        self.persistence.Channels[ Channel ] = {
+                            Color = Colors[ Channel ];
+                        };
+                    else
+                        self.persistence.Channels[ Channel ] = {
+                            Color = {
+                                254 / 255,
+                                191 / 255,
+                                191 / 255,
+                                1,
+                            },
+                        };
+                    end
                 end
             end
 
