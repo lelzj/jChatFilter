@@ -772,10 +772,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CHAT.Run = function( self )
             -- Chat filter
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',self.Filter );
+
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_YELL',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
+            --ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
+            --ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER_INFORM',self.Filter );
+
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_GUILD',self.Filter );
+            --ChatFrame_AddMessageEventFilter( 'GUILD_MOTD',self.Filter );
+
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY_LEADER',self.Filter );
             ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID',self.Filter );
@@ -906,6 +911,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self.ChatFrame.DefaultSettings.AddMessage = self.ChatFrame.AddMessage;
                 self.ChatFrame.AddMessage = self.SendMessage;
             end
+
+            -- Enable types @todo
 
             -- Active quests
             self:RebuildQuests();
