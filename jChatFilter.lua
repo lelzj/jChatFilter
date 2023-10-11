@@ -53,6 +53,35 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'heal','voa',
                 },
                 Channels = {},
+                ChatGroups = {
+                    BATTLEGROUND = true,
+                    TRADESKILLS = true,
+                    SAY = true,
+                    EMOTE = true,
+                    YELL = true,
+                    GUILD = true,
+                    WHISPER = true,
+                    BN = true,
+                    PARTY = true,
+                    RAID = true,
+                    COMBAT = true,
+                    SKILL = true,
+                    LOOT = true,
+                    MONEY = true,
+                    OPENING = true,
+                    PET = true,
+                    ERRORS = true,
+                    IGNORED = true,
+                    CHANNEL = true,
+                },
+                ChatFilters = {
+                    PARTY = true,
+                    RAID = true,
+                    GUILD = true,
+                    YELL = true,
+                    SAY = false,
+                    CHANNEL = true,
+                },
             };
         end
 
@@ -66,6 +95,126 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( self.persistence[ Index ] ~= nil ) then 
                 return self.persistence[ Index ];
             end
+        end
+
+        Addon.CHAT.GetMessageGroups = function( self )
+            return {
+                SAY = {
+                    'SAY',
+                    'MONSTER_SAY',
+                },
+                EMOTE = {
+                    'EMOTE',
+                    'MONSTER_EMOTE',
+                    'MONSTER_BOSS_EMOTE',
+                },
+                YELL = {
+                    'YELL',
+                    'MONSTER_YELL',
+                },
+                GUILD = {
+                    'GUILD',
+                },
+                WHISPER = {
+                    'WHISPER',
+                    'MONSTER_BOSS_WHISPER',
+                    'MONSTER_WHISPER',
+                },
+                BN = {
+                    'BN',
+                    'BG_SYSTEM_HORDE',
+                    'BG_SYSTEM_ALLIANCE',
+                    'BG_SYSTEM_NEUTRAL',
+                    'BN_INLINE_TOAST_ALERT',
+                },
+                PARTY = {
+                    'PARTY',
+                    'PARTY_LEADER',
+                },
+                RAID = {
+                    'RAID',
+                    'RAID_LEADER',
+                    'RAID_WARNING',
+                    'INSTANCE_CHAT',
+                    'INSTANCE_CHAT_LEADER',
+                },
+                COMBAT = {
+                    'COMBAT',
+                    'COMBAT_XP_GAIN',
+                    'COMBAT_HONOR_GAIN',
+                    'COMBAT_FACTION_CHANGE',
+                },
+                SKILL = {
+                    'SKILL',
+                },
+                LOOT = {
+                    'LOOT',
+                },
+                MONEY = {
+                    'MONEY',
+                },
+                TRADESKILLS = {
+                    'TRADESKILLS',
+                },
+                OPENING = {
+                    'OPENING',
+                },
+                PET = {
+                    'PET',
+                    'PET_INFO',
+                },
+                BATTLEGROUND = {
+                    'BATTLEGROUND',
+                },
+                ERRORS = {
+                    'ERRORS',
+                },
+                IGNORED = {
+                    'IGNORED',
+                },
+                CHANNEL = {
+                    'CHANNEL',
+                },
+            };
+        end
+
+        Addon.CHAT.SetMessageGroup = function( self,ChatType,Value )
+            if( self.persistence.ChatGroups[ ChatType ] ~= nil ) then
+                ToggleChatMessageGroup( Value,ChatType );
+            end
+        end
+
+        Addon.CHAT.GetChatFilters = function( self )
+            return {
+                PARTY = {
+                    'CHAT_MSG_PARTY',
+                    'CHAT_MSG_PARTY_LEADER',
+                },
+                RAID = {
+                    'CHAT_MSG_RAID',
+                    'CHAT_MSG_RAID_LEADER',
+                    'CHAT_MSG_RAID_WARNING',
+                    'CHAT_MSG_INSTANCE_CHAT',
+                    'CHAT_MSG_INSTANCE_CHAT_LEADER',
+                },
+                --[[WHISPER = {
+                    'CHAT_MSG_WHISPER',
+                    'CHAT_MSG_WHISPER_INFORM',
+                },]]
+                GUILD = {
+                    'CHAT_MSG_GUILD',
+                    'GUILD_MOTD',
+                },
+                YELL = {
+                    'CHAT_MSG_YELL',
+                },
+                SAY = {
+                    'CHAT_MSG_SAY',
+                },
+                CHANNEL = {
+                    'CHAT_MSG_CHANNEL',
+                },
+            };
         end
 
         --
@@ -168,12 +317,38 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
 
             Order = Order+1;
+            Settings.args.GroupSettings = {
+                type = 'header',
+                order = Order,
+                name = 'Group Settings',
+            };
+            for GroupName,GroupData in pairs( self:GetMessageGroups() ) do
+                Order = Order+1;
+                Settings.args[ GroupName..'Message' ] = {
+                    type = 'toggle',
+                    order = Order,
+                    name = GroupName,
+                    desc = 'Enable/disable messages for '..GroupName,
+                    arg = GroupName,
+                    get = function( Info )
+                        if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
+                            return Addon.CHAT.persistence.ChatGroups[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
+                            Addon.CHAT.persistence.ChatGroups[ Info.arg ] = Value;
+                            self:SetGroup( Info.arg,Value );
+                        end
+                    end,
+                };
+            end
+            Order = Order+1;
             Settings.args.ChannelSettings = {
                 type = 'header',
                 order = Order,
                 name = 'Channel Settings',
             };
-            
             local JoinedChannels = {};
             for i,channel in pairs( self.ChatFrame.channelList ) do
                 for ChannelName,ChannelData in pairs( self.persistence.Channels ) do
@@ -202,42 +377,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = ChannelName,
                 };
             end
-
             Order = Order+1;
             Settings.args.AlertSettings = {
                 type = 'header',
                 order = Order,
                 name = 'Alert Settings',
-            };
-            Order = Order+1;
-            Settings.args.AlertSettings = {
-                type = 'header',
-                order = Order,
-                name = 'Alert Settings',
-            };
-            Order = Order+1;
-            Settings.args.AlertSound = {
-                type = 'toggle',
-                order = Order,
-                name = 'Alert Sound',
-                desc = 'Enable/disable chat alert sound',
-                arg = 'AlertSound',
-            };
-            Order = Order+1;
-            Settings.args.AlertMention = {
-                type = 'toggle',
-                order = Order,
-                name = 'Alert Mention',
-                desc = 'Enable/disable alerting if anyone mentions your name while in joined channels',
-                arg = 'MentionAlert',
-            };
-            Order = Order+1;
-            Settings.args.AlertQuest = {
-                type = 'toggle',
-                order = Order,
-                name = 'Alert Quest',
-                desc = 'Enable/disable alerting if anyone mentions a quest you are on while in joined channels',
-                arg = 'QuestAlert',
             };
             Order = Order+1;
             Settings.args.AlertColor = {
@@ -253,10 +397,55 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                         Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
                     end
                 end,
-                name = 'Alert Color',
+                name = 'Color',
                 desc = 'Set the color of Alerts chat',
                 arg = 'WatchColor',
             };
+            Order = Order+1;
+            Settings.args.AlertSound = {
+                type = 'toggle',
+                order = Order,
+                name = 'Sound',
+                desc = 'Enable/disable chat alert sound',
+                arg = 'AlertSound',
+            };
+            Order = Order+1;
+            Settings.args.AlertMention = {
+                type = 'toggle',
+                order = Order,
+                name = 'Mention',
+                desc = 'Enable/disable alerting if anyone mentions your name while in joined channels',
+                arg = 'MentionAlert',
+            };
+            Order = Order+1;
+            Settings.args.AlertQuest = {
+                type = 'toggle',
+                order = Order,
+                name = 'Quest',
+                desc = 'Enable/disable alerting if anyone mentions a quest you are on while in joined channels',
+                arg = 'QuestAlert',
+            };
+            for FilterName,FilterData in pairs( self:GetChatFilters() ) do
+                Order = Order+1;
+                Settings.args[ FilterName..'Alert' ] = {
+                    type = 'toggle',
+                    order = Order,
+                    name = FilterName,
+                    desc = 'Enable/disable filtering for '..FilterName..' messages',
+                    arg = FilterName,
+                    get = function( Info )
+                        if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
+                            return Addon.CHAT.persistence.ChatFilters[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
+                            Addon.CHAT.persistence.ChatFilters[ Info.arg ] = Value;
+                            self:SetFilter( Info.arg,Value );
+                        end
+                    end,
+                };
+            end
             Order = Order+1;
             Settings.args.AlertList = {
                 type = 'input',
@@ -290,6 +479,23 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 width = 'full',
             };
             return Settings;
+        end
+
+        Addon.CHAT.SetFilter = function( self,Filter,Value )
+            if( self:GetChatFilters()[ Filter ] ) then
+                for _,F in pairs( self:GetChatFilters()[ Filter ] ) do
+                    ChatFrame_RemoveMessageEventFilter( F,self.Filter );
+                    if( Value ) then
+                        ChatFrame_AddMessageEventFilter( F,self.Filter );
+                    end
+                end
+            end
+        end
+
+        Addon.CHAT.SetGroup = function( self,Group,Value )
+            if( self:GetMessageGroups()[ Group ] ) then
+                self:SetMessageGroup( Group,Value )
+            end
         end
 
         --
@@ -729,7 +935,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             if( MentionAlert ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
+                --FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
             end
             if( Watched ) then
                 if( Addon.CHAT:GetValue( 'AlertSound' ) ) then
@@ -771,23 +977,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.CHAT.Run = function( self )
             -- Chat filter
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_CHANNEL',self.Filter );
-
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_SAY',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_YELL',self.Filter );
-            --ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER',self.Filter );
-            --ChatFrame_AddMessageEventFilter( 'CHAT_MSG_WHISPER_INFORM',self.Filter );
-
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_GUILD',self.Filter );
-            --ChatFrame_AddMessageEventFilter( 'GUILD_MOTD',self.Filter );
-
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_PARTY_LEADER',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_LEADER',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_RAID_WARNING',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT',self.Filter );
-            ChatFrame_AddMessageEventFilter( 'CHAT_MSG_INSTANCE_CHAT_LEADER',self.Filter );
+            for Filter,FilterData in pairs( self:GetChatFilters() ) do
+                if( self.persistence.ChatFilters[ Filter ] ) then
+                    for _,F in pairs( FilterData ) do
+                        ChatFrame_RemoveMessageEventFilter( F,self.Filter );
+                        ChatFrame_AddMessageEventFilter( F,self.Filter );
+                    end
+                end
+            end
 
             -- Chat events
             --[[
@@ -912,7 +1109,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self.ChatFrame.AddMessage = self.SendMessage;
             end
 
-            -- Enable types @todo
+            -- Chat types
+            for Group,GroupData in pairs( self:GetMessageGroups() ) do
+                if( self.persistence.ChatGroups[ Group ] ~= nil ) then
+                    self:SetGroup( Group,self.persistence.ChatGroups[ Group ] );
+                end
+            end
 
             -- Active quests
             self:RebuildQuests();
