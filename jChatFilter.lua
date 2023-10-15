@@ -121,7 +121,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'MONSTER_WHISPER',
                 },
                 BN = {
-                    'BN',
                     'BG_SYSTEM_HORDE',
                     'BG_SYSTEM_ALLIANCE',
                     'BG_SYSTEM_NEUTRAL',
@@ -176,12 +175,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHANNEL',
                 },
             };
-        end
-
-        Addon.CHAT.SetMessageGroup = function( self,ChatType,Value )
-            if( self.persistence.ChatGroups[ ChatType ] ~= nil ) then
-                ToggleChatMessageGroup( Value,ChatType );
-            end
         end
 
         Addon.CHAT.GetChatFilters = function( self )
@@ -338,7 +331,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     set = function( Info,Value )
                         if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
                             Addon.CHAT.persistence.ChatGroups[ Info.arg ] = Value;
-                            self:SetGroup( Info.arg,Value );
+                            for _,GroupName in pairs( self:GetMessageGroups()[ Info.arg ] ) do
+                                self:SetGroup( GroupName,Value );
+                            end
                         end
                     end,
                 };
@@ -441,7 +436,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     set = function( Info,Value )
                         if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
                             Addon.CHAT.persistence.ChatFilters[ Info.arg ] = Value;
-                            self:SetFilter( Info.arg,Value );
+                            for _,FilterName in pairs( self:GetChatFilters()[ Info.arg ] ) do
+                                self:SetFilter( FilterName,Value );
+                            end
                         end
                     end,
                 };
@@ -481,21 +478,27 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             return Settings;
         end
 
+        --
+        -- Set chant filter
+        --
+        -- @return void
         Addon.CHAT.SetFilter = function( self,Filter,Value )
-            if( self:GetChatFilters()[ Filter ] ) then
-                for _,F in pairs( self:GetChatFilters()[ Filter ] ) do
-                    ChatFrame_RemoveMessageEventFilter( F,self.Filter );
-                    if( Value ) then
-                        ChatFrame_AddMessageEventFilter( F,self.Filter );
-                    end
-                end
+            if( Value ) then
+                --print( 'add',Value,Filter )
+                ChatFrame_AddMessageEventFilter( Filter,self.Filter );
+            else
+                --print( 'remove',Value,Filter )
+                ChatFrame_RemoveMessageEventFilter( Filter,self.Filter );
             end
         end
 
+        --
+        -- Set chat group
+        --
+        -- @return void
         Addon.CHAT.SetGroup = function( self,Group,Value )
-            if( self:GetMessageGroups()[ Group ] ) then
-                self:SetMessageGroup( Group,Value )
-            end
+            --print( Group,Value )
+            ToggleChatMessageGroup( Value,Group );
         end
 
         --
@@ -978,11 +981,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CHAT.Run = function( self )
             -- Chat filter
             for Filter,FilterData in pairs( self:GetChatFilters() ) do
-                if( self.persistence.ChatFilters[ Filter ] ) then
-                    for _,F in pairs( FilterData ) do
-                        ChatFrame_RemoveMessageEventFilter( F,self.Filter );
-                        ChatFrame_AddMessageEventFilter( F,self.Filter );
-                    end
+                for _,FilterName in pairs( FilterData ) do
+                    --print( FilterName,Filter,self.persistence.ChatFilters[ Filter ] )
+                    self:SetFilter( FilterName,self.persistence.ChatFilters[ Filter ] );
                 end
             end
 
@@ -1111,8 +1112,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Chat types
             for Group,GroupData in pairs( self:GetMessageGroups() ) do
-                if( self.persistence.ChatGroups[ Group ] ~= nil ) then
-                    self:SetGroup( Group,self.persistence.ChatGroups[ Group ] );
+                for _,GroupName in pairs( GroupData ) do
+                    self:SetGroup( GroupName,self.persistence.ChatGroups[ Group ] );
                 end
             end
 
