@@ -10,7 +10,7 @@
 ## SavedVariables: jChatFilter
 
 #@retail@
-## Interface: 90001
+## Interface: 100200
 #@end-retail@
 #@non-retail@
 ## Interface: 11404

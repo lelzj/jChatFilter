@@ -44,9 +44,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 TimeStamps = true,
                 QuestAlert = true,
                 WatchColor = {
-                    204 / 255,
-                    89 / 255,
-                    241 / 255,
+                    150 / 255,
+                    233 / 255,
+                    240 / 255,
                     1,
                 },
                 WatchList = {
@@ -310,10 +310,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
 
             Order = Order+1;
-            Settings.args.GroupSettings = {
+            Settings.args.MessageSettings = {
                 type = 'header',
                 order = Order,
-                name = 'Group Settings',
+                name = 'Message Settings',
             };
             for GroupName,GroupData in pairs( self:GetMessageGroups() ) do
                 Order = Order+1;
@@ -372,6 +372,184 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = ChannelName,
                 };
             end
+            --[[
+            Order = Order+1;
+            Settings.args.JoinGeneral = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'General',
+                desc = 'Join/Leave General',
+                arg = 'General',
+            };
+            Order = Order+1;
+            Settings.args.JoinTrade = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'Trade',
+                desc = 'Join/Leave Trade',
+                arg = 'Trade',
+            };
+            Order = Order+1;
+            Settings.args.JoinLocalDefense = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'Local Defense',
+                desc = 'Join/Leave Local Defense',
+                arg = 'LocalDefense',
+            };
+            Order = Order+1;
+            Settings.args.JoinWorldDefense = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'World Defense',
+                desc = 'Join/Leave World Defense',
+                arg = 'WorldDefense',
+            };
+            Order = Order+1;
+            Settings.args.JoinLookingForGroup = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'Looking For Group',
+                desc = 'Join/Leave LookingForGroup',
+                arg = 'LookingForGroup',
+            };
+            Order = Order+1;
+            Settings.args.JoinWorld = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'World',
+                desc = 'Join/Leave World',
+                arg = 'World',
+            };
+            Order = Order+1;
+            Settings.args.JoinFederation = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'Federation',
+                desc = 'Join/Leave Federation',
+                arg = 'federation',
+            };
+            Order = Order+1;
+            Settings.args.JoinRP = {
+                type = 'toggle',
+                order = Order,
+                get = function( Info )
+                    for i,v in pairs( self.ChatFrame.channelList ) do
+                        if( Addon:Minify( v ):find( Addon:Minify( Info.arg ) ) ) then
+                            return true;
+                        end
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Value ) then
+                        self:JoinChannel( Info.arg );
+                    else
+                        self:LeaveChannel( Info.arg );
+                    end
+                end,
+                name = 'RP',
+                desc = 'Join/Leave RolePlay',
+                arg = 'rp',
+            };
+            ]]
             Order = Order+1;
             Settings.args.AlertSettings = {
                 type = 'header',
@@ -666,10 +844,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Join channel
         --
         --  @return bool
-        Addon.CHAT.JoinChannel = function( self,... )
-            local ChannelId = select( 8,... );
-            local ChannelName = select( 9,... );
-            if( ChannelId and ChannelName ) then
+        Addon.CHAT.JoinChannel = function( self,ChannelName )
+            if( ChannelName ) then
+                local Type,Name = JoinPermanentChannel( ChannelName );
                 Addon.CHAT.persistence.Channels[ ChannelName ] = {
                     Color = {
                         254 / 255,
@@ -677,7 +854,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                         191 / 255,
                         1,
                     },
-                    Id = ChannelId,
+                    Id = #self.ChatFrame.channelList+1,
                 };
                 return true;
             end
@@ -688,10 +865,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Leave channel
         --
         --  @return bool
-        Addon.CHAT.LeaveChannel = function( self,... )
-            local ChannelId = select( 8,... );
-            local ChannelName = select( 9,... );
-            if( ChannelId and ChannelName ) then
+        Addon.CHAT.LeaveChannel = function( self,ChannelName )
+            if( ChannelName ) then
+                LeaveChannelByName( ChannelName );
                 Addon.CHAT.persistence.Channels[ ChannelName ] = nil;
                 return true;
             end
@@ -986,21 +1162,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     self:SetFilter( FilterName,self.persistence.ChatFilters[ Filter ] );
                 end
             end
-
-            -- Chat events
-            --[[
-            self.Events:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
-            self.Events:SetScript( 'OnEvent', function( self,Event,... )
-                if( Event == 'CHAT_MSG_CHANNEL_NOTICE' ) then
-                    local SubEvent = select( 1,... );
-                    if( SubEvent == 'YOU_CHANGED' ) then
-                        Addon.CHAT:JoinChannel( ... );
-                    elseif( SubEvent == 'YOU_LEFT' ) then
-                        Addon.CHAT:LeaveChannel( ... );
-                    end
-                end
-            end );
-            ]]
 
             -- List channels
             for i,v in pairs( self.ChatFrame.channelList ) do
