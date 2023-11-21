@@ -65,6 +65,10 @@ Addon.IsClassic = function( self )
   return ( WOW_PROJECT_ID ~= WOW_PROJECT_MAINLINE );
 end
 
+Addon.IsWrath = function( self )
+  return ( WOW_PROJECT_ID == WOW_PROJECT_WRATH_CLASSIC );
+end
+
 Addon.Hex2RGB = function( self,Hex )
   Hex = Hex:gsub( '#','' );
   return tonumber( '0x' .. Hex:sub( 1,2 ) ) / 255, 

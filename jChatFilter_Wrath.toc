@@ -9,7 +9,7 @@
 ## DefaultState: disabled
 ## SavedVariables: jChatFilter
 
-## Interface: 11500
+## Interface: 30403
 #/run print((select(4, GetBuildInfo())));
 #https://markdownlivepreview.com/
 
