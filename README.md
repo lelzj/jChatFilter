@@ -20,5 +20,5 @@ https://github.com/jadissa/jChatFilter/issues
 
 ## Screenshots
 <p float="left">
-  <img src="ChatSettings.png" width="400" />
+  <img src="ChatSettings.png" width="500" />
 </p>
