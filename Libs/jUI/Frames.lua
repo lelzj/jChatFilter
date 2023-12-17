@@ -255,6 +255,27 @@ Addon.FRAMES.AddVarToggle = function( self,VarData,Parent,Handler )
     return Frame;
 end
 
+Addon.FRAMES.AddCheckBox = function( self,VarData,Parent,Handler )
+    local Key = string.lower( VarData.Name );
+    local Frame = CreateFrame( 'CheckButton',Key..'Toggle',Parent,'ChatConfigCheckButtonTemplate' );
+    Frame:SetChecked( Addon:Int2Bool( Handler:GetVarValue( Key ) ) );
+    Frame.keyValue = Key;
+    if( VarData.DisplayText ) then
+        Frame.Text:SetText( VarData.DisplayText );
+    end
+    if( VarData.Description ) then
+        Frame.tooltip = VarData.Description;
+    end
+    Frame:HookScript( 'OnClick',function( self )
+         Handler:SetVarValue( self.keyValue,Addon:BoolToInt( self:GetChecked() ) );
+    end );
+    if( VarData.Flagged ) then
+        Frame:Disable();
+    end
+    Frame:SetSize( 25,25 );
+    return Frame;
+end
+
 Addon.FRAMES.AddButton = function( self,VarData,Parent )
     local Key = string.lower( VarData.Name );
     local Frame = CreateFrame( 'Button',Key..'Toggle',Parent,'UIPanelButtonNoTooltipTemplate' );

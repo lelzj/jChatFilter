@@ -97,6 +97,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
+        Addon.CHAT.GetVarValue = function( self,Index )
+            return self:GetValue( Index );
+        end
+
+        Addon.CHAT.SetVarValue = function( self,Index,Value )
+            self:SetValue( Index,Value );
+        end
+
         Addon.CHAT.GetMessageGroups = function( self )
             return {
                 SAY = {
@@ -223,7 +231,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 set = function( Info,Value )
                     self:SetValue( Info.arg,Value );
                 end,
-                name = AddonName..' Settings',
+                name = AddonName,
                 desc = 'Simple chat filter',
                 args = {
                 },
@@ -310,34 +318,117 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
 
             Order = Order+1;
-            Settings.args.MessageSettings = {
+            Settings.args.AlertSettings = {
                 type = 'header',
                 order = Order,
-                name = 'Message Settings',
+                name = 'Alert Settings',
             };
-            for GroupName,GroupData in pairs( self:GetMessageGroups() ) do
+            Order = Order+1;
+            Settings.args.AlertList = {
+                type = 'input',
+                order = Order,
+                multiline = true,
+                get = function( Info )
+                    return Addon:Implode( self:GetWatches(),',' );
+                end,
+                set = function( Info,Value )
+                    self:SetWatches( Value );
+                end,
+                name = 'Alert List',
+                desc = 'Words or phrases to be alerted on when they are mentioned in chat. Note that phrases contain no spaces',
+                arg = 'WatchList',
+                width = 'full',
+            };
+            Order = Order+1;
+            Settings.args.IgnoreList = {
+                type = 'input',
+                order = Order,
+                multiline = true,
+                get = function( Info )
+                    return Addon:Implode( self:GetIgnores(),',' );
+                end,
+                set = function( Info,Value )
+                    self:SetIgnores( Value );
+                end,
+                name = 'Ignore List',
+                desc = 'Words or phrases which should be omitted in chat. Note that phrases contain no spaces',
+                arg = 'IgnoreList',
+                width = 'full',
+            };
+
+            Order = Order+1;
+            Settings.args.AlertMention = {
+                type = 'toggle',
+                order = Order,
+                name = 'Mention',
+                desc = 'Enable/disable alerting if anyone mentions your name',
+                arg = 'MentionAlert',
+            };
+            Order = Order+1;
+            Settings.args.AlertQuest = {
+                type = 'toggle',
+                order = Order,
+                name = 'Quest',
+                desc = 'Enable/disable alerting if anyone mentions a quest you are on',
+                arg = 'QuestAlert',
+            };
+            Order = Order+1;
+            Settings.args.AlertColor = {
+                type = 'color',
+                order = Order,
+                get = function( Info )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        return unpack( Addon.CHAT.persistence[ Info.arg ] );
+                    end
+                end,
+                set = function( Info,R,G,B,A )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
+                    end
+                end,
+                name = 'Color',
+                desc = 'Set the color of Alerts chat',
+                arg = 'WatchColor',
+            };
+            Order = Order+1;
+            Settings.args.AlertSound = {
+                type = 'toggle',
+                order = Order,
+                name = 'Sound',
+                desc = 'Enable/disable chat alert sound',
+                arg = 'AlertSound',
+            };
+
+            Order = Order+1;
+            Settings.args.FilterSettings = {
+                type = 'header',
+                order = Order,
+                name = 'Filter Settings',
+            };
+            for FilterName,FilterData in pairs( self:GetChatFilters() ) do
                 Order = Order+1;
-                Settings.args[ GroupName..'Message' ] = {
+                Settings.args[ FilterName..'Alert' ] = {
                     type = 'toggle',
                     order = Order,
-                    name = GroupName,
-                    desc = 'Enable/disable messages for '..GroupName,
-                    arg = GroupName,
+                    name = FilterName,
+                    desc = 'Enable/disable filtering for '..FilterName..' messages',
+                    arg = FilterName,
                     get = function( Info )
-                        if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
-                            return Addon.CHAT.persistence.ChatGroups[ Info.arg ];
+                        if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
+                            return Addon.CHAT.persistence.ChatFilters[ Info.arg ];
                         end
                     end,
                     set = function( Info,Value )
-                        if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
-                            Addon.CHAT.persistence.ChatGroups[ Info.arg ] = Value;
-                            for _,GroupName in pairs( self:GetMessageGroups()[ Info.arg ] ) do
-                                self:SetGroup( GroupName,Value );
+                        if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
+                            Addon.CHAT.persistence.ChatFilters[ Info.arg ] = Value;
+                            for _,FilterName in pairs( self:GetChatFilters()[ Info.arg ] ) do
+                                self:SetFilter( FilterName,Value );
                             end
                         end
                     end,
                 };
             end
+
             Order = Order+1;
             Settings.args.ChannelSettings = {
                 type = 'header',
@@ -372,6 +463,37 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = ChannelName,
                 };
             end
+
+            Order = Order+1;
+            Settings.args.MessageSettings = {
+                type = 'header',
+                order = Order,
+                name = 'Message Settings',
+            };
+            for GroupName,GroupData in pairs( self:GetMessageGroups() ) do
+                Order = Order+1;
+                Settings.args[ GroupName..'Message' ] = {
+                    type = 'toggle',
+                    order = Order,
+                    name = GroupName,
+                    desc = 'Enable/disable messages for '..GroupName,
+                    arg = GroupName,
+                    get = function( Info )
+                        if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
+                            return Addon.CHAT.persistence.ChatGroups[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
+                            Addon.CHAT.persistence.ChatGroups[ Info.arg ] = Value;
+                            for _,GroupName in pairs( self:GetMessageGroups()[ Info.arg ] ) do
+                                self:SetGroup( GroupName,Value );
+                            end
+                        end
+                    end,
+                };
+            end
+
             --[[
             Order = Order+1;
             Settings.args.JoinGeneral = {
@@ -550,109 +672,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 arg = 'rp',
             };
             ]]
-            Order = Order+1;
-            Settings.args.AlertSettings = {
-                type = 'header',
-                order = Order,
-                name = 'Alert Settings',
-            };
-            Order = Order+1;
-            Settings.args.AlertColor = {
-                type = 'color',
-                order = Order,
-                get = function( Info )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        return unpack( Addon.CHAT.persistence[ Info.arg ] );
-                    end
-                end,
-                set = function( Info,R,G,B,A )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
-                    end
-                end,
-                name = 'Color',
-                desc = 'Set the color of Alerts chat',
-                arg = 'WatchColor',
-            };
-            Order = Order+1;
-            Settings.args.AlertSound = {
-                type = 'toggle',
-                order = Order,
-                name = 'Sound',
-                desc = 'Enable/disable chat alert sound',
-                arg = 'AlertSound',
-            };
-            Order = Order+1;
-            Settings.args.AlertMention = {
-                type = 'toggle',
-                order = Order,
-                name = 'Mention',
-                desc = 'Enable/disable alerting if anyone mentions your name while in joined channels',
-                arg = 'MentionAlert',
-            };
-            Order = Order+1;
-            Settings.args.AlertQuest = {
-                type = 'toggle',
-                order = Order,
-                name = 'Quest',
-                desc = 'Enable/disable alerting if anyone mentions a quest you are on while in joined channels',
-                arg = 'QuestAlert',
-            };
-            for FilterName,FilterData in pairs( self:GetChatFilters() ) do
-                Order = Order+1;
-                Settings.args[ FilterName..'Alert' ] = {
-                    type = 'toggle',
-                    order = Order,
-                    name = FilterName,
-                    desc = 'Enable/disable filtering for '..FilterName..' messages',
-                    arg = FilterName,
-                    get = function( Info )
-                        if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
-                            return Addon.CHAT.persistence.ChatFilters[ Info.arg ];
-                        end
-                    end,
-                    set = function( Info,Value )
-                        if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
-                            Addon.CHAT.persistence.ChatFilters[ Info.arg ] = Value;
-                            for _,FilterName in pairs( self:GetChatFilters()[ Info.arg ] ) do
-                                self:SetFilter( FilterName,Value );
-                            end
-                        end
-                    end,
-                };
-            end
-            Order = Order+1;
-            Settings.args.AlertList = {
-                type = 'input',
-                order = Order,
-                multiline = true,
-                get = function( Info )
-                    return Addon:Implode( self:GetWatches(),',' );
-                end,
-                set = function( Info,Value )
-                    self:SetWatches( Value );
-                end,
-                name = 'Alert List',
-                desc = 'Words or phrases to be alerted on when they are mentioned in chat. Note that phrases contain no spaces',
-                arg = 'WatchList',
-                width = 'full',
-            };
-            Order = Order+1;
-            Settings.args.IgnoreList = {
-                type = 'input',
-                order = Order,
-                multiline = true,
-                get = function( Info )
-                    return Addon:Implode( self:GetIgnores(),',' );
-                end,
-                set = function( Info,Value )
-                    self:SetIgnores( Value );
-                end,
-                name = 'Ignore List',
-                desc = 'Words or phrases which should be omitted in chat. Note that phrases contain no spaces',
-                arg = 'IgnoreList',
-                width = 'full',
-            };
+
             return Settings;
         end
 
@@ -1183,6 +1203,78 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Addon.CHAT.db:ResetDB();
             end
             LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( AddonName ),self:GetSettings() );
+
+
+            --[[
+            self.Config = CreateFrame( 'Frame',AddonName..'Main',UIParent,'UIPanelDialogTemplate' );
+            self.Config:SetFrameStrata( 'HIGH' );
+
+            self.Config:SetClampedToScreen( true );
+            self.Config:SetSize( self.ChatFrame:GetWidth(),self.ChatFrame:GetHeight() );
+            self.Config:DisableDrawLayer( 'OVERLAY' );
+            self.Config:DisableDrawLayer( 'BACKGROUND' );
+
+            self.Config:EnableKeyboard( true );
+            self.Config:EnableMouse( true );
+            self.Config:SetResizable( false );
+            self.Config:SetPoint( 'bottomleft',self.ChatFrame,'bottomleft',0,0 );
+            self.Config:SetScale( 1 );
+
+            self.Config.Background = self.Config:CreateTexture( nil,'ARTWORK',nil,0 );
+            self.Config.Background:SetTexture( 'Interface\\Addons\\jChatFilter\\Libs\\jUI\\Textures\\frame' );
+            self.Config.Background:SetAllPoints( self.Config );
+
+            self.Config.Tools = CreateFrame( 'Frame',self.Config:GetName()..'Tools',self.Config );
+            self.Config.Tools:SetSize( self.Config:GetWidth(),1 );
+            self.Config.Tools:SetPoint( 'topleft',self.Config,'topleft' );
+            self.Config.Tools.Background = self.Config:CreateTexture( nil,'ARTWORK',nil,0 );
+            self.Config.Tools.Background:SetTexture( 'Interface\\Addons\\jChatFilter\\Libs\\jUI\\Textures\\frame' );
+            self.Config.Tools.Background:SetAllPoints( self.Config.Tools );
+
+            self.Config.Browser = CreateFrame( 'Frame',self.Config:GetName()..'Browser',self.Config );
+            self.Config.Browser:SetSize( self.Config:GetWidth(),self.Config:GetHeight()-self.Config.Tools:GetHeight() );
+            self.Config.Browser:SetPoint( 'topleft',self.Config.Tools,'bottomleft' );
+
+            self.Config.Browser.Heading = CreateFrame( 'Frame',self.Config.Browser:GetName()..'Heading',self.Config );
+            self.Config.Browser.Heading:SetSize( self.Config.Browser:GetWidth(),100 );
+            self.Config.Browser.Heading:SetPoint( 'topleft',self.Config.Tools,'bottomleft' );
+
+
+
+            -- Options scroll frame
+            self.Config.Browser.Data = CreateFrame( 'ScrollFrame',nil,self.Config.Browser,'UIPanelScrollFrameTemplate' );
+
+            -- Options scrolling content frame
+            self.Config.Browser.Data.ScrollChild = CreateFrame( 'Frame' );
+
+            -- Options scroll frame
+            self.Config.Browser.Data:SetSize( self.Config.Browser:GetWidth(),self.Config.Browser:GetHeight()-self.Config.Browser:GetHeight()-self.Config.Tools:GetHeight() );
+            self.Config.Browser.Data:SetPoint( 'topleft',self.Config.Browser.Heading,'bottomleft' );
+
+            -- Options scroll content 
+            self.Config.Browser.Data:SetScrollChild( self.Config.Browser.Data.ScrollChild );
+            self.Config.Browser.Data.ScrollChild:SetSize( self.Config.Browser.Data:GetWidth()-18,20 );
+
+
+            -- Configurations
+            self.Switches = {
+                General = {
+                    TimeStamps = Addon.FRAMES:AddCheckBox( { Name='TimeStamps',DisplayText='Add Timestamps',Description='Timestamp prefix messsages'},self.Config.Browser.Data,self ),
+                    ScrollBack = Addon.FRAMES:AddCheckBox( { Name='ScrollBack',DisplayText='Extend History',Description='Extend chat history to 1,000 lines'},self.Config.Browser.Data,self ),
+                    FadeOut = Addon.FRAMES:AddCheckBox( { Name='FadeOut',DisplayText='Message Fading',Description='Messages will disappear from view after a period of time'},self.Config.Browser.Data,self ),
+                },
+            };
+
+            -- Configuration display
+            local X,Y = 10,-2;
+            for SetName,SwitchData in pairs( self.Switches ) do
+                for _,Frame in pairs( SwitchData ) do
+                    Frame:SetPoint( 'topleft',self.Config.Browser.Data.ScrollChild,'topleft',X,Y );
+                    Y=Y-20;
+                    X=X+75;
+                end
+            end
+            ]]
         end
 
         --
