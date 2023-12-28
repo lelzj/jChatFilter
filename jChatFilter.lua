@@ -963,7 +963,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Class color
             if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
-                if( PlayerId and Info and Chat_ShouldColorChatByClass( Info ) ) then
+                if( PlayerId and Info and self:GetValue( 'ClassColor' ) ) then
                     if( EnglishClass ) then
                         local ClassColorTable = RAID_CLASS_COLORS[ EnglishClass ];
                         if ( ClassColorTable ) then
@@ -1192,17 +1192,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             for i,v in pairs( self.ChatFrame.channelList ) do
                 print( 'You have joined '..v );
             end
-
-            -- Color chat names
-            C_Timer.After( 2,function()
-                if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
-                    SetCVar( 'chatClassColorOverride',0 );
-                    --self:ToggleChatColorNamesByClassGroup( true,'CHANNEL' );
-                else
-                    SetCVar( 'chatClassColorOverride',1 );
-                    --self:ToggleChatColorNamesByClassGroup( false,'CHANNEL' );
-                end
-            end );
         end
 
         --
