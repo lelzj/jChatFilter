@@ -453,7 +453,12 @@ end
 -- Two named frames. todo: make support only one/make sizing fully dynamic
 Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
 
-    local X,Y = 20,40; 
+    
+    local X,Y = 10,0; 
+    local AbsX = X;
+    local AbsY = Y;
+    local ElementWidth = 25;
+    local RowHeight = 20;
     -- Increment Y to control vertical spacing
     -- this will afect both columns, all rows
 
@@ -461,7 +466,7 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
     ObjHandler.ScrollFrame = CreateFrame( 'ScrollFrame',nil,ObjHandler.Panel,'UIPanelScrollFrameTemplate' );
 
     -- Options scrolling content frame
-    ObjHandler.ScrollChild = CreateFrame( 'Frame' );
+    ObjHandler.ScrollChild = CreateFrame( 'Frame',ObjHandler.Panel:GetName()..'ScrollChild' );
 
     -- Options scroll frame
     ObjHandler.ScrollFrame:SetPoint( 'TOPLEFT',3,-4 );
@@ -476,37 +481,26 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
     end
     ObjHandler.ScrollChild:SetHeight( 20 );
 
-    -- Config screen left side
-    ObjHandler.ScrollChild.Left = CreateFrame( 'Frame',ObjHandler.Panel:GetName()..'Left',ObjHandler.ScrollChild );
-    ObjHandler.ScrollChild.Left:SetSize( ObjHandler.ScrollChild:GetWidth() / 3,ObjHandler.ScrollChild:GetHeight() - 10 );
-    ObjHandler.ScrollChild.Left:SetPoint( 'topleft',ObjHandler.ScrollChild,'topleft' );
+    local Parent = ObjHandler.ScrollChild;
+    Parent.KeyValue = 'ScrollFrame';
+    local AbsParent = Parent;
 
-    -- Config screen right side
-    ObjHandler.ScrollChild.Right = CreateFrame( 'Frame',ObjHandler.Panel:GetName()..'Right',ObjHandler.ScrollChild );
-    ObjHandler.ScrollChild.Right:SetSize( ObjHandler.ScrollChild:GetWidth() / 3,ObjHandler.ScrollChild:GetHeight() - 10 );
-    ObjHandler.ScrollChild.Right:SetPoint( 'topleft',ObjHandler.ScrollChild.Left,'topright' );
-
+    local Iterator = 1;
+    local NumPerLine = 3;
+    local MyPosition = 'topleft';
+    local YourPosition = 'topright';
     local Children = {};
-    local Iterator = 0;
+
+    table.insert( Children,Parent );
+
     for Var,VarData in Addon:Sort( Settings ) do
         if( VarData.Type == 'Toggle' ) then
 
-            local Parent;
-            if( Iterator % 2 == 0 ) then
-                Parent = ObjHandler.ScrollChild.Left;
-            else
-                Parent = ObjHandler.ScrollChild.Right;
-            end
-            if( not Children[ Parent:GetName() ] ) then
-                Children[ Parent:GetName() ] = 1;
-            else
-                Children[ Parent:GetName() ] = Children[ Parent:GetName() ]+1;
-            end
-
-            --print( Parent:GetName(),'Toggle',X,-( Y*NumChildren ) )
-            ObjHandler[ Var ] = LibStub( 'Sushi-3.1' ).Check( Parent );
+            Parent = Children[ Iterator ];
+            
+            ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).Check( Parent );
             ObjHandler[ Var ]:SetChecked( Addon:Int2Bool( ObjHandler:GetValue( VarData.KeyValue ) ) );
-            ObjHandler[ Var ]:SetPoint( 'topleft',Parent,'bottomleft',X,-( Y*Children[ Parent:GetName() ] ) );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetLabel( Var );
             ObjHandler[ Var ].KeyValue = Var;
@@ -514,24 +508,16 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
             ObjHandler[ Var ]:SetCall('OnClick',function( self )
                 ObjHandler:SetValue( self.KeyValue,Addon:BoolToInt( self:GetValue() ) );
             end );
+            table.insert( Children,ObjHandler[ Var ] );
+
             Iterator = Iterator+1;
+            X = X+ElementWidth;
         elseif( VarData.Type == 'Range' ) then
 
-            local Parent;
-            if( Iterator % 2 == 0 ) then
-                Parent = ObjHandler.ScrollChild.Left;
-            else
-                Parent = ObjHandler.ScrollChild.Right;
-            end
-            if( not Children[ Parent:GetName() ] ) then
-                Children[ Parent:GetName() ] = 1;
-            else
-                Children[ Parent:GetName() ] = Children[ Parent:GetName() ]+1;
-            end
+            Parent = Children[ Iterator ];
 
-            --print( Parent:GetName(),'Range',X,-( Y*NumChildren ) )
-            ObjHandler[ Var ] = LibStub( 'Sushi-3.1' ).Slider( Parent );
-            ObjHandler[ Var ]:SetPoint( 'topleft',Parent,'bottomleft',X,-( Y*Children[ Parent:GetName() ] ) );
+            ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).Slider( Parent );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetValue( ObjHandler:GetValue( VarData.KeyValue ) );
             ObjHandler[ Var ].Edit:SetValue( Addon:SliderRound( ObjHandler:GetValue( VarData.KeyValue ),VarData.Step ) );
@@ -548,24 +534,16 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
             ObjHandler[ Var ]:SetCall('OnValue',function( self )
                 ObjHandler:SetValue( self.KeyValue,self:GetValue() );
             end );
+            table.insert( Children,ObjHandler[ Var ] );
+
             Iterator = Iterator+1;
+            X = X+ElementWidth;
         elseif( VarData.Type == 'Text' ) then
 
-            local Parent;
-            if( Iterator % 2 == 0 ) then
-                Parent = ObjHandler.ScrollChild.Left;
-            else
-                Parent = ObjHandler.ScrollChild.Right;
-            end
-            if( not Children[ Parent:GetName() ] ) then
-                Children[ Parent:GetName() ] = 1;
-            else
-                Children[ Parent:GetName() ] = Children[ Parent:GetName() ]+1;
-            end
+            Parent = Children[ Iterator ];
 
-            --print( Parent:GetName(),'Range',X,-( Y*NumChildren ) )
-            ObjHandler[ Var ] = LibStub( 'Sushi-3.1' ).BoxEdit( Parent );
-            ObjHandler[ Var ]:SetPoint( 'topleft',Parent,'bottomleft',X+10,-( Y*Children[ Parent:GetName() ] ) );
+            ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).BoxEdit( Parent );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetMultiLine( true );
             if( VarData.CSV ) then
@@ -593,23 +571,16 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
                     ObjHandler:SetValue( self.KeyValue,self:GetValue() );
                 end
             end );
+            table.insert( Children,ObjHandler[ Var ] );
+
             Iterator = Iterator+1;
+            X = X+ElementWidth;
         elseif( VarData.Type == 'Color' ) then
 
-            local Parent;
-            if( Iterator % 2 == 0 ) then
-                Parent = ObjHandler.ScrollChild.Left;
-            else
-                Parent = ObjHandler.ScrollChild.Right;
-            end
-            if( not Children[ Parent:GetName() ] ) then
-                Children[ Parent:GetName() ] = 1;
-            else
-                Children[ Parent:GetName() ] = Children[ Parent:GetName() ]+1;
-            end
+            Parent = Children[ Iterator ];
 
-            ObjHandler[ Var ] = LibStub( 'Sushi-3.1' ).ColorPicker( Parent );
-            ObjHandler[ Var ]:SetPoint( 'topleft',Parent,'bottomleft',X,-( Y*Children[ Parent:GetName() ] ) );
+            ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).ColorPicker( Parent );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetLabel( Var );
             ObjHandler[ Var ].KeyValue = Var;
@@ -619,24 +590,17 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
                 ObjHandler.persistence[ self.KeyValue ] = { self.color.r,self.color.g,self.color.b,self.color.a };
             end )
             --ObjHandler[ Var ].hasOpacity = true;
+            table.insert( Children,ObjHandler[ Var ] );
+
             Iterator = Iterator+1;
+            X = X+ElementWidth;
         elseif( VarData.Type == 'List' ) then
 
-            local Parent;
-            if( Iterator % 2 == 0 ) then
-                Parent = ObjHandler.ScrollChild.Left;
-            else
-                Parent = ObjHandler.ScrollChild.Right;
-            end
-            if( not Children[ Parent:GetName() ] ) then
-                Children[ Parent:GetName() ] = 1;
-            else
-                Children[ Parent:GetName() ] = Children[ Parent:GetName() ]+1;
-            end
+            Parent = Children[ Iterator ];
 
-            ObjHandler[ Var ] = LibStub( 'Sushi-3.1' ).DropChoice( Parent );
+            ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).DropChoice( Parent );
             ObjHandler[ Var ]:SetValue( ObjHandler:GetValue( VarData.KeyValue ) );
-            ObjHandler[ Var ]:SetPoint( 'topleft',Parent,'bottomleft',X,-( Y*Children[ Parent:GetName() ] ) );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetLabel( Var );
             ObjHandler[ Var ].KeyValue = Var;
@@ -653,7 +617,19 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
                 print( self.KeyValue,self:GetValue() )
                 ObjHandler:SetValue( self.KeyValue,self:GetValue() );
             end );
+            table.insert( Children,ObjHandler[ Var ] );
+
             Iterator = Iterator+1;
+            X = X+100;
         end
+        if( Iterator % NumPerLine == 0 ) then
+            Parent = AbsParent;
+            YourPosition = 'topleft';
+            X = AbsX;
+            Y = Y-RowHeight;
+        else
+            Y = AbsY;
+        end
+        print( Var,MyPosition,Parent.KeyValue,YourPosition,X,Y );
     end
 end

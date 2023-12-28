@@ -24,6 +24,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Flags = 'THINOUTLINE',
                 },
                 FadeOut = false,
+                ClassColor = true,
                 GeneralColor = {
                     254 / 255,
                     191 / 255,
@@ -266,6 +267,25 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Fade Out',
                 desc = 'Enable/disable chat fading',
                 arg = 'FadeOut',
+            };
+            Order = Order+1;
+            Settings.args.ClassColor = {
+                type = 'toggle',
+                get = function( Info )
+                    return self:GetValue( Info.arg );
+                end,
+                set = function( Info,Value )
+                    self:SetValue( Info.arg,Value );
+                    if( Value ) then
+                        SetCVar( 'colorChatNamesByClass',true );
+                    else
+                        SetCVar( 'colorChatNamesByClass',false );
+                    end
+                end,
+                order = Order,
+                name = 'Class Color',
+                desc = 'Enable/disable chat class colors',
+                arg = 'ClassColor',
             };
             Order = Order+1;
             Settings.args.FontFamily = {
@@ -895,21 +915,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        --  Chat Config Color Toggle
-        --
-        --  @return void
-        Addon.CHAT.ToggleChatColorNamesByClassGroup = function( self,Checked,Group)
-            local Info = ChatTypeGroup[ Group ];
-            if ( Info ) then
-            for Key,Value in pairs( Info ) do
-                SetChatColorNameByClass( strsub( Value,10 ),Checked );  --strsub gets rid of CHAT_MSG_
-            end
-            else
-                SetChatColorNameByClass( Group,Checked );
-            end
-        end
-
-        --
         --  Format Chat Message
         --
         --  @param  string  Event
@@ -1187,6 +1192,17 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             for i,v in pairs( self.ChatFrame.channelList ) do
                 print( 'You have joined '..v );
             end
+
+            -- Color chat names
+            C_Timer.After( 2,function()
+                if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
+                    SetCVar( 'chatClassColorOverride',0 );
+                    --self:ToggleChatColorNamesByClassGroup( true,'CHANNEL' );
+                else
+                    SetCVar( 'chatClassColorOverride',1 );
+                    --self:ToggleChatColorNamesByClassGroup( false,'CHANNEL' );
+                end
+            end );
         end
 
         --
@@ -1206,6 +1222,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
 
             --[[
+            Test 1
+
             self.Config = CreateFrame( 'Frame',AddonName..'Main',UIParent,'UIPanelDialogTemplate' );
             self.Config:SetFrameStrata( 'HIGH' );
 
@@ -1266,14 +1284,138 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
 
             -- Configuration display
-            local X,Y = 10,-2;
+            local MaxElems = 3;
+            local X,Y = 10,0;
+            local InitX,InitY = X,Y;
+            local XSpacing = 100;
+
+            local Children = {};
+            local Iterator = 0;
+
             for SetName,SwitchData in pairs( self.Switches ) do
-                for _,Frame in pairs( SwitchData ) do
+                for Index,Frame in pairs( SwitchData ) do
+
+                    if( #Children % MaxElems == 0 ) then
+                        X,Y = XSpacing,0
+                    elseif( #Children > 0 ) then
+                        X,Y = XSpacing + Children[ Iterator ]:GetWidth(),Y;
+                    end
+
+                    Iterator = Iterator + 1;
+
+                    Children[ Iterator ] = Frame;
+                    print( Index,X,Y )
                     Frame:SetPoint( 'topleft',self.Config.Browser.Data.ScrollChild,'topleft',X,Y );
-                    Y=Y-20;
-                    X=X+75;
                 end
             end
+            ]]
+
+            --[[
+            Test 2 
+            self.Panel = CreateFrame( 'Frame',AddonName..'Main',UIParent,'UIPanelDialogTemplate' );
+            self.Panel:SetFrameStrata( 'HIGH' );
+
+            self.Panel:SetClampedToScreen( true );
+            self.Panel:SetSize( self.ChatFrame:GetWidth(),self.ChatFrame:GetHeight() );
+            self.Panel:DisableDrawLayer( 'OVERLAY' );
+            self.Panel:DisableDrawLayer( 'BACKGROUND' );
+
+            self.Panel:EnableKeyboard( true );
+            self.Panel:EnableMouse( true );
+            self.Panel:SetResizable( false );
+            self.Panel:SetPoint( 'bottomleft',self.ChatFrame,'bottomleft',0,0 );
+            self.Panel:SetScale( 1 );
+
+            self.Panel.Background = self.Panel:CreateTexture( nil,'ARTWORK',nil,0 );
+            self.Panel.Background:SetTexture( 'Interface\\Addons\\jChatFilter\\Libs\\jUI\\Textures\\frame' );
+            self.Panel.Background:SetAllPoints( self.Panel );
+
+            self.Panel.Tools = CreateFrame( 'Frame',self.Panel:GetName()..'Tools',self.Panel );
+            self.Panel.Tools:SetSize( self.Panel:GetWidth(),1 );
+            self.Panel.Tools:SetPoint( 'topleft',self.Panel,'topleft' );
+            self.Panel.Tools.Background = self.Panel:CreateTexture( nil,'ARTWORK',nil,0 );
+            self.Panel.Tools.Background:SetTexture( 'Interface\\Addons\\jChatFilter\\Libs\\jUI\\Textures\\frame' );
+            self.Panel.Tools.Background:SetAllPoints( self.Panel.Tools );
+
+            self.Panel.Browser = CreateFrame( 'Frame',self.Panel:GetName()..'Browser',self.Panel );
+            self.Panel.Browser:SetSize( self.Panel:GetWidth(),self.Panel:GetHeight()-self.Panel.Tools:GetHeight() );
+            self.Panel.Browser:SetPoint( 'topleft',self.Panel.Tools,'bottomleft' );
+
+            self.Panel.Browser.Heading = CreateFrame( 'Frame',self.Panel.Browser:GetName()..'Heading',self.Panel );
+            self.Panel.Browser.Heading:SetSize( self.Panel.Browser:GetWidth(),100 );
+            self.Panel.Browser.Heading:SetPoint( 'topleft',self.Panel.Tools,'bottomleft' );
+
+
+            Addon.CHAT.Test = function( self )
+                return {
+                    TimeStamps = {
+                        Description = 'Timestamp prefix messsages',
+                        KeyValue = 'TimeStamps',
+                        DefaultValue = self:GetValue( 'TimeStamps' ),
+                        KeyPairs = {
+                            Option1 = {
+                                Value = 0,
+                                Description = 'Off',
+                            },
+                            Option2 = {
+                                Value = 1,
+                                Description = 'On',
+                            },
+                        },
+                        Type = 'Toggle',
+                    },
+                    ScrollBack = {
+                        Description = 'Extend chat history to 1,000 lines',
+                        KeyValue = 'ScrollBack',
+                        DefaultValue = self:GetValue( 'ScrollBack' ),
+                        KeyPairs = {
+                            Option1 = {
+                                Value = 0,
+                                Description = 'Off',
+                            },
+                            Option2 = {
+                                Value = 1,
+                                Description = 'On',
+                            },
+                        },
+                        Type = 'Toggle',
+                    },
+                    FadeOut = {
+                        Description = 'Messages will disappear from view after a period of time',
+                        KeyValue = 'FadeOut',
+                        DefaultValue = self:GetValue( 'FadeOut' ),
+                        KeyPairs = {
+                            Option1 = {
+                                Value = 0,
+                                Description = 'Off',
+                            },
+                            Option2 = {
+                                Value = 1,
+                                Description = 'On',
+                            },
+                        },
+                        Type = 'Toggle',
+                    },
+                    AlertSound = {
+                        Description = 'Alerts should produce a sound',
+                        KeyValue = 'AlertSound',
+                        DefaultValue = self:GetValue( 'AlertSound' ),
+                        KeyPairs = {
+                            Option1 = {
+                                Value = 0,
+                                Description = 'Off',
+                            },
+                            Option2 = {
+                                Value = 1,
+                                Description = 'On',
+                            },
+                        },
+                        Type = 'Toggle',
+                    },
+                };
+            end
+
+            Addon.FRAMES:DrawFromSettings( Addon.CHAT:Test(),Addon.CHAT );
             ]]
         end
 
@@ -1303,17 +1445,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Events frame
             self.Events = CreateFrame( 'Frame' );
-
-            -- Color chat names
-            if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
-                for i,channel in pairs( self.ChatFrame.channelList ) do
-                    self:ToggleChatColorNamesByClassGroup( true,'CHANNEL'..i );
-                end
-            else
-                for i,channel in pairs( self.ChatFrame.channelList ) do
-                    self:ToggleChatColorNamesByClassGroup( false,'CHANNEL'..i );
-                end
-            end
 
             -- Expired channels
             local Colors = {};
