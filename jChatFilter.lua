@@ -962,13 +962,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             --ChangeChatColor( 'CHANNEL'..ChannelId,r,g,b,a );
 
             -- Class color
-            if( Addon:Int2Bool( GetCVar( 'colorChatNamesByClass' ) ) ) then
-                if( PlayerId and Info and self:GetValue( 'ClassColor' ) ) then
-                    if( EnglishClass ) then
-                        local ClassColorTable = RAID_CLASS_COLORS[ EnglishClass ];
-                        if ( ClassColorTable ) then
-                            PlayerName = string.format( "\124cff%.2x%.2x%.2x", ClassColorTable.r*255, ClassColorTable.g*255, ClassColorTable.b*255 )..PlayerName.."\124r";
-                        end
+            if( PlayerId and Info and self:GetValue( 'ClassColor' ) ) then
+                if( EnglishClass ) then
+                    local ClassColorTable = RAID_CLASS_COLORS[ EnglishClass ];
+                    if ( ClassColorTable ) then
+                        PlayerName = string.format( "\124cff%.2x%.2x%.2x", ClassColorTable.r*255, ClassColorTable.g*255, ClassColorTable.b*255 )..PlayerName.."\124r";
                     end
                 end
             end
