@@ -1492,7 +1492,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             self:RebuildQuests();
         end
 
-        C_Timer.After( 5, function()
+        C_Timer.After( 2,function()
             self:Init();
             self:CreateFrames();
             self:Run();
