@@ -82,6 +82,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     YELL = true,
                     SAY = false,
                     CHANNEL = true,
+                    WHISPER = true,
                 },
             };
         end
@@ -215,6 +216,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 CHANNEL = {
                     'CHAT_MSG_CHANNEL',
+                },
+                WHISPER = {
+                    'WHISPER',
                 },
             };
         end
@@ -427,11 +431,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
             for FilterName,FilterData in pairs( self:GetChatFilters() ) do
                 Order = Order+1;
+                local Note = '';
+                if( FilterName == 'WHISPER' ) then
+                    Note = '. Although whispers will be routed through the filter, their text color will not be updated since they are direct messages';
+                end
                 Settings.args[ FilterName..'Alert' ] = {
                     type = 'toggle',
                     order = Order,
                     name = FilterName,
-                    desc = 'Enable/disable filtering for '..FilterName..' messages',
+                    desc = 'Enable/disable filtering for '..FilterName..' messages'..Note,
                     arg = FilterName,
                     get = function( Info )
                         if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
@@ -954,7 +962,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     r,g,b,a = unpack( Addon.CHAT.persistence.Channels[ ChannelName ].Color );
                 end
             end
-            if( Watched ) then
+            if( Watched and not ChatType == 'WHISPER' ) then
                 r,g,b,a = unpack( Addon.CHAT:GetValue( 'WatchColor' ) );
             end
 
@@ -1199,7 +1207,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CHAT.CreateFrames = function( self )
             self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( AddonName ),AddonName );
             self.Config.okay = function( self )
-                Addon.CHAT:Refresh();
                 RestartGx();
             end
             self.Config.default = function( self )
@@ -1296,9 +1303,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             ]]
-
             --[[
-            Test 2 
+            --Test 2 
             self.Panel = CreateFrame( 'Frame',AddonName..'Main',UIParent,'UIPanelDialogTemplate' );
             self.Panel:SetFrameStrata( 'HIGH' );
 
