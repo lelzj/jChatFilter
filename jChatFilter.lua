@@ -56,7 +56,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Channels = {},
                 ChatGroups = {
                     BATTLEGROUND = true,
-                    TRADESKILLS = true,
+                    TRADESKILLS = false,
                     SAY = true,
                     EMOTE = true,
                     YELL = true,
