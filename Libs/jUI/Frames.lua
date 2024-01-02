@@ -457,7 +457,6 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
     local X,Y = 10,0; 
     local AbsX = X;
     local AbsY = Y;
-    local ElementWidth = 25;
     local RowHeight = 20;
     -- Increment Y to control vertical spacing
     -- this will afect both columns, all rows
@@ -481,26 +480,26 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
     end
     ObjHandler.ScrollChild:SetHeight( 20 );
 
-    local Parent = ObjHandler.ScrollChild;
-    Parent.KeyValue = 'ScrollFrame';
-    local AbsParent = Parent;
+    local AbsParent = ObjHandler.ScrollChild;
+    AbsParent.KeyValue = AbsParent:GetName();
 
-    local Iterator = 1;
+    local Iterator = 0;
     local NumPerLine = 3;
     local MyPosition = 'topleft';
-    local YourPosition = 'topright';
+    local YourPosition = 'topleft';
     local Children = {};
+    local Parent;
 
-    table.insert( Children,Parent );
+    table.insert( Children,AbsParent );
 
     for Var,VarData in Addon:Sort( Settings ) do
         if( VarData.Type == 'Toggle' ) then
 
-            Parent = Children[ Iterator ];
+            Parent = Children[ Iterator+1 ];
             
             ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).Check( Parent );
             ObjHandler[ Var ]:SetChecked( Addon:Int2Bool( ObjHandler:GetValue( VarData.KeyValue ) ) );
-            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Children[ Iterator ],YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetLabel( Var );
             ObjHandler[ Var ].KeyValue = Var;
@@ -508,16 +507,21 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
             ObjHandler[ Var ]:SetCall('OnClick',function( self )
                 ObjHandler:SetValue( self.KeyValue,Addon:BoolToInt( self:GetValue() ) );
             end );
-            table.insert( Children,ObjHandler[ Var ] );
 
+            print( Var,MyPosition,Parent.KeyValue,YourPosition,X,Y );
+
+            table.insert( Children,ObjHandler[ Var ] );
             Iterator = Iterator+1;
-            X = X+ElementWidth;
+
+            if( Iterator > 1 ) then
+                YourPosition = 'topright';
+            end
         elseif( VarData.Type == 'Range' ) then
 
-            Parent = Children[ Iterator ];
+            Parent = Children[ Iterator+1 ];
 
             ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).Slider( Parent );
-            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Children[ Iterator ],YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetValue( ObjHandler:GetValue( VarData.KeyValue ) );
             ObjHandler[ Var ].Edit:SetValue( Addon:SliderRound( ObjHandler:GetValue( VarData.KeyValue ),VarData.Step ) );
@@ -534,16 +538,19 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
             ObjHandler[ Var ]:SetCall('OnValue',function( self )
                 ObjHandler:SetValue( self.KeyValue,self:GetValue() );
             end );
-            table.insert( Children,ObjHandler[ Var ] );
 
+            table.insert( Children,ObjHandler[ Var ] );
             Iterator = Iterator+1;
-            X = X+ElementWidth;
+
+            if( Iterator > 1 ) then
+                YourPosition = 'topright';
+            end
         elseif( VarData.Type == 'Text' ) then
 
-            Parent = Children[ Iterator ];
+            Parent = Children[ Iterator+1 ];
 
             ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).BoxEdit( Parent );
-            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Children[ Iterator ],YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetMultiLine( true );
             if( VarData.CSV ) then
@@ -571,16 +578,19 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
                     ObjHandler:SetValue( self.KeyValue,self:GetValue() );
                 end
             end );
-            table.insert( Children,ObjHandler[ Var ] );
 
+            table.insert( Children,ObjHandler[ Var ] );
             Iterator = Iterator+1;
-            X = X+ElementWidth;
+
+            if( Iterator > 1 ) then
+                YourPosition = 'topright';
+            end
         elseif( VarData.Type == 'Color' ) then
 
-            Parent = Children[ Iterator ];
+            Parent = Children[ Iterator+1 ];
 
             ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).ColorPicker( Parent );
-            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Children[ Iterator ],YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetLabel( Var );
             ObjHandler[ Var ].KeyValue = Var;
@@ -590,17 +600,20 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
                 ObjHandler.persistence[ self.KeyValue ] = { self.color.r,self.color.g,self.color.b,self.color.a };
             end )
             --ObjHandler[ Var ].hasOpacity = true;
-            table.insert( Children,ObjHandler[ Var ] );
 
+            table.insert( Children,ObjHandler[ Var ] );
             Iterator = Iterator+1;
-            X = X+ElementWidth;
+
+            if( Iterator > 1 ) then
+                YourPosition = 'topright';
+            end
         elseif( VarData.Type == 'List' ) then
 
-            Parent = Children[ Iterator ];
+            Parent = Children[ Iterator+1 ];
 
             ObjHandler[ Var ] = LibStub( 'Sushi-3.2' ).DropChoice( Parent );
             ObjHandler[ Var ]:SetValue( ObjHandler:GetValue( VarData.KeyValue ) );
-            ObjHandler[ Var ]:SetPoint( MyPosition,Parent,YourPosition,X,Y );
+            ObjHandler[ Var ]:SetPoint( MyPosition,Children[ Iterator ],YourPosition,X,Y );
             ObjHandler[ Var ]:SetTip( Var,VarData.Description );
             ObjHandler[ Var ]:SetLabel( Var );
             ObjHandler[ Var ].KeyValue = Var;
@@ -617,19 +630,25 @@ Addon.FRAMES.DrawFromSettings = function( self,Settings,ObjHandler )
                 print( self.KeyValue,self:GetValue() )
                 ObjHandler:SetValue( self.KeyValue,self:GetValue() );
             end );
-            table.insert( Children,ObjHandler[ Var ] );
 
+            table.insert( Children,ObjHandler[ Var ] );
             Iterator = Iterator+1;
-            X = X+100;
+            X = X+ElementWidth;
+
+            if( Iterator > 1 ) then
+                YourPosition = 'topright';
+            end
         end
+        print( Iterator, NumPerLine )
         if( Iterator % NumPerLine == 0 ) then
             Parent = AbsParent;
             YourPosition = 'topleft';
             X = AbsX;
             Y = Y-RowHeight;
+            print( 'here yes' )
         else
             Y = AbsY;
         end
-        print( Var,MyPosition,Parent.KeyValue,YourPosition,X,Y );
+        
     end
 end

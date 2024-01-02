@@ -431,15 +431,16 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
             for FilterName,FilterData in pairs( self:GetChatFilters() ) do
                 Order = Order+1;
-                local Note = '';
+                local Disabled = false;
                 if( FilterName == 'WHISPER' ) then
-                    Note = '. Although whispers will be routed through the filter, their text color will not be updated since they are direct messages';
+                    Disabled = true;
                 end
                 Settings.args[ FilterName..'Alert' ] = {
                     type = 'toggle',
                     order = Order,
                     name = FilterName,
-                    desc = 'Enable/disable filtering for '..FilterName..' messages'..Note,
+                    disabled = Disabled,
+                    desc = 'Enable/disable filtering for '..FilterName..' messages',
                     arg = FilterName,
                     get = function( Info )
                         if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
@@ -723,8 +724,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return void
         Addon.CHAT.SetGroup = function( self,Group,Value )
-            --print( Group,Value )
-            ToggleChatMessageGroup( Value,Group );
+            if ( Value ) then
+                ChatFrame_AddMessageGroup( self.ChatFrame,Group );
+            else
+                ChatFrame_RemoveMessageGroup( self.ChatFrame,Group );
+            end
+            --ToggleChatMessageGroup( Value,Group );
         end
 
         --
@@ -962,7 +967,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     r,g,b,a = unpack( Addon.CHAT.persistence.Channels[ ChannelName ].Color );
                 end
             end
-            if( Watched and not ChatType == 'WHISPER' ) then
+            if( Watched and ( ChatType == 'WHISPER' ) == false ) then
                 r,g,b,a = unpack( Addon.CHAT:GetValue( 'WatchColor' ) );
             end
 
