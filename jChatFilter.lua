@@ -51,7 +51,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     1,
                 },
                 WatchList = {
-                    'heal','voa',
+                    'heal',
                 },
                 Channels = {},
                 ChatGroups = {
@@ -359,7 +359,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     self:SetWatches( Value );
                 end,
                 name = 'Alert List',
-                desc = 'Words or phrases to be alerted on when they are mentioned in chat. Note that phrases contain no spaces',
+                desc = 'Words or phrases to be alerted on when they are mentioned in chat. Seperate individual things to alert on with a comma: e.g. healer,spriest,sfk,really cool',
                 arg = 'WatchList',
                 width = 'full',
             };
@@ -375,7 +375,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     self:SetIgnores( Value );
                 end,
                 name = 'Ignore List',
-                desc = 'Words or phrases which should be omitted in chat. Note that phrases contain no spaces',
+                desc = 'Words or phrases which should be omitted in chat. Seperate individual things to ignore with a comma: e.g. boost,spam,anidiot,absolutely terrible',
                 arg = 'IgnoreList',
                 width = 'full',
             };
@@ -1027,6 +1027,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChannelLink = "|Hchannel:PARTY|h[Party]|h";
             elseif( ChatType == 'PARTY_LEADER' ) then
                 ChannelLink = "|Hchannel:PARTY|h[Party Leader]|h";
+            elseif( ChatType == 'INSTANCE_CHAT' ) then
+                ChannelLink = "|Hchannel:INSTANCE_CHAT|h[Instance]|h";
+            elseif( ChatType == 'INSTANCE_CHAT_LEADER' ) then
+                ChannelLink = "|Hchannel:INSTANCE_CHAT|h[Instance Leader]|h";
             elseif( ChatType == 'RAID' ) then
                 ChannelLink = "|Hchannel:RAID|h[Raid]|h";
             elseif( ChatType == 'RAID_LEADER' or ChatType == 'RAID_WARNING' ) then
