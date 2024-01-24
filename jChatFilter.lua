@@ -1083,6 +1083,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             local GMFlag = select( 6,... );
             local ChannelId = select( 8,... );
             local PlayerId = select( 12,... );
+            local BNId = select( 13,... );
             local IconReplacement = select( 17,... );
 
             local MyPlayerName,MyRealm = UnitName( 'player' );
@@ -1159,6 +1160,73 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( Watched ) then
                 if( Addon.CHAT:GetValue( 'AlertSound' ) ) then
                     PlaySound( SOUNDKIT.TELL_MESSAGE );
+                end
+            end
+
+            -- Questie support
+            if( QuestieLoader ) then
+                local QuestieLink = QuestieLoader:ImportModule( 'QuestieLink' );
+                local QuestieDB = QuestieLoader:ImportModule( 'QuestieDB' );
+
+                if( string.find( MessageText,"%[(..-) %((%d+)%)%]" ) ) then
+
+                    if Addon.CHAT.ChatFrame.historyBuffer and #( Addon.CHAT.ChatFrame.historyBuffer.elements ) then
+
+                        for k in string.gmatch( MessageText,"%[%[?%d?..?%]?..-%]" ) do
+                            local sqid, questId, questLevel, questName;
+
+                            questName, sqid = string.match( k,"%[(..-) %((%d+)%)%]" );
+
+                            if( questName and sqid ) then
+                                questId = tonumber(sqid)
+
+                                if( string.find( questName,"(%[%d+.-%]) ") ~= nil ) then
+                                    questLevel, questName = string.match( questName,"%[(..-)%] (.+)");
+                                end
+                            end
+
+                            if( questId and QuestieDB.QuestPointers[questId] ) then
+                                if( not PlayerId ) then
+                                    playerName = BNGetFriendInfoByID( BNId );
+                                    PlayerId = BNId;
+                                end
+
+                                local questLink = QuestieLink:GetQuestHyperLink( questId,PlayerId );
+
+                                local function escapeMagic(toEsc)
+                                    return (toEsc
+                                            :gsub("%%", "%%%%")
+                                            :gsub("^%^", "%%^")
+                                            :gsub("%$$", "%%$")
+                                            :gsub("%(", "%%(")
+                                            :gsub("%)", "%%)")
+                                            :gsub("%.", "%%.")
+                                            :gsub("%[", "%%[")
+                                            :gsub("%]", "%%]")
+                                            :gsub("%*", "%%*")
+                                            :gsub("%+", "%%+")
+                                            :gsub("%-", "%%-")
+                                            :gsub("%?", "%%?")
+                                            :gsub("%|", "%%|")
+                                    );
+                                end
+
+                                if( questName ) then
+                                    questName = escapeMagic( questName );
+                                end
+
+                                if( questLevel ) then
+                                    questLevel = escapeMagic( questLevel );
+                                end
+
+                                if( questLevel ) then
+                                    MessageText = string.gsub( MessageText,"%[%["..questLevel.."%] "..questName.." %("..sqid.."%)%]",questLink );
+                                else
+                                    MessageText = string.gsub( MessageText,"%["..questName.." %("..sqid.."%)%]",questLink );
+                                end
+                            end
+                        end
+                    end
                 end
             end
 
