@@ -941,7 +941,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  PlayerId
         --  @param  string  IconReplacement
         --  @return list
-        Addon.CHAT.Format = function( Event,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,PlayerId,IconReplacement,Watched )
+        Addon.CHAT.Format = function( Event,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId,IconReplacement,Watched )
             local OriginalText = MessageText;
             local ChatType = strsub( Event,10 );
             local Info = ChatTypeInfo[ ChatType ];
@@ -1063,108 +1063,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 MessageText = MessageText..' : '..Watched;
             end
 
-            return MessageText,r,g,b,a,Info.id;
-        end
-
-        --
-        --  Filter Chat Message
-        --
-        --  @param  string  Event
-        --  @param  list    ...
-        --  @return bool
-        Addon.CHAT.Filter = function( self,Event,... )
-            local ChatType = strsub( Event,10 );
-            local MessageText = select( 1,... );
-            local OriginalText = MessageText;
-            local PlayerRealm = select( 2,... );
-            local LangHeader = select( 3,... );
-            local ChannelNameId = select( 4,... );
-            local PlayerName = select( 5,... );
-            local GMFlag = select( 6,... );
-            local ChannelId = select( 8,... );
-            local PlayerId = select( 12,... );
-            local BNId = select( 13,... );
-            local IconReplacement = select( 17,... );
-
-            local MyPlayerName,MyRealm = UnitName( 'player' );
-
-            -- Prevent ignored messages
-            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                local IgnoredMessages = Addon.CHAT:GetIgnores();
-                if( #IgnoredMessages > 0 ) then
-                    for i,IgnoredMessage in ipairs( IgnoredMessages ) do
-                        if( Addon:Minify( OriginalText ):find( Addon:Minify( IgnoredMessage ) ) ) then
-                            return true;
-                        end
-                    end
-                end
-            end
-
-            -- Prevent repeat messages for 1 minute
-            local CacheKey = Addon:Minify( PlayerRealm..MessageText..date( "%H:%M" ) );
-            if( Addon.CHAT.Cache[ CacheKey ] ) then
-                return true;
-            end
-            Addon.CHAT.Cache[ CacheKey ] = true;
-
-            -- Watch check
-            local Watched;
-            local MentionAlert = false;
-            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                local WatchedMessages = Addon.CHAT:GetWatches();
-                if( #WatchedMessages > 0 ) then
-                    for i,WatchedMessage in ipairs( WatchedMessages ) do
-                        if( Addon:Minify( OriginalText ):find( Addon:Minify( WatchedMessage ) ) ) then
-                            Watched = WatchedMessage;
-                        end
-                    end
-                end
-                if( Addon.CHAT:GetValue( 'QuestAlert' ) ) then
-                    for i,ActiveQuest in pairs( Addon.CHAT.ActiveQuests ) do
-                        if( Addon:Minify( OriginalText ):find( ActiveQuest ) ) then
-                            Watched = ActiveQuest;
-                        end
-                    end
-                end
-                if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
-                    if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
-                        Watched = MyPlayerName;
-                        MentionAlert = true;
-                    end
-                end
-            end
-
-            -- Format message
-            MessageText,r,g,b,a,id = Addon.CHAT.Format(
-                Event,
-                MessageText,
-                PlayerRealm,
-                LangHeader,
-                ChannelNameId,
-                PlayerName,
-                GMFlag,
-                ChannelId,
-                PlayerId,
-                IconReplacement,
-                Watched
-            );
-
-            -- Sound
-            if ( ChatType == 'WHISPER' ) then
-                PlaySound( SOUNDKIT.TELL_MESSAGE );
-            end
-            if( MentionAlert ) then
-                PlaySound( SOUNDKIT.TELL_MESSAGE );
-                --FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
-            end
-            if( Watched ) then
-                if( Addon.CHAT:GetValue( 'AlertSound' ) ) then
-                    PlaySound( SOUNDKIT.TELL_MESSAGE );
-                end
-            end
-
             -- Questie support
             if( QuestieLoader ) then
+                --[[
+                local ChatFilter = QuestieLoader:ImportModule( 'ChatFilter' );
+                if( ChatFilter ) then
+                    ChatFilter:Filter( Addon.CHAT.ChatFrame,'junk',MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelIndex,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
+                end
+                ]]
+
                 local QuestieLink = QuestieLoader:ImportModule( 'QuestieLink' );
                 local QuestieDB = QuestieLoader:ImportModule( 'QuestieDB' );
 
@@ -1227,6 +1134,113 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                             end
                         end
                     end
+                end
+            end
+
+            return MessageText,r,g,b,a,Info.id;
+        end
+
+        --
+        --  Filter Chat Message
+        --
+        --  @param  string  Event
+        --  @param  list    ...
+        --  @return bool
+        Addon.CHAT.Filter = function( self,Event,... )
+            local ChatType = strsub( Event,10 );
+            local MessageText = select( 1,... );
+            local OriginalText = MessageText;
+            local PlayerRealm = select( 2,... );
+            local LangHeader = select( 3,... );
+            local ChannelNameId = select( 4,... );
+            local PlayerName = select( 5,... );
+            local GMFlag = select( 6,... );
+            local ChannelId = select( 8,... );
+            local ChannelBaseName = select( 9,... );
+            local UnUsed = select( 10,... );
+            local LineId = select( 11,... );
+            local PlayerId = select( 12,... );
+            local BNId = select( 13,... );
+            local IconReplacement = select( 17,... );
+
+            local MyPlayerName,MyRealm = UnitName( 'player' );
+
+            -- Prevent ignored messages
+            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                local IgnoredMessages = Addon.CHAT:GetIgnores();
+                if( #IgnoredMessages > 0 ) then
+                    for i,IgnoredMessage in ipairs( IgnoredMessages ) do
+                        if( Addon:Minify( OriginalText ):find( Addon:Minify( IgnoredMessage ) ) ) then
+                            return true;
+                        end
+                    end
+                end
+            end
+
+            -- Prevent repeat messages for 1 minute
+            local CacheKey = Addon:Minify( PlayerRealm..MessageText..date( "%H:%M" ) );
+            if( Addon.CHAT.Cache[ CacheKey ] ) then
+                return true;
+            end
+            Addon.CHAT.Cache[ CacheKey ] = true;
+
+            -- Watch check
+            local Watched;
+            local MentionAlert = false;
+            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                local WatchedMessages = Addon.CHAT:GetWatches();
+                if( #WatchedMessages > 0 ) then
+                    for i,WatchedMessage in ipairs( WatchedMessages ) do
+                        if( Addon:Minify( OriginalText ):find( Addon:Minify( WatchedMessage ) ) ) then
+                            Watched = WatchedMessage;
+                        end
+                    end
+                end
+                if( Addon.CHAT:GetValue( 'QuestAlert' ) ) then
+                    for i,ActiveQuest in pairs( Addon.CHAT.ActiveQuests ) do
+                        if( Addon:Minify( OriginalText ):find( ActiveQuest ) ) then
+                            Watched = ActiveQuest;
+                        end
+                    end
+                end
+                if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
+                        Watched = MyPlayerName;
+                        MentionAlert = true;
+                    end
+                end
+            end
+
+            -- Format message
+            MessageText,r,g,b,a,id = Addon.CHAT.Format(
+                Event,
+                MessageText,
+                PlayerRealm,
+                LangHeader,
+                ChannelNameId,
+                PlayerName,
+                GMFlag,
+                ChannelId,
+                ChannelBaseName,
+                UnUsed,
+                LineId,
+                PlayerId,
+                BNId,
+                IconReplacement,
+                Watched
+            );
+
+            -- Sound
+            if ( ChatType == 'WHISPER' ) then
+                PlaySound( SOUNDKIT.TELL_MESSAGE );
+            end
+            if( MentionAlert ) then
+                PlaySound( SOUNDKIT.TELL_MESSAGE );
+                --FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
+            end
+            if( Watched ) then
+                if( Addon.CHAT:GetValue( 'AlertSound' ) ) then
+                    PlaySound( SOUNDKIT.TELL_MESSAGE );
                 end
             end
 
