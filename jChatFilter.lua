@@ -992,77 +992,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             MessageText = RemoveExtraSpaces( MessageText );
 
-            -- Add AFK/DND flags
-            local PFlag;
-            if( GMFlag ~= '' ) then
-                if( GMFlag == 'GM' ) then
-                    --If it was a whisper, dispatch it to the GMChat addon.
-                    if ( ChatType == 'WHISPER' ) then
-                        return;
-                    end
-                    --Add Blizzard Icon, this was sent by a GM
-                    PFlag = "|TInterface\\ChatFrame\\UI-ChatIcon-Blizz:12:20:0:0:32:16:4:28:0:16|t ";
-                elseif ( GMFlag == 'DEV' ) then
-                    --Add Blizzard Icon, this was sent by a Dev
-                    PFlag = "|TInterface\\ChatFrame\\UI-ChatIcon-Blizz:12:20:0:0:32:16:4:28:0:16|t ";
-                else
-                    PFlag = _G["CHAT_FLAG_"..GMFlag];
-                end
-            else
-                PFlag = '';
-            end
-
-            -- Timestamp
-            local TimeStamp = '';
-            if( Addon.CHAT:GetValue( 'TimeStamps' ) ) then
-                TimeStamp = '['..BetterDate( "|cffffffff%I:%M:%S %p|r",time() )..'] ';
-            end
-
-            -- Channel link
-            -- https://wowpedia.fandom.com/wiki/Hyperlinks
-            local ChannelLink = '';
-            if( tonumber( ChannelId ) > 0 ) then
-                ChannelLink = "|Hchannel:channel:"..ChannelId.."|h["..ChannelNameId.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
-            elseif( ChatType == 'PARTY' ) then
-                ChannelLink = "|Hchannel:PARTY|h[Party]|h";
-            elseif( ChatType == 'PARTY_LEADER' ) then
-                ChannelLink = "|Hchannel:PARTY|h[Party Leader]|h";
-            elseif( ChatType == 'INSTANCE_CHAT' ) then
-                ChannelLink = "|Hchannel:INSTANCE_CHAT|h[Instance]|h";
-            elseif( ChatType == 'INSTANCE_CHAT_LEADER' ) then
-                ChannelLink = "|Hchannel:INSTANCE_CHAT|h[Instance Leader]|h";
-            elseif( ChatType == 'RAID' ) then
-                ChannelLink = "|Hchannel:RAID|h[Raid]|h";
-            elseif( ChatType == 'RAID_LEADER' or ChatType == 'RAID_WARNING' ) then
-                ChannelLink = "|Hchannel:RAID|h[Raid Leader]|h";
-            elseif( ChatType == 'GUILD' ) then
-                ChannelLink = "|Hchannel:GUILD|h[Guild]|h";
-            end
-
-            -- Player link
-            -- https://wowpedia.fandom.com/wiki/Hyperlinks
-            local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h" -- |Hplayer:Blasfemy-Grobbulus|h was here
-
-            -- Player action
-            local PlayerAction = '';
-            if( ChatType == 'YELL' ) then
-                PlayerAction = ' yells';
-            end
-            if ( ChatType == 'WHISPER' ) then
-                PlayerAction = ' whispers';
-            end
-
-            -- Player level
-            local PlayerLevel = '';--'['..UnitLevel( PlayerId )..']';
-
-            -- Message
-            MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
-
-            -- Append what was watched
-            if( Watched ) then
-                MessageText = MessageText..' : '..Watched;
-            end
-
             -- Questie support
             if( QuestieLoader ) then
                 --[[
@@ -1135,6 +1064,77 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                         end
                     end
                 end
+            end
+
+            -- Add AFK/DND flags
+            local PFlag;
+            if( GMFlag ~= '' ) then
+                if( GMFlag == 'GM' ) then
+                    --If it was a whisper, dispatch it to the GMChat addon.
+                    if ( ChatType == 'WHISPER' ) then
+                        return;
+                    end
+                    --Add Blizzard Icon, this was sent by a GM
+                    PFlag = "|TInterface\\ChatFrame\\UI-ChatIcon-Blizz:12:20:0:0:32:16:4:28:0:16|t ";
+                elseif ( GMFlag == 'DEV' ) then
+                    --Add Blizzard Icon, this was sent by a Dev
+                    PFlag = "|TInterface\\ChatFrame\\UI-ChatIcon-Blizz:12:20:0:0:32:16:4:28:0:16|t ";
+                else
+                    PFlag = _G["CHAT_FLAG_"..GMFlag];
+                end
+            else
+                PFlag = '';
+            end
+
+            -- Timestamp
+            local TimeStamp = '';
+            if( Addon.CHAT:GetValue( 'TimeStamps' ) ) then
+                TimeStamp = '['..BetterDate( "|cffffffff%I:%M:%S %p|r",time() )..'] ';
+            end
+
+            -- Channel link
+            -- https://wowpedia.fandom.com/wiki/Hyperlinks
+            local ChannelLink = '';
+            if( tonumber( ChannelId ) > 0 ) then
+                ChannelLink = "|Hchannel:channel:"..ChannelId.."|h["..ChannelNameId.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
+            elseif( ChatType == 'PARTY' ) then
+                ChannelLink = "|Hchannel:PARTY|h[Party]|h";
+            elseif( ChatType == 'PARTY_LEADER' ) then
+                ChannelLink = "|Hchannel:PARTY|h[Party Leader]|h";
+            elseif( ChatType == 'INSTANCE_CHAT' ) then
+                ChannelLink = "|Hchannel:INSTANCE_CHAT|h[Instance]|h";
+            elseif( ChatType == 'INSTANCE_CHAT_LEADER' ) then
+                ChannelLink = "|Hchannel:INSTANCE_CHAT|h[Instance Leader]|h";
+            elseif( ChatType == 'RAID' ) then
+                ChannelLink = "|Hchannel:RAID|h[Raid]|h";
+            elseif( ChatType == 'RAID_LEADER' or ChatType == 'RAID_WARNING' ) then
+                ChannelLink = "|Hchannel:RAID|h[Raid Leader]|h";
+            elseif( ChatType == 'GUILD' ) then
+                ChannelLink = "|Hchannel:GUILD|h[Guild]|h";
+            end
+
+            -- Player link
+            -- https://wowpedia.fandom.com/wiki/Hyperlinks
+            local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h" -- |Hplayer:Blasfemy-Grobbulus|h was here
+
+            -- Player action
+            local PlayerAction = '';
+            if( ChatType == 'YELL' ) then
+                PlayerAction = ' yells';
+            end
+            if ( ChatType == 'WHISPER' ) then
+                PlayerAction = ' whispers';
+            end
+
+            -- Player level
+            local PlayerLevel = '';--'['..UnitLevel( PlayerId )..']';
+
+            -- Message
+            MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
+
+            -- Append what was watched
+            if( Watched ) then
+                MessageText = MessageText..' : '..Watched;
             end
 
             return MessageText,r,g,b,a,Info.id;
