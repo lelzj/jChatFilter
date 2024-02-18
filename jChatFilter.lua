@@ -37,6 +37,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     191 / 255,
                     1,
                 },
+                MentionColor = {
+                    110 / 255,
+                    121 / 255,
+                    247 / 255,
+                    1,
+                },
                 IgnoreList = {
                     'boost',
                 },
@@ -385,7 +391,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 type = 'toggle',
                 order = Order,
                 name = 'Mention',
-                desc = 'Enable/disable alerting if anyone mentions your name',
+                desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound',
                 arg = 'MentionAlert',
             };
             Order = Order+1;
@@ -410,16 +416,34 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                         Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
                     end
                 end,
-                name = 'Color',
+                name = 'Alert Color',
                 desc = 'Set the color of Alerts chat',
                 arg = 'WatchColor',
+            };
+            Order = Order+1;
+            Settings.args.MentionColor = {
+                type = 'color',
+                order = Order,
+                get = function( Info )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        return unpack( Addon.CHAT.persistence[ Info.arg ] );
+                    end
+                end,
+                set = function( Info,R,G,B,A )
+                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
+                        Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
+                    end
+                end,
+                name = 'Mention Color',
+                desc = 'Set the color of Mentions in chat',
+                arg = 'MentionColor',
             };
             Order = Order+1;
             Settings.args.AlertSound = {
                 type = 'toggle',
                 order = Order,
                 name = 'Sound',
-                desc = 'Enable/disable chat alert sound',
+                desc = 'Enable/disable chat Alert sound',
                 arg = 'AlertSound',
             };
 
@@ -940,8 +964,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  ChannelId
         --  @param  string  PlayerId
         --  @param  string  IconReplacement
+        --  @param  bool    Watched
+        --  @param  bool    Mentioned
         --  @return list
-        Addon.CHAT.Format = function( Event,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId,IconReplacement,Watched )
+        Addon.CHAT.Format = function( Event,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId,IconReplacement,Watched,Mentioned )
             local OriginalText = MessageText;
             local ChatType = strsub( Event,10 );
             local Info = ChatTypeInfo[ ChatType ];
@@ -969,6 +995,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             if( Watched and ( ChatType == 'WHISPER' ) == false ) then
                 r,g,b,a = unpack( Addon.CHAT:GetValue( 'WatchColor' ) );
+            elseif( Watched and Mentioned ) then
+                r,g,b,a = unpack( Addon.CHAT:GetValue( 'MentionColor' ) );
             end
 
             --Addon.CHAT.ChatFrame:SetTextColor( r,g,b,a );
@@ -1186,7 +1214,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Watch check
             local Watched;
-            local MentionAlert = false;
+            local Mentioned = false;
             if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
                 local WatchedMessages = Addon.CHAT:GetWatches();
                 if( #WatchedMessages > 0 ) then
@@ -1206,7 +1234,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
                     if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
                         Watched = MyPlayerName;
-                        MentionAlert = true;
+                        Mentioned = true;
                     end
                 end
             end
@@ -1227,17 +1255,20 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 PlayerId,
                 BNId,
                 IconReplacement,
-                Watched
+                Watched,
+                Mentioned
             );
 
-            -- Sound
+            -- Always sound whispers
             if ( ChatType == 'WHISPER' ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
             end
-            if( MentionAlert ) then
+            -- Always sound mentions
+            if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
                 --FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
             end
+            -- Conditionally sound alerts
             if( Watched ) then
                 if( Addon.CHAT:GetValue( 'AlertSound' ) ) then
                     PlaySound( SOUNDKIT.TELL_MESSAGE );
