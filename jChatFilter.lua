@@ -224,7 +224,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHAT_MSG_CHANNEL',
                 },
                 WHISPER = {
-                    'WHISPER',
+                    'CHAT_MSG_WHISPER',
                 },
             };
         end
@@ -995,7 +995,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             if( Watched and ( ChatType == 'WHISPER' ) == false ) then
                 r,g,b,a = unpack( Addon.CHAT:GetValue( 'WatchColor' ) );
-            elseif( Watched and Mentioned ) then
+            elseif( Mentioned ) then
                 r,g,b,a = unpack( Addon.CHAT:GetValue( 'MentionColor' ) );
             end
 
@@ -1003,7 +1003,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             --ChangeChatColor( 'CHANNEL'..ChannelId,r,g,b,a );
 
             -- Class color
-            if( PlayerId and Info and self:GetValue( 'ClassColor' ) ) then
+            if( PlayerName and self:GetValue( 'ClassColor' ) ) then
                 if( EnglishClass ) then
                     local ClassColorTable = RAID_CLASS_COLORS[ EnglishClass ];
                     if ( ClassColorTable ) then
