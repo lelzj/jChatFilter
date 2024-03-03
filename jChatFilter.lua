@@ -44,7 +44,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     1,
                 },
                 IgnoreList = {
-                    'boost',
                 },
                 MentionAlert = true,
                 ScrollBack = true,
@@ -57,7 +56,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     1,
                 },
                 WatchList = {
-                    'heal',
                 },
                 Channels = {},
                 ChatGroups = {
@@ -206,10 +204,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHAT_MSG_INSTANCE_CHAT',
                     'CHAT_MSG_INSTANCE_CHAT_LEADER',
                 },
-                --[[WHISPER = {
-                    'CHAT_MSG_WHISPER',
-                    'CHAT_MSG_WHISPER_INFORM',
-                },]]
                 GUILD = {
                     'CHAT_MSG_GUILD',
                     'GUILD_MOTD',
@@ -222,6 +216,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 CHANNEL = {
                     'CHAT_MSG_CHANNEL',
+                    'CHAT_MSG_CHANNEL_JOIN',
+                    'CHAT_MSG_CHANNEL_LEAVE',
                 },
                 WHISPER = {
                     'CHAT_MSG_WHISPER',
@@ -782,13 +778,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 for i,v in pairs( watch ) do
                     if( string.len( v ) > 0 ) then
                         table.insert( Addon.CHAT.persistence.WatchList,Addon:Minify( v ) );
-                    else
-                        Addon.CHAT.persistence.WatchList = {};
                     end
                 end
             else
-                Addon.CHAT.persistence.WatchList = {Addon:Minify( watch )};
+                Addon.CHAT.persistence.WatchList = { Addon:Minify( watch ) };
             end
+            --Addon:Dump( Addon.CHAT.persistence.WatchList )
         end
 
         --
@@ -812,13 +807,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 for i,v in pairs( ignore ) do
                     if( string.len( v ) > 0 ) then
                         table.insert( Addon.CHAT.persistence.IgnoreList,Addon:Minify( v ) );
-                    else
-                        Addon.CHAT.persistence.IgnoreList = {};
                     end
                 end
             else
-                Addon.CHAT.persistence.IgnoreList = {Addon:Minify( ignore )};
+                Addon.CHAT.persistence.IgnoreList = { Addon:Minify( ignore ) };
             end
+            --Addon:Dump( Addon.CHAT.persistence.IgnoreList )
         end
 
         --
@@ -837,9 +831,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CHAT.AcceptQuest = function( self,... )
             local QuestTitle,IsHeader;
             if( Addon:IsClassic() ) then
-                QuestTitle,_,_,IsHeader = Addon:Minify( select( 1, GetQuestLogTitle( select( 1, ... ) ) ) );
+                QuestTitle,_,_,IsHeader = Addon:Minify( select( 1, GetQuestLogTitle( select( 1,... ) ) ) );
             else
-                QuestTitle = Addon:Minify( C_QuestLog.GetTitleForQuestID( select( 1, ... ) ) );
+                QuestTitle = Addon:Minify( C_QuestLog.GetTitleForQuestID( select( 1,... ) ) );
             end
             if( not Addon.CHAT.ActiveQuests ) then
                 Addon.CHAT.ActiveQuests = {};
@@ -898,7 +892,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CHAT.EnableQuestEvents = function( self )
             Addon.CHAT.Events:RegisterEvent( 'QUEST_ACCEPTED' );
             Addon.CHAT.Events:RegisterEvent( 'QUEST_TURNED_IN' );
-            Addon.CHAT.Events:SetScript( 'OnEvent', function( self, event, ... )
+            Addon.CHAT.Events:SetScript( 'OnEvent',function( self,event,... )
                 if( event == 'QUEST_ACCEPTED' ) then
                     Addon.CHAT:AcceptQuest( ...  );
                 elseif( event == 'QUEST_TURNED_IN' ) then
@@ -1603,7 +1597,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.ChatFrame:SetShadowOffset( 0,0 );
             self.ChatFrame:SetShadowColor( 0,0,0,0 );
             
-            -- Chat replacement
+            -- Chat messages
             if( Addon:IsClassic() ) then
                 self.ChatFrame.DefaultSettings.AddMessage = self.ChatFrame.AddMessage;
                 self.ChatFrame.AddMessage = self.SendMessage;
