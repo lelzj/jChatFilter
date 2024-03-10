@@ -1207,8 +1207,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Addon.CHAT.Cache[ CacheKey ] = true;
 
             -- Watch check
-            local Watched;
-            local Mentioned = false;
+            local Watched,Mentioned = false,false;
             if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
                 local WatchedMessages = Addon.CHAT:GetWatches();
                 if( #WatchedMessages > 0 ) then
@@ -1227,7 +1226,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
                     if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
-                        Watched = MyPlayerName;
                         Mentioned = true;
                     end
                 end
