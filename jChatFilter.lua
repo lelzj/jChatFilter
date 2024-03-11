@@ -1152,6 +1152,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             local PlayerLevel = '';--'['..UnitLevel( PlayerId )..']';
 
             -- Message
+            if( ( not MessageText or MessageText == '' ) and ChatType == 'CHANNEL_JOIN' ) then
+                MessageText = 'has joined the channel.';
+            elseif( ( not MessageText or MessageText == '' ) and ChatType == 'CHANNEL_LEAVE' ) then
+                MessageText = 'has left the channel.';
+            end
             MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
 
             -- Append what was watched
