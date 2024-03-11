@@ -44,6 +44,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     1,
                 },
                 IgnoreList = {
+                    'boost',
                 },
                 MentionAlert = true,
                 ScrollBack = true,
@@ -221,6 +222,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 WHISPER = {
                     'CHAT_MSG_WHISPER',
+                    'CHAT_MSG_WHISPER_INFORM',
                 },
             };
         end
