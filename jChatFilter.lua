@@ -1265,7 +1265,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                --FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
+                FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
+                UIErrorsFrame:AddMessage( MessageText,r,g,b,a );
             end
             -- Conditionally sound alerts
             if( Watched ) then
@@ -1307,6 +1308,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CHAT.Run = function( self )
+
             -- Chat filter
             for Filter,FilterData in pairs( self:GetChatFilters() ) do
                 for _,FilterName in pairs( FilterData ) do
@@ -1316,8 +1318,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- List channels
-            for i,v in pairs( self.ChatFrame.channelList ) do
-                print( 'You have joined '..v );
+            local Channels = { GetChannelList() };
+            for i = 1, #Channels, 3 do
+                local Id, Name, Disabled = Channels[i], Channels[i+1], Channels[i+2]
+                print( 'You have joined '..Id..')'..Name );
             end
         end
 
@@ -1559,6 +1563,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Events frame
             self.Events = CreateFrame( 'Frame' );
+
+            hooksecurefunc( 'FCF_Tab_OnClick',function( self,Button )
+                FCF_StopAlertFlash( Addon.CHAT.ChatFrame );
+            end );
 
             -- Expired channels
             local Colors = {};
