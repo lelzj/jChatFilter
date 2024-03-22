@@ -89,6 +89,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     CHANNEL = true,
                     WHISPER = true,
                 },
+                DisableInGroup = false,
             };
         end
 
@@ -247,105 +248,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
 
             local Order = 1;
-            Settings.args.GeneralSettings = {
-                type = 'header',
-                order = Order,
-                name = 'General Settings',
-            }
-            Order = Order+1;
-            Settings.args.TimeStamps = {
-                type = 'toggle',
-                order = Order,
-                name = 'Time Stamps',
-                desc = 'Enable/disable chat timestamps',
-                arg = 'TimeStamps',
-            };
-            Order = Order+1;
-            Settings.args.ScrollBack = {
-                type = 'toggle',
-                order = Order,
-                name = 'Scroll Back',
-                desc = 'Extend chat history to 10,000 lines',
-                arg = 'ScrollBack',
-            };
-            Order = Order+1;
-            Settings.args.FadeOut = {
-                type = 'toggle',
-                order = Order,
-                name = 'Fade Out',
-                desc = 'Enable/disable chat fading',
-                arg = 'FadeOut',
-            };
-            Order = Order+1;
-            Settings.args.ClassColor = {
-                type = 'toggle',
-                get = function( Info )
-                    return self:GetValue( Info.arg );
-                end,
-                set = function( Info,Value )
-                    self:SetValue( Info.arg,Value );
-                    if( Value ) then
-                        SetCVar( 'colorChatNamesByClass',true );
-                    else
-                        SetCVar( 'colorChatNamesByClass',false );
-                    end
-                end,
-                order = Order,
-                name = 'Class Color',
-                desc = 'Enable/disable chat class colors',
-                arg = 'ClassColor',
-            };
-            Order = Order+1;
-            Settings.args.FontFamily = {
-                type = 'select',
-                get = function( Info )
-                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
-                        return Addon.CHAT.persistence.Font[ Info.arg ];
-                    end
-                end,
-                set = function( Info,Value )
-                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
-                        Addon.CHAT.persistence.Font[ Info.arg ] = Value;
-                    end
-                end,
-                values = {
-                    skurri = 'skurri',
-                    ARIALN = 'ARIALN',
-                    MORPHEUS = 'MORPHEUS',
-                    FRIZQT__ = 'FRIZQT__',
-                },
-                order = Order,
-                name = 'Font Family',
-                desc = 'Chat Font Family',
-                arg = 'Family',
-            };
-            Order = Order+1;
-            Settings.args.FontSize = {
-                type = 'select',
-                get = function( Info )
-                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
-                        return Addon.CHAT.persistence.Font[ Info.arg ];
-                    end
-                end,
-                set = function( Info,Value )
-                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
-                        Addon.CHAT.persistence.Font[ Info.arg ] = Value;
-                    end
-                end,
-                values = {
-                    [10] = 10,
-                    [12] = 12,
-                    [14] = 14,
-                    [16] = 16,
-                    [18] = 18,
-                },
-                order = Order,
-                name = 'Font Size',
-                desc = 'Chat Font Size',
-                arg = 'Size',
-            };
-
-            Order = Order+1;
             Settings.args.AlertSettings = {
                 type = 'header',
                 order = Order,
@@ -388,7 +290,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.AlertMention = {
                 type = 'toggle',
                 order = Order,
-                name = 'Mention',
+                name = 'Mention Alert',
                 desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound',
                 arg = 'MentionAlert',
             };
@@ -396,7 +298,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.AlertQuest = {
                 type = 'toggle',
                 order = Order,
-                name = 'Quest',
+                name = 'Quest Alert',
                 desc = 'Enable/disable alerting if anyone mentions a quest you are on',
                 arg = 'QuestAlert',
             };
@@ -440,16 +342,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.AlertSound = {
                 type = 'toggle',
                 order = Order,
-                name = 'Sound',
+                name = 'Sound Alert',
                 desc = 'Enable/disable chat Alert sound',
                 arg = 'AlertSound',
-            };
-
-            Order = Order+1;
-            Settings.args.FilterSettings = {
-                type = 'header',
-                order = Order,
-                name = 'Filter Settings',
             };
             for FilterName,FilterData in pairs( self:GetChatFilters() ) do
                 Order = Order+1;
@@ -460,9 +355,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Settings.args[ FilterName..'Alert' ] = {
                     type = 'toggle',
                     order = Order,
-                    name = FilterName,
+                    name = FilterName..' Alert',
                     disabled = Disabled,
-                    desc = 'Enable/disable filtering for '..FilterName..' messages',
+                    desc = 'Enable/disable alerting for '..FilterName..' messages',
                     arg = FilterName,
                     get = function( Info )
                         if( Addon.CHAT.persistence.ChatFilters[ Info.arg ] ~= nil ) then
@@ -479,6 +374,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end,
                 };
             end
+            Order = Order+1;
+            Settings.args.DisableInGroup = {
+                type = 'toggle',
+                order = Order,
+                name = 'Disable in Group',
+                desc = 'Sometimes I like to focus only on what my group is doing, automatically and without having to toggle on and off messages from different channels i\'ve joined. Enable this option for that purpose',
+                arg = 'DisableInGroup',
+            };
 
             Order = Order+1;
             Settings.args.ChannelSettings = {
@@ -724,6 +627,104 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
             ]]
 
+            Order = Order+1;
+            Settings.args.GeneralSettings = {
+                type = 'header',
+                order = Order,
+                name = 'General Settings',
+            }
+            Order = Order+1;
+            Settings.args.TimeStamps = {
+                type = 'toggle',
+                order = Order,
+                name = 'Time Stamps',
+                desc = 'Enable/disable chat timestamps',
+                arg = 'TimeStamps',
+            };
+            Order = Order+1;
+            Settings.args.ScrollBack = {
+                type = 'toggle',
+                order = Order,
+                name = 'Scroll Back',
+                desc = 'Extend chat history to 10,000 lines',
+                arg = 'ScrollBack',
+            };
+            Order = Order+1;
+            Settings.args.FadeOut = {
+                type = 'toggle',
+                order = Order,
+                name = 'Fade Out',
+                desc = 'Enable/disable chat fading',
+                arg = 'FadeOut',
+            };
+            Order = Order+1;
+            Settings.args.ClassColor = {
+                type = 'toggle',
+                get = function( Info )
+                    return self:GetValue( Info.arg );
+                end,
+                set = function( Info,Value )
+                    self:SetValue( Info.arg,Value );
+                    if( Value ) then
+                        SetCVar( 'colorChatNamesByClass',true );
+                    else
+                        SetCVar( 'colorChatNamesByClass',false );
+                    end
+                end,
+                order = Order,
+                name = 'Class Color',
+                desc = 'Enable/disable chat class colors',
+                arg = 'ClassColor',
+            };
+            Order = Order+1;
+            Settings.args.FontFamily = {
+                type = 'select',
+                get = function( Info )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        return Addon.CHAT.persistence.Font[ Info.arg ];
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        Addon.CHAT.persistence.Font[ Info.arg ] = Value;
+                    end
+                end,
+                values = {
+                    skurri = 'skurri',
+                    ARIALN = 'ARIALN',
+                    MORPHEUS = 'MORPHEUS',
+                    FRIZQT__ = 'FRIZQT__',
+                },
+                order = Order,
+                name = 'Font Family',
+                desc = 'Chat Font Family',
+                arg = 'Family',
+            };
+            Order = Order+1;
+            Settings.args.FontSize = {
+                type = 'select',
+                get = function( Info )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        return Addon.CHAT.persistence.Font[ Info.arg ];
+                    end
+                end,
+                set = function( Info,Value )
+                    if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
+                        Addon.CHAT.persistence.Font[ Info.arg ] = Value;
+                    end
+                end,
+                values = {
+                    [10] = 10,
+                    [12] = 12,
+                    [14] = 14,
+                    [16] = 16,
+                    [18] = 18,
+                },
+                order = Order,
+                name = 'Font Size',
+                desc = 'Chat Font Size',
+                arg = 'Size',
+            };
             return Settings;
         end
 
@@ -1202,6 +1203,13 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                         if( Addon:Minify( OriginalText ):find( Addon:Minify( IgnoredMessage ) ) ) then
                             return true;
                         end
+                    end
+                end
+            end
+            if( Addon.CHAT:GetValue( 'DisableInGroup' ) ) then
+                if( UnitInParty( 'player' ) or UnitInRaid( 'player' ) ) then
+                    if( Addon:Minify( ChatType ):find( 'channel' ) ) then
+                        return true;
                     end
                 end
             end
