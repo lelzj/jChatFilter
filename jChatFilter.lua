@@ -37,12 +37,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     191 / 255,
                     1,
                 },
-                MentionColor = {
-                    110 / 255,
-                    121 / 255,
-                    247 / 255,
-                    1,
-                },
                 IgnoreList = {
                     'boost',
                 },
@@ -291,7 +285,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 type = 'toggle',
                 order = Order,
                 name = 'Mention Alert',
-                desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound',
+                desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound and have the whisper color',
                 arg = 'MentionAlert',
             };
             Order = Order+1;
@@ -319,24 +313,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Alert Color',
                 desc = 'Set the color of Alerts chat',
                 arg = 'WatchColor',
-            };
-            Order = Order+1;
-            Settings.args.MentionColor = {
-                type = 'color',
-                order = Order,
-                get = function( Info )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        return unpack( Addon.CHAT.persistence[ Info.arg ] );
-                    end
-                end,
-                set = function( Info,R,G,B,A )
-                    if( Addon.CHAT.persistence[ Info.arg ] ~= nil ) then
-                        Addon.CHAT.persistence[ Info.arg ] = { R,G,B,A };
-                    end
-                end,
-                name = 'Mention Color',
-                desc = 'Set the color of Mentions in chat',
-                arg = 'MentionColor',
             };
             Order = Order+1;
             Settings.args.AlertSound = {
@@ -993,7 +969,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( Watched and ( ChatType == 'WHISPER' ) == false ) then
                 r,g,b,a = unpack( Addon.CHAT:GetValue( 'WatchColor' ) );
             elseif( Mentioned ) then
-                r,g,b,a = unpack( Addon.CHAT:GetValue( 'MentionColor' ) );
+                if( ChatTypeInfo.WHISPER ) then
+                    r,g,b,a = ChatTypeInfo.WHISPER.r,ChatTypeInfo.WHISPER.g,ChatTypeInfo.WHISPER.b,1;
+                end
             end
 
             --Addon.CHAT.ChatFrame:SetTextColor( r,g,b,a );
@@ -1019,12 +997,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Questie support
             if( QuestieLoader ) then
-                --[[
-                local ChatFilter = QuestieLoader:ImportModule( 'ChatFilter' );
-                if( ChatFilter ) then
-                    ChatFilter:Filter( Addon.CHAT.ChatFrame,'junk',MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelIndex,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
-                end
-                ]]
 
                 local QuestieLink = QuestieLoader:ImportModule( 'QuestieLink' );
                 local QuestieDB = QuestieLoader:ImportModule( 'QuestieDB' );
