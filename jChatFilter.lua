@@ -1179,9 +1179,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             if( Addon.CHAT:GetValue( 'DisableInGroup' ) ) then
-                if( UnitInParty( 'player' ) or UnitInRaid( 'player' ) ) then
-                    if( Addon:Minify( ChatType ):find( 'channel' ) ) then
-                        return true;
+                if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                    if( UnitInParty( 'player' ) or UnitInRaid( 'player' ) ) then
+                        if( Addon:Minify( ChatType ):find( 'channel' ) ) then
+                            return true;
+                        end
                     end
                 end
             end
