@@ -127,14 +127,25 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 WHISPER = {
                     'WHISPER',
+                    --'WHISPER_INFORM',                     -- Allow sending outgoing whisper messages always
+                    'SMART_WHISPER',
                     'MONSTER_BOSS_WHISPER',
                     'MONSTER_WHISPER',
+                    'RAID_BOSS_WHISPER',
+                    'BN_WHISPER',
+                    --'BN_WHISPER_INFORM',                  -- Allow sending outgoing BN messages always
+                    'BN_WHISPER_PLAYER_OFFLINE',
                 },
                 BN = {
-                    'BG_SYSTEM_HORDE',
-                    'BG_SYSTEM_ALLIANCE',
-                    'BG_SYSTEM_NEUTRAL',
+                    'BN_ALERT',
+                    'BN_BROADCAST',
+                    'BN_BROADCAST_INFORM',
                     'BN_INLINE_TOAST_ALERT',
+                    'BN_INLINE_TOAST_BROADCAST',
+                    'BN_INLINE_TOAST_BROADCAST_INFORM',
+                    'BN_WHISPER',
+                    --'BN_WHISPER_INFORM',                  -- Allow sending outgoing BN messages always
+                    'BN_WHISPER_PLAYER_OFFLINE',
                 },
                 PARTY = {
                     'PARTY',
@@ -173,6 +184,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'PET_INFO',
                 },
                 BATTLEGROUND = {
+                    'BG_SYSTEM_HORDE',
+                    'BG_SYSTEM_ALLIANCE',
+                    'BG_SYSTEM_NEUTRAL',
                     'BATTLEGROUND',
                 },
                 ERRORS = {
@@ -1018,7 +1032,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                                 end
                             end
 
-                            if( questId and QuestieDB.QuestPointers[questId] ) then
+                            if( questId and QuestieDB.QuestPointers and QuestieDB.QuestPointers[questId] ) then
                                 if( not PlayerId ) then
                                     playerName = BNGetFriendInfoByID( BNId );
                                     PlayerId = BNId;
