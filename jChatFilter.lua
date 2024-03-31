@@ -259,7 +259,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.AlertSettings = {
                 type = 'header',
                 order = Order,
-                name = 'Alert Settings',
+                name = 'Alerts',
             };
             Order = Order+1;
             Settings.args.AlertList = {
@@ -377,7 +377,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.ChannelSettings = {
                 type = 'header',
                 order = Order,
-                name = 'Channel Settings',
+                name = 'Channel Colors',
             };
             local JoinedChannels = {};
             for i,channel in pairs( self.ChatFrame.channelList ) do
@@ -412,7 +412,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.MessageSettings = {
                 type = 'header',
                 order = Order,
-                name = 'Message Settings',
+                name = 'Allowed Messages',
             };
             for GroupName,GroupData in pairs( self:GetMessageGroups() ) do
                 Order = Order+1;
@@ -621,7 +621,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.GeneralSettings = {
                 type = 'header',
                 order = Order,
-                name = 'General Settings',
+                name = 'General',
             }
             Order = Order+1;
             Settings.args.TimeStamps = {
