@@ -127,13 +127,13 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 WHISPER = {
                     'WHISPER',
-                    --'WHISPER_INFORM',                     -- Allow sending outgoing whisper messages always
+                    'WHISPER_INFORM',
                     'SMART_WHISPER',
                     'MONSTER_BOSS_WHISPER',
                     'MONSTER_WHISPER',
                     'RAID_BOSS_WHISPER',
                     'BN_WHISPER',
-                    --'BN_WHISPER_INFORM',                  -- Allow sending outgoing BN messages always
+                    'BN_WHISPER_INFORM',
                     'BN_WHISPER_PLAYER_OFFLINE',
                 },
                 BN = {
@@ -144,7 +144,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'BN_INLINE_TOAST_BROADCAST',
                     'BN_INLINE_TOAST_BROADCAST_INFORM',
                     'BN_WHISPER',
-                    --'BN_WHISPER_INFORM',                  -- Allow sending outgoing BN messages always
+                    'BN_WHISPER_INFORM',
                     'BN_WHISPER_PLAYER_OFFLINE',
                 },
                 PARTY = {
@@ -431,6 +431,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                         if( Addon.CHAT.persistence.ChatGroups[ Info.arg ] ~= nil ) then
                             Addon.CHAT.persistence.ChatGroups[ Info.arg ] = Value;
                             for _,GroupName in pairs( self:GetMessageGroups()[ Info.arg ] ) do
+                                -- Always allow outgoing whispers
+                                if( Addon:Minify( GroupName ):find( 'whisperinform' ) ) then
+                                    Value = true;
+                                end
                                 self:SetGroup( GroupName,Value );
                             end
                         end
@@ -724,10 +728,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @return void
         Addon.CHAT.SetFilter = function( self,Filter,Value )
             if( Value ) then
-                --print( 'add',Value,Filter )
                 ChatFrame_AddMessageEventFilter( Filter,self.Filter );
             else
-                --print( 'remove',Value,Filter )
                 ChatFrame_RemoveMessageEventFilter( Filter,self.Filter );
             end
         end
@@ -738,8 +740,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @return void
         Addon.CHAT.SetGroup = function( self,Group,Value )
             if ( Value ) then
+                --print( 'add',Group )
                 ChatFrame_AddMessageGroup( self.ChatFrame,Group );
             else
+                --print( 'remove',Group )
                 ChatFrame_RemoveMessageGroup( self.ChatFrame,Group );
             end
             --ToggleChatMessageGroup( Value,Group );
@@ -1615,7 +1619,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Chat types
             for Group,GroupData in pairs( self:GetMessageGroups() ) do
                 for _,GroupName in pairs( GroupData ) do
-                    self:SetGroup( GroupName,self.persistence.ChatGroups[ Group ] );
+                    -- Always allow outgoing whispers
+                    if( Addon:Minify( GroupName ):find( 'whisperinform' ) ) then
+                        self:SetGroup( GroupName,true );
+                    else
+                        self:SetGroup( GroupName,self.persistence.ChatGroups[ Group ] );
+                    end
                 end
             end
 
