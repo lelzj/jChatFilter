@@ -1013,6 +1013,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             MessageText = RemoveExtraSpaces( MessageText );
 
+            --[[
+            -- Questie support
+            if( QuestieLoader ) then
+                local QuestieFilter = QuestieLoader:ImportModule( 'ChatFilter' );
+                MessageText = QuestieFilter:Filter( self.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
+            end
+            ]]
+
             -- Questie support
             if( QuestieLoader ) then
 
