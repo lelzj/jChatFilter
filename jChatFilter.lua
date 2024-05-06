@@ -44,13 +44,13 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ScrollBack = true,
                 TimeStamps = true,
                 QuestAlert = true,
-                WatchColor = {
-                    150 / 255,
-                    233 / 255,
+                AlertColor = {
+                    224 / 255,
+                    157 / 255,
                     240 / 255,
                     1,
                 },
-                WatchList = {
+                AlertList = {
                 },
                 Channels = {},
                 ChatGroups = {
@@ -217,6 +217,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 GUILD = {
                     'CHAT_MSG_GUILD',
                     'GUILD_MOTD',
+                    'PLAYER_GUILD_UPDATE',
                 },
                 YELL = {
                     'CHAT_MSG_YELL',
@@ -267,14 +268,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 order = Order,
                 multiline = true,
                 get = function( Info )
-                    return Addon:Implode( self:GetWatches(),',' );
+                    return Addon:Implode( self:GetAlerts(),',' );
                 end,
                 set = function( Info,Value )
-                    self:SetWatches( Value );
+                    self:SetAlerts( Value );
                 end,
                 name = 'Alert List',
                 desc = 'Words or phrases to be alerted on when they are mentioned in chat. Seperate individual things to alert on with a comma: e.g. healer,spriest,sfk,really cool',
-                arg = 'WatchList',
+                arg = 'AlertList',
                 width = 'full',
             };
             Order = Order+1;
@@ -326,7 +327,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end,
                 name = 'Alert Color',
                 desc = 'Set the color of Alerts chat',
-                arg = 'WatchColor',
+                arg = 'AlertColor',
             };
             Order = Order+1;
             Settings.args.AlertSound = {
@@ -412,7 +413,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.MessageSettings = {
                 type = 'header',
                 order = Order,
-                name = 'Allowed Messages',
+                name = 'Filtered Messages',
             };
             for GroupName,GroupData in pairs( self:GetMessageGroups() ) do
                 Order = Order+1;
@@ -740,13 +741,12 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @return void
         Addon.CHAT.SetGroup = function( self,Group,Value )
             if ( Value ) then
-                --print( 'add',Group )
+                --print( self.ChatFrame:GetName(),'add',Group )
                 ChatFrame_AddMessageGroup( self.ChatFrame,Group );
             else
-                --print( 'remove',Group )
+                --print( self.ChatFrame:GetName(),'remove',Group )
                 ChatFrame_RemoveMessageGroup( self.ChatFrame,Group );
             end
-            --ToggleChatMessageGroup( Value,Group );
         end
 
         --
@@ -768,27 +768,27 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @param string
         --
         -- @return void
-        Addon.CHAT.SetWatches = function( self,watch )
+        Addon.CHAT.SetAlerts = function( self,watch )
             watch = Addon:Explode( watch,',' );
             if( type( watch ) == 'table' ) then
-                Addon.CHAT.persistence.WatchList = {};
+                Addon.CHAT.persistence.AlertList = {};
                 for i,v in pairs( watch ) do
                     if( string.len( v ) > 0 ) then
-                        table.insert( Addon.CHAT.persistence.WatchList,Addon:Minify( v ) );
+                        table.insert( Addon.CHAT.persistence.AlertList,Addon:Minify( v ) );
                     end
                 end
             else
-                Addon.CHAT.persistence.WatchList = { Addon:Minify( watch ) };
+                Addon.CHAT.persistence.AlertList = { Addon:Minify( watch ) };
             end
-            --Addon:Dump( Addon.CHAT.persistence.WatchList )
+            --Addon:Dump( Addon.CHAT.persistence.AlertList )
         end
 
         --
         -- Get watch list
         --
         -- @return table
-        Addon.CHAT.GetWatches = function( self )
-            return Addon.CHAT.persistence.WatchList;
+        Addon.CHAT.GetAlerts = function( self )
+            return Addon.CHAT.persistence.AlertList;
         end
 
         --
@@ -985,7 +985,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             if( Watched and ( ChatType == 'WHISPER' ) == false ) then
-                r,g,b,a = unpack( Addon.CHAT:GetValue( 'WatchColor' ) );
+                r,g,b,a = unpack( Addon.CHAT:GetValue( 'AlertColor' ) );
             elseif( Mentioned ) then
                 if( ChatTypeInfo.WHISPER ) then
                     r,g,b,a = ChatTypeInfo.WHISPER.r,ChatTypeInfo.WHISPER.g,ChatTypeInfo.WHISPER.b,1;
@@ -1224,7 +1224,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Watch check
             local Watched,Mentioned = false,false;
             if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                local WatchedMessages = Addon.CHAT:GetWatches();
+                local WatchedMessages = Addon.CHAT:GetAlerts();
                 if( #WatchedMessages > 0 ) then
                     for i,WatchedMessage in ipairs( WatchedMessages ) do
                         if( Addon:Minify( OriginalText ):find( Addon:Minify( WatchedMessage ) ) ) then
