@@ -1,8 +1,12 @@
 package-as: jChatFilter
 
 ignore:
+ - LICENSE
  - README.md
+ - .git
+ - .github
  - .gitignore
+ - .pkgmeta
 
 externals:
   Libs/LibStub: https://repos.wowace.com/wow/libstub/trunk
