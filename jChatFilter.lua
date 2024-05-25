@@ -1274,6 +1274,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
                 FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
+                -- longer fadeDuration of message to errorsFrame would be great here
                 UIErrorsFrame:AddMessage( MessageText,r,g,b,a );
             end
             -- Conditionally sound alerts
