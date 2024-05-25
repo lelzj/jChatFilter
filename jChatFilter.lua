@@ -1327,8 +1327,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- List channels
             local Channels = { GetChannelList() };
-            for i = 1, #Channels, 3 do
-                local Id, Name, Disabled = Channels[i], Channels[i+1], Channels[i+2]
+            for i = 1,#Channels,3 do
+                local Id, Name, Disabled = Channels[i],Channels[i+1],Channels[i+2]
                 print( 'You have joined '..Id..')'..Name );
             end
         end

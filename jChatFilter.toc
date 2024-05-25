@@ -5,11 +5,17 @@
 ## Author: jadissa
 ## X-Realm: Moonguard/Grobbulus/Whitemane
 ## X-Website: https://github.com/jadissa/jChatFilter
+## X-Curse-Project-ID: 949164
+## X-WoWI-ID: 26743
+## X-Wago-ID: QNlqea6e
 
 ## DefaultState: disabled
 ## SavedVariables: jChatFilter
 
-## Interface: 11502
+## Interface: 100207
+## Interface-Wrath: 30403
+## Interface-Classic: 11502
+
 #/run print((select(4, GetBuildInfo())));
 #https://markdownlivepreview.com/
 
@@ -23,15 +29,12 @@ Libs\AceHook-3.0\AceHook-3.0.xml
 Libs\AceDB-3.0\AceDB-3.0.xml
 Libs\AceDBOptions-3.0\AceDBOptions-3.0.xml
 Libs\AceLocale-3.0\AceLocale-3.0.xml
-
 Libs\AceGUI-3.0\AceGUI-3.0.xml
 Libs\AceConsole-3.0\AceConsole-3.0.xml
 Libs\AceConfig-3.0\AceConfig-3.0.xml
 
 Libs\LibWindow-1.1\LibWindow-1.1.lua
 
-#Libs\Poncho-2.0\Poncho-2.0.xml
-#Libs\Sushi-3.2\Sushi-3.2.xml
 Libs\jUI\index.xml
 
 jChatFilter.lua
