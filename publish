@@ -1,0 +1,2 @@
+DateTag=$(date +%Y.%m.%d.%H.%M.%S)
+git tag $DateTag && git push $DateTag
