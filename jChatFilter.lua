@@ -243,6 +243,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return table
         Addon.CHAT.GetSettings = function( self )
             local Settings = {
+                name = 'jChat Settings',
+                desc = 'Simple chat filter',
                 type = 'group',
                 get = function( Info )
                     return self:GetValue( Info.arg );
@@ -250,8 +252,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 set = function( Info,Value )
                     self:SetValue( Info.arg,Value );
                 end,
-                name = AddonName,
-                desc = 'Simple chat filter',
                 args = {
                 },
             };
@@ -1339,14 +1339,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CHAT.CreateFrames = function( self )
-            self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( AddonName ),AddonName );
+            self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( 'jChat' ),'jChat' );
             self.Config.okay = function( self )
                 RestartGx();
             end
             self.Config.default = function( self )
                 Addon.CHAT.db:ResetDB();
             end
-            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( AddonName ),self:GetSettings() );
+            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( 'jChat' ),self:GetSettings() );
 
 
             --[[
