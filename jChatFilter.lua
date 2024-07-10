@@ -243,8 +243,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return table
         Addon.CHAT.GetSettings = function( self )
             local Settings = {
-                name = 'jChat Settings',
-                desc = 'Simple chat filter',
                 type = 'group',
                 get = function( Info )
                     return self:GetValue( Info.arg );
@@ -252,6 +250,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 set = function( Info,Value )
                     self:SetValue( Info.arg,Value );
                 end,
+                name = 'jChat Settings',
+                desc = 'Simple chat filter',
                 args = {
                 },
             };
