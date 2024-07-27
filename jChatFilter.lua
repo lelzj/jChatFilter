@@ -24,7 +24,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Flags = 'THINOUTLINE',
                 },
                 FadeOut = false,
-                ClassColor = true,
                 GeneralColor = {
                     254 / 255,
                     191 / 255,
@@ -42,7 +41,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 MentionAlert = true,
                 ScrollBack = true,
-                TimeStamps = true,
                 QuestAlert = true,
                 AlertColor = {
                     224 / 255,
@@ -84,6 +82,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     WHISPER = true,
                 },
                 DisableInGroup = false,
+                showTimestamps = '%I:%M:%S %p ',
             };
         end
 
@@ -213,6 +212,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHAT_MSG_RAID_WARNING',
                     'CHAT_MSG_INSTANCE_CHAT',
                     'CHAT_MSG_INSTANCE_CHAT_LEADER',
+                    'CHAT_MSG_TARGETICONS',
                 },
                 GUILD = {
                     'CHAT_MSG_GUILD',
@@ -229,6 +229,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHAT_MSG_CHANNEL',
                     'CHAT_MSG_CHANNEL_JOIN',
                     'CHAT_MSG_CHANNEL_LEAVE',
+                    'CHAT_MSG_COMMUNITIES_CHANNEL',
                 },
                 WHISPER = {
                     'CHAT_MSG_WHISPER',
@@ -401,6 +402,18 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     set = function( Info,R,G,B,A )
                         if( Addon.CHAT.persistence.Channels[ Info.arg ] ~= nil ) then
                             Addon.CHAT.persistence.Channels[ Info.arg ].Color = { R,G,B,A };
+                            local Community,ClubId,StreamId = unpack( Addon:Explode( Info.arg,':' ) );
+                            if( Addon:Minify( Community ) == 'community' ) then
+                                local Channel = Chat_GetCommunitiesChannel( ClubId,StreamId );
+                                if( Channel ) then
+                                    ChangeChatColor( Channel,R,G,B,A );
+                                end
+                            else
+                                local Channel = Addon.CHAT:GetChannelId( Info.arg );
+                                if( Channel ) then
+                                    ChangeChatColor( 'CHANNEL'..tostring( Channel ),R,G,B,A );
+                                end
+                            end
                         end
                     end,
                     name = ChannelName..' Color',
@@ -629,14 +642,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'General',
             }
             Order = Order+1;
-            Settings.args.TimeStamps = {
-                type = 'toggle',
-                order = Order,
-                name = 'Time Stamps',
-                desc = 'Enable/disable chat timestamps',
-                arg = 'TimeStamps',
-            };
-            Order = Order+1;
             Settings.args.ScrollBack = {
                 type = 'toggle',
                 order = Order,
@@ -656,15 +661,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             Settings.args.ClassColor = {
                 type = 'toggle',
                 get = function( Info )
-                    return self:GetValue( Info.arg );
+                    return GetCVar( 'colorChatNamesByClass' );
                 end,
                 set = function( Info,Value )
-                    self:SetValue( Info.arg,Value );
-                    if( Value ) then
-                        SetCVar( 'colorChatNamesByClass',true );
-                    else
-                        SetCVar( 'colorChatNamesByClass',false );
-                    end
+                    SetCVar( 'colorChatNamesByClass',Value );
                 end,
                 order = Order,
                 name = 'Class Color',
@@ -683,6 +683,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
                         Addon.CHAT.persistence.Font[ Info.arg ] = Value;
                     end
+                    self.ChatFrame:SetFont( 'Fonts\\'..self:GetValue( 'Font' ).Family..'.ttf',self:GetValue( 'Font' ).Size,self:GetValue( 'Font' ).Flags );
                 end,
                 values = {
                     skurri = 'skurri',
@@ -707,6 +708,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     if( Addon.CHAT.persistence.Font[ Info.arg ] ~= nil ) then
                         Addon.CHAT.persistence.Font[ Info.arg ] = Value;
                     end
+                    self.ChatFrame:SetFont( 'Fonts\\'..self:GetValue( 'Font' ).Family..'.ttf',self:GetValue( 'Font' ).Size,self:GetValue( 'Font' ).Flags );
                 end,
                 values = {
                     [10] = 10,
@@ -719,6 +721,22 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Font Size',
                 desc = 'Chat Font Size',
                 arg = 'Size',
+            };
+            Order = Order+1;
+            Settings.args.showTimestamps = {
+                type = 'select',
+                values = Addon:ArrayReverse( {
+                    none = 'none',
+                    hour_min_12 = '%I:%M ',
+                    hour_min_ext = '%I:%M %p ',
+                    hour_min_sec_12_ext = '%I:%M:%S %p ',
+                    hour_min_24 = '%H:%M ',
+                    hour_min_sec_24 = '%H:%M:%S ',
+                } ),
+                order = Order,
+                name = 'Timestamps',
+                desc = 'Timestamp format',
+                arg = 'showTimestamps',
             };
             return Settings;
         end
@@ -943,6 +961,25 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
+        --  Get channel name
+        --
+        --  @param  string  ChannelName
+        --  @return int
+        Addon.CHAT.GetChannelId = function( self,ChannelName )
+            local ChannelId;
+            if( ChannelName ) then
+                local Channels = { GetChannelList() };
+                for i=1,#Channels,3 do
+                    local Id,Name = Channels[i],Channels[i+1];
+                    if( Addon:Minify( Name ):find( Addon:Minify( ChannelName ) ) ) then
+                        ChannelId = Id;
+                    end
+                end
+            end
+            return ChannelId;
+        end
+
+        --
         --  Format Chat Message
         --
         --  @param  string  Event
@@ -996,7 +1033,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             --ChangeChatColor( 'CHANNEL'..ChannelId,r,g,b,a );
 
             -- Class color
-            if( PlayerName and self:GetValue( 'ClassColor' ) ) then
+            if( PlayerName and GetCVar( 'colorChatNamesByClass' ) ) then
                 if( EnglishClass ) then
                     local ClassColorTable = RAID_CLASS_COLORS[ EnglishClass ];
                     if ( ClassColorTable ) then
@@ -1111,8 +1148,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Timestamp
             local TimeStamp = '';
-            if( Addon.CHAT:GetValue( 'TimeStamps' ) ) then
-                TimeStamp = '['..BetterDate( "|cffffffff%I:%M:%S %p|r",time() )..'] ';
+            local chatTimestampFmt = Addon.CHAT:GetValue( 'showTimestamps' );
+            if ( chatTimestampFmt ~= 'none' ) then
+                TimeStamp = BetterDate( chatTimestampFmt,time() );
             end
 
             -- Channel link
@@ -1138,7 +1176,25 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Player link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
-            local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h" -- |Hplayer:Blasfemy-Grobbulus|h was here
+            local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h"; -- |Hplayer:Blasfemy-Grobbulus|h was here
+
+            --[[
+            -- todo: fix communities link
+            -- while we are at it, prob should make it so that when we join a community..
+            -- it automatically adds it to the chat window
+            
+            if( ChatType == 'COMMUNITIES_CHANNEL' ) then
+                local IsBattleNetCommunity = BNId ~= nil and BNId ~= 0;
+                local MessageInfo,ClubId,StreamId,ClubType = C_Club.GetInfoFromLastCommunityChatLine();
+                if( MessageInfo ~= nil ) then
+                    if( IsBattleNetCommunity ) then
+                        PlayerLink = GetBNPlayerCommunityLink( PlayerRealm,PlayerName,BNId,ClubId,StreamId,MessageInfo.messageId.epoch,MessageInfo.messageId.position );
+                    else
+                        playerLink = GetPlayerCommunityLink( PlayerRealm,PlayerName,ClubId,StreamId,MessageInfo.messageId.epoch,MessageInfo.messageId.position );
+                    end
+                end
+            end
+            ]]
 
             -- Player action
             local PlayerAction = '';
@@ -1193,23 +1249,24 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             local MyPlayerName,MyRealm = UnitName( 'player' );
 
+            -- Always allow my messages
+            if( Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                return false;
+            end
+
             -- Prevent ignored messages
-            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                local IgnoredMessages = Addon.CHAT:GetIgnores();
-                if( #IgnoredMessages > 0 ) then
-                    for i,IgnoredMessage in ipairs( IgnoredMessages ) do
-                        if( Addon:Minify( OriginalText ):find( Addon:Minify( IgnoredMessage ) ) ) then
-                            return true;
-                        end
+            local IgnoredMessages = Addon.CHAT:GetIgnores();
+            if( #IgnoredMessages > 0 ) then
+                for i,IgnoredMessage in ipairs( IgnoredMessages ) do
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( IgnoredMessage ) ) ) then
+                        return true;
                     end
                 end
             end
             if( Addon.CHAT:GetValue( 'DisableInGroup' ) ) then
-                if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                    if( UnitInParty( 'player' ) or UnitInRaid( 'player' ) ) then
-                        if( Addon:Minify( ChatType ):find( 'channel' ) ) then
-                            return true;
-                        end
+                if( UnitInParty( 'player' ) or UnitInRaid( 'player' ) ) then
+                    if( Addon:Minify( ChatType ):find( 'channel' ) ) then
+                        return true;
                     end
                 end
             end
@@ -1223,26 +1280,24 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Watch check
             local Watched,Mentioned = false,false;
-            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                local WatchedMessages = Addon.CHAT:GetAlerts();
-                if( #WatchedMessages > 0 ) then
-                    for i,WatchedMessage in ipairs( WatchedMessages ) do
-                        if( Addon:Minify( OriginalText ):find( Addon:Minify( WatchedMessage ) ) ) then
-                            Watched = WatchedMessage;
-                        end
+            local WatchedMessages = Addon.CHAT:GetAlerts();
+            if( #WatchedMessages > 0 ) then
+                for i,WatchedMessage in ipairs( WatchedMessages ) do
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( WatchedMessage ) ) ) then
+                        Watched = WatchedMessage;
                     end
                 end
-                if( Addon.CHAT:GetValue( 'QuestAlert' ) ) then
-                    for i,ActiveQuest in pairs( Addon.CHAT.ActiveQuests ) do
-                        if( Addon:Minify( OriginalText ):find( ActiveQuest ) ) then
-                            Watched = ActiveQuest;
-                        end
+            end
+            if( Addon.CHAT:GetValue( 'QuestAlert' ) ) then
+                for i,ActiveQuest in pairs( Addon.CHAT.ActiveQuests ) do
+                    if( Addon:Minify( OriginalText ):find( ActiveQuest ) ) then
+                        Watched = ActiveQuest;
                     end
                 end
-                if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
-                    if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
-                        Mentioned = true;
-                    end
+            end
+            if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
+                if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
+                    Mentioned = true;
                 end
             end
 
@@ -1273,8 +1328,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
-                -- longer fadeDuration of message to errorsFrame would be great here
+                --FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
+                -- longer fadeDuration of message to errorsFrame
+                if( UIErrorsFrame.fadeDuration and tonumber( UIErrorsFrame.fadeDuration ) > 0 ) then
+                    UIErrorsFrame.fadeDuration = UIErrorsFrame.fadeDuration * 5;
+                    print( 'works by delaying'..tostring( UIErrorsFrame.fadeDuration ) );
+                else
+                    print( 'failed to delay' );
+                end
                 UIErrorsFrame:AddMessage( MessageText,r,g,b,a );
             end
             -- Conditionally sound alerts
@@ -1285,32 +1346,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Display
-            if( Addon:IsClassic() ) then
-                Addon.CHAT.ChatFrame.DefaultSettings:AddMessage( MessageText,r,g,b,id );
-            else
-                Addon.CHAT.ChatFrame:AddMessage( MessageText,r,g,b,id ); 
-            end
+            Addon.CHAT.ChatFrame:AddMessage( MessageText,r,g,b,id ); 
             return true;
         end;
-
-        --
-        --  Chat AddMessage Replacement
-        --  @param  string  MessageText
-        --  @param  string  R
-        --  @param  string  G
-        --  @param  string  B
-        --  @param  string  id
-        --  @return void
-        function Addon.CHAT.SendMessage( self,MessageText,r,g,b,id )
-            if( Addon.CHAT:GetValue( 'TimeStamps' ) ) then
-                MessageText = '['..BetterDate( "|cffffffff%I:%M:%S %p|r",time() )..'] '..MessageText;
-            end
-            if( Addon:IsClassic() ) then
-                Addon.CHAT.ChatFrame.DefaultSettings:AddMessage( MessageText,r,g,b,id );
-            else
-                Addon.CHAT.ChatFrame:AddMessage( MessageText,r,g,b,id );
-            end
-        end
 
         --
         --  Module run
@@ -1573,9 +1611,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Events frame
             self.Events = CreateFrame( 'Frame' );
 
+            --[[
             hooksecurefunc( 'FCF_Tab_OnClick',function( self,Button )
                 FCF_StopAlertFlash( Addon.CHAT.ChatFrame );
             end );
+            ]]
 
             -- Expired channels
             local Colors = {};
@@ -1618,12 +1658,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.ChatFrame:SetFont( 'Fonts\\'..self:GetValue( 'Font' ).Family..'.ttf',self:GetValue( 'Font' ).Size,self:GetValue( 'Font' ).Flags );
             self.ChatFrame:SetShadowOffset( 0,0 );
             self.ChatFrame:SetShadowColor( 0,0,0,0 );
-            
-            -- Chat messages
-            if( Addon:IsClassic() ) then
-                self.ChatFrame.DefaultSettings.AddMessage = self.ChatFrame.AddMessage;
-                self.ChatFrame.AddMessage = self.SendMessage;
-            end
 
             -- Chat types
             for Group,GroupData in pairs( self:GetMessageGroups() ) do
