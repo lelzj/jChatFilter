@@ -768,19 +768,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        -- Set quests
-        --
-        -- @return void
-        Addon.CHAT.SetQuests = function( self )
-            if( Addon.CHAT.persistence.QuestAlert.On ) then
-                Addon.CHAT:EnableQuestEvents();
-                Addon.CHAT:RebuildQuests();
-            else
-                Addon.CHAT:DisableQuestEvents();
-            end
-        end
-
-        --
         -- Set watch list
         --
         -- @param string
@@ -836,6 +823,21 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @return table
         Addon.CHAT.GetIgnores = function( self )
             return Addon.CHAT.persistence.IgnoreList;
+        end
+
+        --
+        --  Enable Config Events
+        --
+        --  @return void
+        Addon.CHAT.EnableConfigEvents = function( self )
+            self.ConfigEvents = CreateFrame( 'Frame' );
+            self.ConfigEvents:RegisterEvent( 'UPDATE_CHAT_COLOR' );
+            self.ConfigEvents:SetScript( 'OnEvent',function( self,Event,ChannelId,R,G,B,A )
+                local ChannelName = Addon.CHAT:GetChannelName( ChannelId );
+                if( ChannelName and Addon.CHAT.persistence.Channels[ ChannelName ] ) then
+                    Addon.CHAT.persistence.Channels[ ChannelName ].Color = { R,G,B,A };
+                end
+            end );
         end
 
         --
@@ -901,13 +903,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        --  Enable Quest Watch Events
+        --  Enable Quest Events
         --
         --  @return void
         Addon.CHAT.EnableQuestEvents = function( self )
-            Addon.CHAT.Events:RegisterEvent( 'QUEST_ACCEPTED' );
-            Addon.CHAT.Events:RegisterEvent( 'QUEST_TURNED_IN' );
-            Addon.CHAT.Events:SetScript( 'OnEvent',function( self,event,... )
+            self.QuestEvents = CreateFrame( 'Frame' );
+            self.QuestEvents:RegisterEvent( 'QUEST_ACCEPTED' );
+            self.QuestEvents:RegisterEvent( 'QUEST_TURNED_IN' );
+            self.QuestEvents:SetScript( 'OnEvent',function( self,event,... )
                 if( event == 'QUEST_ACCEPTED' ) then
                     Addon.CHAT:AcceptQuest( ...  );
                 elseif( event == 'QUEST_TURNED_IN' ) then
@@ -917,13 +920,13 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        --  Disable Quest Watch
+        --  Disable Quest Events
         --
         --  @return void
         Addon.CHAT.DisableQuestEvents = function( self )
-            Addon.CHAT.ActiveQuests = {};
-            Addon.CHAT.Events:UnregisterEvent( 'QUEST_ACCEPTED' );
-            Addon.CHAT.Events:UnregisterEvent( 'QUEST_TURNED_IN' );
+            self.ActiveQuests = {};
+            self.QuestEvents:UnregisterEvent( 'QUEST_ACCEPTED' );
+            self.QuestEvents:UnregisterEvent( 'QUEST_TURNED_IN' );
         end
 
         --
@@ -961,7 +964,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        --  Get channel name
+        --  Get channel id
         --
         --  @param  string  ChannelName
         --  @return int
@@ -977,6 +980,25 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             return ChannelId;
+        end
+
+        --
+        --  Get channel name
+        --
+        --  @param  string  Id
+        --  @return int
+        Addon.CHAT.GetChannelName = function( self,ChannelId )
+            local ChannelName;
+            if( ChannelId ) then
+                local Channels = { GetChannelList() };
+                for i=1,#Channels,3 do
+                    local Id,Name = Channels[i],Channels[i+1];
+                    if( Addon:Minify( ChannelId ):find( Addon:Minify( tostring( Id ) ) ) ) then
+                        ChannelName = Name;
+                    end
+                end
+            end
+            return ChannelName;
         end
 
         --
@@ -1182,7 +1204,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- todo: fix communities link
             -- while we are at it, prob should make it so that when we join a community..
             -- it automatically adds it to the chat window
-            
+
             if( ChatType == 'COMMUNITIES_CHANNEL' ) then
                 local IsBattleNetCommunity = BNId ~= nil and BNId ~= 0;
                 local MessageInfo,ClubId,StreamId,ClubType = C_Club.GetInfoFromLastCommunityChatLine();
@@ -1608,14 +1630,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Chat defaults
             self.ChatFrame.DefaultSettings = {};
 
-            -- Events frame
-            self.Events = CreateFrame( 'Frame' );
+            -- Quest events
+            if( self.persistence.QuestAlert ) then
+                self:EnableQuestEvents();
+            else
+                self:DisableQuestEvents();
+            end
 
-            --[[
-            hooksecurefunc( 'FCF_Tab_OnClick',function( self,Button )
-                FCF_StopAlertFlash( Addon.CHAT.ChatFrame );
-            end );
-            ]]
+            -- Config events
+            self:EnableConfigEvents();
 
             -- Expired channels
             local Colors = {};
