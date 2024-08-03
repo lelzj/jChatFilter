@@ -20,7 +20,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 Font = {
                     Family = 'ARIALN',
-                    Size = 12,
+                    Size = 14,
                     Flags = 'THINOUTLINE',
                 },
                 FadeOut = false,
@@ -907,7 +907,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CHAT.EnableQuestEvents = function( self )
-            self.QuestEvents = CreateFrame( 'Frame' );
+            self.QuestEvents = self.QuestEvents or CreateFrame( 'Frame' );
             self.QuestEvents:RegisterEvent( 'QUEST_ACCEPTED' );
             self.QuestEvents:RegisterEvent( 'QUEST_TURNED_IN' );
             self.QuestEvents:SetScript( 'OnEvent',function( self,event,... )
@@ -925,6 +925,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return void
         Addon.CHAT.DisableQuestEvents = function( self )
             self.ActiveQuests = {};
+            self.QuestEvents = self.QuestEvents or CreateFrame( 'Frame' );
             self.QuestEvents:UnregisterEvent( 'QUEST_ACCEPTED' );
             self.QuestEvents:UnregisterEvent( 'QUEST_TURNED_IN' );
         end
@@ -1174,6 +1175,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if ( chatTimestampFmt ~= 'none' ) then
                 TimeStamp = BetterDate( chatTimestampFmt,time() );
             end
+            SetCVar( 'showTimestamps',chatTimestampFmt );
 
             -- Channel link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
