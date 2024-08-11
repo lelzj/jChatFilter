@@ -83,6 +83,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 DisableInGroup = false,
                 showTimestamps = '%I:%M:%S %p ',
+                AutoInvite = true,
             };
         end
 
@@ -738,6 +739,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 desc = 'Timestamp format',
                 arg = 'showTimestamps',
             };
+            Order = Order+1;
+            Settings.args.AutoInvite = {
+                type = 'toggle',
+                order = Order,
+                name = 'Auto Invite',
+                desc = 'Automatically accept party members who send "inv" messages',
+                arg = 'AutoInvite',
+            };
             return Settings;
         end
 
@@ -1325,6 +1334,13 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
 
+            -- Invite check
+            if( ChatType == 'WHISPER' and Addon.CHAT:GetValue( 'AutoInvite' ) ) then
+                if( Addon:Minify( OriginalText ):find( 'inv' ) ) then
+                    InviteUnit( PlayerName );
+                end
+            end
+
             -- Format message
             MessageText,r,g,b,a,id = Addon.CHAT.Format(
                 Event,
@@ -1613,6 +1629,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CHAT.Init = function( self )
+
             -- Chat frame
             self.ChatFrame = DEFAULT_CHAT_FRAME;
 
@@ -1698,6 +1715,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Active quests
             self:RebuildQuests();
+
+            -- 1. Pick HELLOWORLD as the unique identifier.
+            -- 2. Pick /hiw and /hellow as slash commands (/hi and /hello are actual emotes)
+            -- https://wowpedia.fandom.com/wiki/Creating_a_slash_command
+            SLASH_JCHAT1, SLASH_JCHAT2 = '/jc', '/jchat'; -- 3.
+            SlashCmdList['JCHAT'] = function( Msg,EditBox ) -- 4.
+                Settings.OpenToCategory( 'jChat' );
+            end
         end
 
         C_Timer.After( 2,function()
