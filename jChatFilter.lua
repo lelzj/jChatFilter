@@ -1287,6 +1287,13 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return false;
             end
 
+            -- Invite check
+            if( ChatType == 'WHISPER' and Addon.CHAT:GetValue( 'AutoInvite' ) ) then
+                if( Addon:Minify( OriginalText ):find( 'inv' ) ) then
+                    InviteUnit( PlayerName );
+                end
+            end
+
             -- Prevent ignored messages
             local IgnoredMessages = Addon.CHAT:GetIgnores();
             if( #IgnoredMessages > 0 ) then
@@ -1331,13 +1338,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( Addon.CHAT:GetValue( 'MentionAlert' ) ) then
                 if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
                     Mentioned = true;
-                end
-            end
-
-            -- Invite check
-            if( ChatType == 'WHISPER' and Addon.CHAT:GetValue( 'AutoInvite' ) ) then
-                if( Addon:Minify( OriginalText ):find( 'inv' ) ) then
-                    InviteUnit( PlayerName );
                 end
             end
 
