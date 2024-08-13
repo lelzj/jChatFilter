@@ -41,4 +41,4 @@ Libs\LibWindow-1.1\LibWindow-1.1.lua
 
 Libs\jUI\index.xml
 
-jChatFilter.lua
+Index.xml

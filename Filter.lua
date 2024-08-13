@@ -40,6 +40,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'boost',
                 },
                 MentionAlert = true,
+                MentionTime = 20,
+                AliasList = {
+                },
                 ScrollBack = true,
                 QuestAlert = true,
                 AlertColor = {
@@ -304,6 +307,31 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Mention Alert',
                 desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound and have the whisper color',
                 arg = 'MentionAlert',
+            };
+            Order = Order+1;
+            Settings.args.MentionTime = {
+                type = 'range',
+                order = Order,
+                name = 'Mention Duration',
+                desc = 'The duration of time in seconds to show mention alerts',
+                min = 10, max = 120, step = 10,
+                arg = 'MentionTime',
+            };
+            Order = Order+1;
+            Settings.args.AliasList = {
+                type = 'input',
+                order = Order,
+                multiline = true,
+                get = function( Info )
+                    return Addon:Implode( self:GetAliasList(),',' );
+                end,
+                set = function( Info,Value )
+                    self:SetAliasList( Value );
+                end,
+                name = 'Alias List',
+                desc = 'Comma seperated list of aliases for your character name, to be used in mention alerts',
+                arg = 'Aliases',
+                width = 'full',
             };
             Order = Order+1;
             Settings.args.AlertQuest = {
@@ -835,6 +863,35 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
+        -- Set alias list
+        --
+        -- @param string
+        --
+        -- @return void
+        Addon.CHAT.SetAliasList = function( self,Alias )
+            Alias = Addon:Explode( Alias,',' );
+            if( type( Alias ) == 'table' ) then
+                Addon.CHAT.persistence.AliasList = {};
+                for i,v in pairs( Alias ) do
+                    if( string.len( v ) > 0 ) then
+                        table.insert( Addon.CHAT.persistence.AliasList,Addon:Minify( v ) );
+                    end
+                end
+            else
+                Addon.CHAT.persistence.AliasList = { Addon:Minify( Alias ) };
+            end
+            --Addon:Dump( Addon.CHAT.persistence.AliasList )
+        end
+
+        --
+        -- Get alist list
+        --
+        -- @return table
+        Addon.CHAT.GetAliasList = function( self )
+            return Addon.CHAT.persistence.AliasList;
+        end
+
+        --
         --  Enable Config Events
         --
         --  @return void
@@ -1082,80 +1139,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             MessageText = RemoveExtraSpaces( MessageText );
 
-            --[[
             -- Questie support
+            local Text;
             if( QuestieLoader ) then
                 local QuestieFilter = QuestieLoader:ImportModule( 'ChatFilter' );
-                MessageText = QuestieFilter:Filter( self.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
+                Text = QuestieFilter.Filter( self.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
             end
-            ]]
-
-            -- Questie support
-            if( QuestieLoader ) then
-
-                local QuestieLink = QuestieLoader:ImportModule( 'QuestieLink' );
-                local QuestieDB = QuestieLoader:ImportModule( 'QuestieDB' );
-
-                if( string.find( MessageText,"%[(..-) %((%d+)%)%]" ) ) then
-
-                    if Addon.CHAT.ChatFrame.historyBuffer and #( Addon.CHAT.ChatFrame.historyBuffer.elements ) then
-
-                        for k in string.gmatch( MessageText,"%[%[?%d?..?%]?..-%]" ) do
-                            local sqid, questId, questLevel, questName;
-
-                            questName, sqid = string.match( k,"%[(..-) %((%d+)%)%]" );
-
-                            if( questName and sqid ) then
-                                questId = tonumber(sqid)
-
-                                if( string.find( questName,"(%[%d+.-%]) ") ~= nil ) then
-                                    questLevel, questName = string.match( questName,"%[(..-)%] (.+)");
-                                end
-                            end
-
-                            if( questId and QuestieDB.QuestPointers and QuestieDB.QuestPointers[questId] ) then
-                                if( not PlayerId ) then
-                                    playerName = BNGetFriendInfoByID( BNId );
-                                    PlayerId = BNId;
-                                end
-
-                                local questLink = QuestieLink:GetQuestHyperLink( questId,PlayerId );
-
-                                local function escapeMagic(toEsc)
-                                    return (toEsc
-                                            :gsub("%%", "%%%%")
-                                            :gsub("^%^", "%%^")
-                                            :gsub("%$$", "%%$")
-                                            :gsub("%(", "%%(")
-                                            :gsub("%)", "%%)")
-                                            :gsub("%.", "%%.")
-                                            :gsub("%[", "%%[")
-                                            :gsub("%]", "%%]")
-                                            :gsub("%*", "%%*")
-                                            :gsub("%+", "%%+")
-                                            :gsub("%-", "%%-")
-                                            :gsub("%?", "%%?")
-                                            :gsub("%|", "%%|")
-                                    );
-                                end
-
-                                if( questName ) then
-                                    questName = escapeMagic( questName );
-                                end
-
-                                if( questLevel ) then
-                                    questLevel = escapeMagic( questLevel );
-                                end
-
-                                if( questLevel ) then
-                                    MessageText = string.gsub( MessageText,"%[%["..questLevel.."%] "..questName.." %("..sqid.."%)%]",questLink );
-                                else
-                                    MessageText = string.gsub( MessageText,"%["..questName.." %("..sqid.."%)%]",questLink );
-                                end
-                            end
-                        end
-                    end
-                end
+            if( Text ) then
+                MessageText = Text;
             end
 
             -- Add AFK/DND flags
@@ -1282,11 +1273,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             local MyPlayerName,MyRealm = UnitName( 'player' );
 
-            -- Always allow my messages
-            if( Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                return false;
-            end
-
             -- Invite check
             if( ChatType == 'WHISPER' and Addon.CHAT:GetValue( 'AutoInvite' ) ) then
                 if( Addon:Minify( OriginalText ):find( 'inv' ) ) then
@@ -1299,14 +1285,18 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( #IgnoredMessages > 0 ) then
                 for i,IgnoredMessage in ipairs( IgnoredMessages ) do
                     if( Addon:Minify( OriginalText ):find( Addon:Minify( IgnoredMessage ) ) ) then
-                        return true;
+                        if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                            return true;
+                        end
                     end
                 end
             end
             if( Addon.CHAT:GetValue( 'DisableInGroup' ) ) then
                 if( UnitInParty( 'player' ) or UnitInRaid( 'player' ) ) then
                     if( Addon:Minify( ChatType ):find( 'channel' ) ) then
-                        return true;
+                        if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                            return true;
+                        end
                     end
                 end
             end
@@ -1340,6 +1330,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Mentioned = true;
                 end
             end
+            local AliasList = Addon.CHAT:GetAliasList();
+            if( #AliasList > 0 ) then
+                for i,Alias in ipairs( AliasList ) do
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Alias ) ) ) then
+                        Mentioned = true;
+                    end
+                end
+            end
 
             -- Format message
             MessageText,r,g,b,a,id = Addon.CHAT.Format(
@@ -1368,15 +1366,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                --FCF_StartAlertFlash( Addon.CHAT.ChatFrame );
-                -- longer fadeDuration of message to errorsFrame
-                if( UIErrorsFrame.fadeDuration and tonumber( UIErrorsFrame.fadeDuration ) > 0 ) then
-                    UIErrorsFrame.fadeDuration = UIErrorsFrame.fadeDuration * 5;
-                    print( 'works by delaying'..tostring( UIErrorsFrame.fadeDuration ) );
-                else
-                    print( 'failed to delay' );
-                end
-                UIErrorsFrame:AddMessage( MessageText,r,g,b,a );
+                Addon.FRAMES:PopUpMessage( { Name='Mention',Value=MessageText,r=r,g=g,b=b,a=a },UIParent,Addon.CHAT );
             end
             -- Conditionally sound alerts
             if( Watched ) then
@@ -1426,6 +1416,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( 'jChat' ),self:GetSettings() );
 
+            -- Mention alert duration
+            self.MentionTime = self:GetValue( 'MentionTime' );
 
             --[[
             Test 1
