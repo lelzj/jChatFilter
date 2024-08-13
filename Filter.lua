@@ -331,7 +331,8 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Alias List',
                 desc = 'Comma seperated list of aliases for your character name, to be used in mention alerts',
                 arg = 'Aliases',
-                width = 'full',
+                width = 'normal',
+                multiline = false,
             };
             Order = Order+1;
             Settings.args.AlertQuest = {
