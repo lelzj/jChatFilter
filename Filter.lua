@@ -1082,7 +1082,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  ChannelId
         --  @param  string  PlayerId
         --  @param  string  IconReplacement
-        --  @param  bool    Watched
+        --  @param  string  Watched
         --  @param  bool    Mentioned
         --  @return list
         Addon.CHAT.Format = function( Event,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId,IconReplacement,Watched,Mentioned )
@@ -1199,6 +1199,22 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChannelLink = "|Hchannel:GUILD|h[Guild]|h";
             end
 
+            --[[
+            function gisub(s, pat, repl, n)
+                pat = gsub(pat, '(%a)',
+                function (v) return '['..strupper(v)..strlower(v)..']' end)
+                if n then
+                    return gsub(s, pat, repl, n)
+                else
+                    return gsub(s, pat, repl)
+                end
+            end
+
+            if( Watched ) then
+                MessageText = gisub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
+            end
+            ]]
+
             -- Player link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
             local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h"; -- |Hplayer:Blasfemy-Grobbulus|h was here
@@ -1241,11 +1257,17 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
 
+            --[[
             -- Append what was watched
             if( Watched ) then
-                MessageText = MessageText..' : '..Watched;
+                MessageText = MessageText..' : '..CreateColor( r,g,b ):WrapTextInColorCode( string.upper( Watched ) );
             end
 
+            return MessageText,Info.r,Info.g,Info.b,1,Info.id;
+            ]]
+            if( Watched ) then
+                MessageText = MessageText..': '..CreateColor( 1,1,1 ):WrapTextInColorCode( Watched );
+            end
             return MessageText,r,g,b,a,Info.id;
         end
 
