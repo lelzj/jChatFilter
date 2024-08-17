@@ -1144,7 +1144,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Text;
             if( QuestieLoader ) then
                 local QuestieFilter = QuestieLoader:ImportModule( 'ChatFilter' );
-                Text = QuestieFilter.Filter( self.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
+                _,Text = QuestieFilter.Filter( self.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
             end
             if( Text ) then
                 MessageText = Text;
