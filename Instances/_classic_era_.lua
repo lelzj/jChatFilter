@@ -257,6 +257,15 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
                 };
                 Rules[ 'BFD' ] = {
                 };
+                Rules['DFC'] = {
+                    Abbrevs = {
+                        'dfc','demonfall',
+                    },
+                    Description = 'Demonfall Canyon',
+                    LevelBracket = {55,60},
+                    BestLevels = {58,60},
+                    PlayerLimit = {5},
+                };
             end
             return Rules;
         end
