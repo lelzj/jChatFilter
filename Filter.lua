@@ -87,6 +87,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 DisableInGroup = false,
                 showTimestamps = '%I:%M:%S %p ',
                 AutoInvite = true,
+                DungeonQueue = {
+                },
+                RaidQueue = {
+                },
             };
         end
 
@@ -262,6 +266,58 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             };
 
             local Order = 1;
+            Settings.args.DungeonGroups = {
+                type = 'header',
+                order = Order,
+                name = 'Classic Dungeon Groups',
+            };
+            for Abbrev,Instance in pairs( Addon.INSTANCES_CLASSIC_ERA:GetDungeonsF( UnitLevel( 'player' ) ) ) do
+                Order = Order+1;
+                Settings.args[ Abbrev ] = {
+                    type = 'toggle',
+                    order = Order,
+                    name = CreateColor( unpack( Instance.Color ) ):WrapTextInColorCode( Instance.Name ),
+                    desc = Instance.Description,
+                    arg = Abbrev,
+                    disabled = Instance.Disabled,
+                    get = function( Info )
+                        if( Addon.CHAT.persistence.DungeonQueue[ Info.arg ] ~= nil ) then
+                            return Addon.CHAT.persistence.DungeonQueue[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        Addon.CHAT.persistence.DungeonQueue[ Info.arg ] = Value;
+                    end,
+                };
+            end
+
+            Order = Order+1;
+            Settings.args.RaidGroups = {
+                type = 'header',
+                order = Order,
+                name = 'Classic Raid Groups',
+            };
+            for Abbrev,Instance in pairs( Addon.INSTANCES_CLASSIC_ERA:GetRaidsF( UnitLevel( 'player' ) ) ) do
+                Order = Order+1;
+                Settings.args[ Abbrev ] = {
+                    type = 'toggle',
+                    order = Order,
+                    name = CreateColor( unpack( Instance.Color ) ):WrapTextInColorCode( Instance.Name ),
+                    desc = Instance.Description,
+                    arg = Abbrev,
+                    disabled = Instance.Disabled,
+                    get = function( Info )
+                        if( Addon.CHAT.persistence.RaidQueue[ Info.arg ] ~= nil ) then
+                            return Addon.CHAT.persistence.RaidQueue[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        Addon.CHAT.persistence.RaidQueue[ Info.arg ] = Value;
+                    end,
+                };
+            end
+
+            Order = Order+1;
             Settings.args.AlertSettings = {
                 type = 'header',
                 order = Order,
@@ -893,6 +949,22 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
+        -- Get dungeon queue
+        --
+        -- @return table
+        Addon.CHAT.GetDungeonQueue = function( self )
+            return Addon.CHAT.persistence.DungeonQueue;
+        end
+
+        --
+        -- Get raid queue
+        --
+        -- @return table
+        Addon.CHAT.GetRaidQueue = function( self )
+            return Addon.CHAT.persistence.RaidQueue;
+        end
+
+        --
         --  Enable Config Events
         --
         --  @return void
@@ -1358,6 +1430,34 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 for i,Alias in ipairs( AliasList ) do
                     if( Addon:Minify( OriginalText ):find( Addon:Minify( Alias ) ) ) then
                         Mentioned = true;
+                    end
+                end
+            end
+
+            -- Queue check
+            local Dungeons = Addon.INSTANCES_CLASSIC_ERA:GetDungeonsF( UnitLevel( 'player' ) );
+            for ABBREV,IsQueued in pairs( Addon.CHAT:GetDungeonQueue() ) do
+                if( IsQueued ) then
+                    for _,Abbrev in pairs( Dungeons[ ABBREV ].Abbrevs ) do
+                        if( Addon:Minify( OriginalText ):find( Addon:Minify( Abbrev ) ) ) then
+                            Watched = Abbrev;
+                        end
+                    end
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Dungeons[ ABBREV ].Name ) ) ) then
+                        Watched = Dungeons[ ABBREV ].Name;
+                    end
+                end
+            end
+            local Raids = Addon.INSTANCES_CLASSIC_ERA:GetRaidsF( UnitLevel( 'player' ) );
+            for ABBREV,IsQueued in pairs( Addon.CHAT:GetRaidQueue() ) do
+                if( IsQueued ) then
+                    for _,Abbrev in pairs( Raids[ ABBREV ].Abbrevs ) do
+                        if( Addon:Minify( OriginalText ):find( Addon:Minify( Abbrev ) ) ) then
+                            Watched = Abbrev;
+                        end
+                    end
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Raids[ ABBREV ].Name ) ) ) then
+                        Watched = Raids[ ABBREV ].Name;
                     end
                 end
             end
