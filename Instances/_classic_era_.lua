@@ -421,6 +421,7 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
             for Key,Instance in pairs( InstanceData ) do
 
                 if( Instance.LevelBracket ) then
+                    Instance.MyLevel = MyLevel;
                     Instances[ Key ] = Instance;
 
                     -- Average level
@@ -464,17 +465,23 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
                         Instances[ Key ].Color = GetColor( 'red' );
                     elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 3 ) then
                         Instances[ Key ].Color = GetColor( 'orange' );
+                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 2 ) then
+                        Instances[ Key ].Color = GetColor( 'orange' );
 
                     -- Leveled rules
+                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 1 ) then
+                        Instances[ Key ].Color = GetColor( 'yellow' );
                     elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) <= 1 ) then
                         Instances[ Key ].Color = GetColor( 'yellow' );
                     elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 1 ) then
                         Instance.Color = GetColor( 'yellow' );
 
                     -- Overleveled rules
-                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( MyLevel - Instances[ Key ].AvgLevel ) >= 3 ) then
+                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( math.abs( MyLevel - Instances[ Key ].AvgLevel ) ) >= 3 ) then
                         Instances[ Key ].Color = GetColor( 'grey' );
-                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( MyLevel - Instances[ Key ].AvgLevel ) >= 1 ) then
+                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( math.abs( MyLevel - Instances[ Key ].AvgLevel ) ) >= 1 ) then
+                        Instances[ Key ].Color = GetColor( 'green' );
+                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( math.abs( MyLevel - Instances[ Key ].AvgLevel ) ) >= 0 ) then
                         Instances[ Key ].Color = GetColor( 'green' );
                     end
                 end
