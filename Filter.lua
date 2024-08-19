@@ -272,9 +272,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Classic Dungeon Groups',
             };
             for Abbrev,Instance in pairs( Addon.INSTANCES_CLASSIC_ERA:GetDungeonsF( UnitLevel( 'player' ) ) ) do
-                if( not Instance.Color ) then
-                    Addon:Dump( Instance )
-                end
                 Order = Order+1;
                 Settings.args[ Abbrev ] = {
                     type = 'toggle',
