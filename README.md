@@ -20,11 +20,11 @@ https://github.com/jadissa/jChatFilter/issues
 
 ## Screenshots
 <p float="center">
-  <img src="Screenshot1-min.png" width="500" />
+  <img src="https://i.imgur.com/MfOTgKO.png" width="500" />
 </p>
 <p float="center">
-  <img src="Screenshot2-min.png" width="500" />
+  <img src="https://i.imgur.com/lEMEOlh.png" width="500" />
 </p>
 <p float="center">
-  <img src="Screenshot3-min.png" width="500" />
+  <img src="https://i.imgur.com/rB41NRe.png" width="500" />
 </p>
