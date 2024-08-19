@@ -19,6 +19,12 @@ UI works with Classic Era, Classic Wrath and Retail
 https://github.com/jadissa/jChatFilter/issues
 
 ## Screenshots
-<p float="left">
-  <img src="ChatSettings.png" width="500" />
+<p float="center">
+  <img src="Screenshot1-min.png" width="500" />
+</p>
+<p float="center">
+  <img src="Screenshot2-min.png" width="500" />
+</p>
+<p float="center">
+  <img src="Screenshot3-min.png" width="500" />
 </p>
