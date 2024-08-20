@@ -11,7 +11,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @return table
         Addon.CHAT.GetDefaults = function( self )
             return {
-                AlertSound = false,
                 ChannelColor = {
                     254 / 255,
                     191 / 255,
@@ -51,8 +50,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     240 / 255,
                     1,
                 },
+                AlertSound = false,
                 AlertList = {
                 },
+                FullHighlight = true,
                 Channels = {},
                 ChatGroups = {
                     BATTLEGROUND = true,
@@ -459,6 +460,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 name = 'Disable in Group',
                 desc = 'Sometimes I like to focus only on what my group is doing, automatically and without having to toggle on and off messages from different channels i\'ve joined. Enable this option for that purpose',
                 arg = 'DisableInGroup',
+            };
+            Order = Order+1;
+            Settings.args.FullHighlight = {
+                type = 'toggle',
+                order = Order,
+                name = 'Fully Highlight Message',
+                desc = 'Enable/disable highlighting entire message alerts during match',
+                arg = 'FullHighlight',
             };
 
             Order = Order+1;
@@ -1271,22 +1280,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChannelLink = "|Hchannel:GUILD|h[Guild]|h";
             end
 
-            --[[
-            function gisub(s, pat, repl, n)
-                pat = gsub(pat, '(%a)',
-                function (v) return '['..strupper(v)..strlower(v)..']' end)
-                if n then
-                    return gsub(s, pat, repl, n)
-                else
-                    return gsub(s, pat, repl)
-                end
-            end
-
-            if( Watched ) then
-                MessageText = gisub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
-            end
-            ]]
-
             -- Player link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
             local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h"; -- |Hplayer:Blasfemy-Grobbulus|h was here
@@ -1329,18 +1322,21 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
 
-            --[[
-            -- Append what was watched
+            -- Highlight
             if( Watched ) then
-                MessageText = MessageText..' : '..CreateColor( r,g,b ):WrapTextInColorCode( string.upper( Watched ) );
+                MessageText = Addon:GiSub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
             end
 
-            return MessageText,Info.r,Info.g,Info.b,1,Info.id;
-            ]]
+            --[[-- Append what was watched
             if( Watched ) then
-                MessageText = MessageText..': '..CreateColor( 1,1,1 ):WrapTextInColorCode( Watched );
+                MessageText = MessageText..' : '..CreateColor( r,g,b ):WrapTextInColorCode( Watched );
+            end]]
+
+            -- Return
+            if( Addon.CHAT:GetValue( 'FullHighlight' ) ) then
+                return MessageText,r,g,b,a,Info.id;
             end
-            return MessageText,r,g,b,a,Info.id;
+            return MessageText,Info.r,Info.g,Info.b,1,Info.id;
         end
 
         --

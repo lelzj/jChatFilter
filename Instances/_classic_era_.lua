@@ -188,7 +188,7 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
                     },
                     Description = 'Dire Maul',
                     LevelBracket = {52,60},
-                    BestLevels = {54,60},
+                    BestLevels = {56,60},
                     PlayerLimit = {5},
                 },
                 TRIBUTE = {
