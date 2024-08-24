@@ -1,10 +1,9 @@
 local _, Addon = ...;
 
-Addon.INSTANCES_CLASSIC_ERA = CreateFrame( 'Frame' );
-Addon.INSTANCES_CLASSIC_ERA:RegisterEvent( 'ADDON_LOADED' );
-Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName )
+Addon.DUNGEONS = CreateFrame( 'Frame' );
+Addon.DUNGEONS:RegisterEvent( 'ADDON_LOADED' );
+Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jChatFilter' ) then
-
         -- https://www.zockify.com/wowclassic/dungeons/
         local GetDungeons = function()
             return {
@@ -197,7 +196,7 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
                     },
                     Description = 'Dire Maul Tribute',
                     LevelBracket = {52,60},
-                    BestLevels = {54,60},
+                    BestLevels = {56,60},
                     PlayerLimit = {5},
                 },
                 LBRS = {
@@ -400,20 +399,6 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
             return Rules;
         end
 
-        local GetColor = function( Color )
-            if( string.lower( Color ):find( 'grey' ) ) then
-                return {189/255, 185/255, 185/255};
-            elseif( string.lower( Color ):find( 'green' ) ) then
-                return {27/255, 247/255, 2/255};
-            elseif( string.lower( Color ):find( 'yellow' ) ) then
-                return {247/255, 190/255, 2/255};
-            elseif( string.lower( Color ):find( 'orange' ) ) then
-                return {247/255, 92/255, 2/255};
-            elseif( string.lower( Color ):find( 'red' ) ) then
-                return {247/255, 19/255, 2/255};
-            end
-        end
-
         local FormatData = function( InstanceData,MyLevel,PartySize )
             local Instances = {};
             table.sort( InstanceData );
@@ -457,39 +442,24 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
                         Instances[ Key ].Description = Instances[ Key ].Description..','..Instances[ Key ].LevelBracket[2];
                     end
                     Instances[ Key ].Description = Instances[ Key ].Description..']';
+                    Instances[ Key ].Description = Instances[ Key ].Description.."\rKeys: "..Addon:Implode( Instances[ Key ].Abbrevs,',' );
+                    --[[
+                    Addon:Dump( {
+                        Key = Key,
+                        MyLevel = Instances[ Key ].MyLevel,
+                        ReqLevel = Instances[ Key ].ReqLevel,
+                        GetQuestDifficultyColor = GetQuestDifficultyColor( Instances[ Key ].ReqLevel ),
+                    } );
+                    ]]
 
-                    -- Underleveled rules
-                    if( Instances[ Key ].ReqLevel > MyLevel ) then
-                        Instances[ Key ].Color = GetColor( 'red' );
-                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 5 ) then
-                        Instances[ Key ].Color = GetColor( 'red' );
-                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 3 ) then
-                        Instances[ Key ].Color = GetColor( 'orange' );
-                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 2 ) then
-                        Instances[ Key ].Color = GetColor( 'orange' );
-
-                    -- Leveled rules
-                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 1 ) then
-                        Instances[ Key ].Color = GetColor( 'yellow' );
-                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) <= 1 ) then
-                        Instances[ Key ].Color = GetColor( 'yellow' );
-                    elseif( tonumber( Instances[ Key ].AvgLevel ) >= tonumber( MyLevel ) and tonumber( Instances[ Key ].AvgLevel - MyLevel ) >= 1 ) then
-                        Instance.Color = GetColor( 'yellow' );
-
-                    -- Overleveled rules
-                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( math.abs( MyLevel - Instances[ Key ].AvgLevel ) ) >= 3 ) then
-                        Instances[ Key ].Color = GetColor( 'grey' );
-                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( math.abs( MyLevel - Instances[ Key ].AvgLevel ) ) >= 1 ) then
-                        Instances[ Key ].Color = GetColor( 'green' );
-                    elseif( tonumber( MyLevel ) >= tonumber( Instances[ Key ].AvgLevel ) and tonumber( math.abs( MyLevel - Instances[ Key ].AvgLevel ) ) >= 0 ) then
-                        Instances[ Key ].Color = GetColor( 'green' );
-                    end
+                    local Color = GetQuestDifficultyColor( Instances[ Key ].ReqLevel );
+                    Instances[ Key ].Color = { Color.r,Color.g,Color.b };
                 end
             end
             return Instances;
         end
 
-        Addon.INSTANCES_CLASSIC_ERA.GetDungeonsF = function( self,MyLevel,PartySize )
+        Addon.DUNGEONS.GetDungeonsF = function( self,MyLevel,PartySize )
             local Instances = {};
             local InstanceData = GetDungeons();
 
@@ -506,7 +476,7 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
             return FormatData( Instances,MyLevel,PartySize );
         end
 
-        Addon.INSTANCES_CLASSIC_ERA.GetRaidsF = function( self,MyLevel,PartySize )
+        Addon.DUNGEONS.GetRaidsF = function( self,MyLevel,PartySize )
             local Instances = {};
             local InstanceData = GetRaids();
 
@@ -521,6 +491,22 @@ Addon.INSTANCES_CLASSIC_ERA:SetScript( 'OnEvent',function( self,Event,AddonName 
                 Instances[ Key ] = Instance;
             end
             return FormatData( Instances,MyLevel,PartySize );
+        end
+
+        --
+        -- Get dungeon queue
+        --
+        -- @return table
+        Addon.DUNGEONS.GetDungeonQueue = function( self )
+            return Addon.CONFIG.persistence.DungeonQueue;
+        end
+
+        --
+        -- Get raid queue
+        --
+        -- @return table
+        Addon.DUNGEONS.GetRaidQueue = function( self )
+            return Addon.CONFIG.persistence.RaidQueue;
         end
 
         self:UnregisterEvent( 'ADDON_LOADED' );
