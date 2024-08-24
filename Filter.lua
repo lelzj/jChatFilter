@@ -260,17 +260,16 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
 
-            -- Prevent toggled off message types 
-            local FoundType = false;
-            for index,value in pairs( Addon.CHAT.ChatFrame.messageTypeList ) do
-                if( strupper( value ) == strupper( ChatType ) ) then
-                    FoundType = true;
+            -- Prevent toggled off message types
+            local PossibleTypes = {};
+            for Type,MessageTypes in pairs( Addon.CONFIG:GetChatFilters() ) do
+                for i,MessageType in pairs( MessageTypes ) do
+                    PossibleTypes[ MessageType ] = Type;
                 end
             end
-            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                if( not FoundType ) then
-                    return true;
-                end
+            local Values = Addon.CONFIG:GetValue( 'ChatGroups' );
+            if( PossibleTypes[ Event ] and not Values[ PossibleTypes[ Event ] ] ) then
+                return true;
             end
 
             -- Prevent repeat messages for 1 minute
