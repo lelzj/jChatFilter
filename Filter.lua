@@ -72,10 +72,6 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     r,g,b,a = unpack( Addon.CONFIG.persistence.Channels[ ChannelName ].Color );
                 end
             end
-
-
-
-            
             if( Watched and ( ChatType == 'WHISPER' ) == false ) then
                 r,g,b,a = unpack( Addon.CONFIG:GetValue( 'AlertColor' ) );
             elseif( Mentioned ) then
@@ -263,13 +259,17 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end
-            if( Addon.CONFIG:GetValue( 'DisableInGroup' ) ) then
-                if( UnitInParty( 'player' ) or UnitInRaid( 'player' ) ) then
-                    if( Addon:Minify( ChatType ):find( 'channel' ) ) then
-                        if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                            return true;
-                        end
-                    end
+
+            -- Prevent toggled off message types 
+            local FoundType = false;
+            for index,value in pairs( Addon.CHAT.ChatFrame.messageTypeList ) do
+                if( strupper( value ) == strupper( ChatType ) ) then
+                    FoundType = true;
+                end
+            end
+            if( not Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                if( not FoundType ) then
+                    return true;
                 end
             end
 

@@ -67,7 +67,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     CHANNEL = true,
                     WHISPER = true,
                 },
-                DisableInGroup = false,
                 showTimestamps = '%I:%M:%S %p ',
                 AutoInvite = true,
                 DungeonQueue = {
@@ -220,14 +219,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         end,
                     };
                 end
-                Order = Order+1;
-                Settings.DisableInGroup = {
-                    type = 'toggle',
-                    order = Order,
-                    name = 'Disable in Group',
-                    desc = 'Sometimes I like to focus only on what my group is doing, automatically and without having to toggle on and off messages from different channels i\'ve joined. Enable this option for that purpose',
-                    arg = 'DisableInGroup',
-                };
                 --[[
                 Order = Order+1;
                 Settings.FullHighLight = {
