@@ -535,15 +535,22 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CONFIG.CreateFrames = function( self )
-            self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( string.upper( 'jChat' ),'jChat' );
-            self.Config.okay = function( self )
-                RestartGx();
+            local AppName = string.upper( 'jChat' );
+            local BlizOptions = LibStub( 'AceConfigDialog-3.0' ).BlizOptions;
+            if( not BlizOptions[ AppName ] ) then
+                BlizOptions[ AppName ] = {};
             end
-            self.Config.default = function( self )
-                Addon.CHAT.db:ResetDB();
+            local Key = AppName;
+            if( not BlizOptions[ AppName ][ Key ] ) then
+                self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( AppName,'jChat' );
+                self.Config.okay = function( self )
+                    RestartGx();
+                end
+                self.Config.default = function( self )
+                    Addon.CHAT.db:ResetDB();
+                end
+                LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( AppName,self:GetSettings() );
             end
-            LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( 'jChat' ),self:GetSettings() );
-
             --[[
             Test 1
 
@@ -1031,9 +1038,17 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
+        -- Wait for chat windoww to load
         self:Init();
-        C_Timer.After( 2,function()
-            Addon.CONFIG:CreateFrames();
+
+        local ChatFrame = CreateFrame( 'Frame' );
+        ChatFrame:RegisterEvent( 'UPDATE_FLOATING_CHAT_WINDOWS' );
+        ChatFrame:SetScript( 'OnEvent',function( self,Event )
+            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' ) then
+                C_Timer.After( 2,function()
+                    Addon.CONFIG:CreateFrames();
+                end );
+            end
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
