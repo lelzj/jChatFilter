@@ -1021,14 +1021,24 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not self.persistence ) then
                 return;
             end
+
+            -- 1. Pick HELLOWORLD as the unique identifier.
+            -- 2. Pick /hiw and /hellow as slash commands (/hi and /hello are actual emotes)
+            -- https://wowpedia.fandom.com/wiki/Creating_a_slash_command
+            SLASH_JCHAT1, SLASH_JCHAT2 = '/jc', '/jchat'; -- 3.
+            SlashCmdList['JCHAT'] = function( Msg,EditBox ) -- 4.
+                Settings.OpenToCategory( 'jChat' );
+            end
         end
 
         -- Wait for chat windoww to load
         self:Init();
 
-        Addon.CHAT.ChatFrame:SetScript( 'OnEvent',function( self,Event )
-            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' ) then
-                Addon.FILTER:CreateFrames();
+        local ChatFrame = CreateFrame( 'Frame' );
+        ChatFrame:RegisterEvent( 'UPDATE_FLOATING_CHAT_WINDOWS' );
+        ChatFrame:SetScript( 'OnEvent',function( self,Event )
+            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' and not Addon.CONFIG.Config ) then
+                Addon.CONFIG:CreateFrames();
             end
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );

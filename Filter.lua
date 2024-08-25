@@ -328,6 +328,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             local Values = Addon.CONFIG:GetValue( 'ChatGroups' );
             if( PossibleTypes[ Event ] and not Values[ PossibleTypes[ Event ] ] ) then
+                print( 'stopped sending',Event,MessageText )
                 return true;
             end
 
@@ -449,6 +450,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     self:SetFilter( FilterName,Addon.CONFIG.persistence.ChatFilters[ Filter ] );
                 end
             end
+            self.Ran = true;
         end
 
         --
@@ -486,8 +488,10 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- Wait for chat windoww to load
         self:Init();
 
-        Addon.CHAT.ChatFrame:SetScript( 'OnEvent',function( self,Event )
-            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' ) then
+        local ChatFrame = CreateFrame( 'Frame' );
+        ChatFrame:RegisterEvent( 'UPDATE_FLOATING_CHAT_WINDOWS' );
+        ChatFrame:SetScript( 'OnEvent',function( self,Event )
+            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' and not Addon.FILTER.Ran ) then
                 Addon.FILTER:Run();
             end
         end );
