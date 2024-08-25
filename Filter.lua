@@ -30,6 +30,46 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
+        Addon.FILTER.GetURLPatterns = function()
+            return {
+                        -- X://Y url
+                    { "https?://www%.[^/]+(/v/%d+/)%w+", "%s"},
+                    { "%f[%S](%a[%w%.+-]+://%S+)", "%s"},
+                        -- www.X.Y url
+                    { "^(www%.[-%w_%%]+%.%S+)", "%s"},
+                    { "%f[%S](www%.[-%w_%%]+%.%S+)", "%s"},
+                        -- "W X"@Y.Z email (this is seriously a valid email)
+                    --{ pattern = '^(%"[^%"]+%"@[-%w_%%%.]+%.(%a%a+))', matchfunc=Link_TLD},
+                    --{ pattern = '%f[%S](%"[^%"]+%"@[-%w_%%%.]+%.(%a%a+))', matchfunc=Link_TLD},
+                        -- X@Y.Z email
+                    { "(%S+@[-%w_%%%.]+%.(%a%a+))", "%s"},
+                        -- XXX.YYY.ZZZ.WWW:VVVV/UUUUU IPv4 address with port and path
+                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d/%S+)", "%s"},
+                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d/%S+)", "%s"},
+                        -- XXX.YYY.ZZZ.WWW:VVVV IPv4 address with port (IP of ts server for example)
+                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
+                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
+                        -- XXX.YYY.ZZZ.WWW/VVVVV IPv4 address with path
+                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%/%S+)", "%s"},
+                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%/%S+)", "%s"},
+                        -- XXX.YYY.ZZZ.WWW IPv4 address
+                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", "%s"},
+                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", "%s"},
+                        -- X.Y.Z:WWWW/VVVVV url with port and path
+                    { "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", "%s"},
+                    { "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", "%s"},
+                        -- X.Y.Z:WWWW url with port (ts server for example)
+                    { "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
+                    { "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
+                        -- X.Y.Z/WWWWW url with path
+                    { "^([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", "%s"},
+                    { "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", "%s"},
+                        -- X.Y.Z url
+                    --{ "^([-%w_%%]+%.[-%w_%%]+%.%S+)", "%s"},
+                    --{ "%f[%S]([-%w_%%]+%.[-%w_%%]+%.%S+)", "%s"},
+                };
+        end
+
         --
         --  Format Chat Message
         --
@@ -57,6 +97,8 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             local _, ChannelName = GetChannelName( ChannelId );
             local ChatGroup = Chat_GetChatCategory( ChatType );
+
+            -- Player info
             local LocalizedClass,EnglishClass,LocalizedRace,EnglishRace,Sex,Name,Server;
             if( PlayerId ) then
                 LocalizedClass,EnglishClass,LocalizedRace,EnglishRace,Sex,Name,Server = GetPlayerInfoByGUID( PlayerId );
@@ -64,6 +106,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     PlayerName = Name;
                 end
             end
+            --print( C_FriendList.SendWho( PlayerRealm ) );
 
             -- Chat color
             local r,g,b,a = Info.r,Info.g,Info.b,0;
@@ -160,6 +203,22 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Player link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
             local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h"; -- |Hplayer:Blasfemy-Grobbulus|h was here
+
+
+            -- url copy
+
+            local Color = 'ffffff';
+            local ALink = '|cff'..Color..'|Haddon:jChat:url|h[>%1$s<]|h|r';
+
+            if strlen( MessageText ) > 7 then
+                local Patterns = Addon.FILTER:GetURLPatterns();
+                for i = 1, #Patterns do
+                    local v = Patterns[i]
+                    MessageText = gsub(MessageText, v[1], function(str)
+                        return format(ALink, str)
+                    end );
+                end
+            end
 
             --[[
             -- todo: fix communities link
@@ -411,11 +470,26 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end
+
+            hooksecurefunc( 'SetItemRef',function( Pattern,FullText )
+                local linkType,addon,param1 = strsplit( ':',Pattern )
+                if( linkType == 'addon' and addon == 'jChat' ) then
+                    if( param1 == 'url' ) then
+                        Addon.CHAT.ChatFrame.editBox:SetText( FullText:match( ">(.-)<" ) );
+
+                        ChatEdit_ActivateChat( Addon.CHAT.ChatFrame.editBox );
+                    end
+                end
+            end );
         end
 
-        C_Timer.After( 2,function()
-            self:Init();
-            self:Run();
+        -- Wait for chat windoww to load
+        self:Init();
+
+        Addon.CHAT.ChatFrame:SetScript( 'OnEvent',function( self,Event )
+            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' ) then
+                Addon.FILTER:Run();
+            end
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );
     end

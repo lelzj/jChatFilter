@@ -544,9 +544,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( string.upper( 'jChat' ),self:GetSettings() );
 
-            -- Mention alert duration
-            self.MentionTime = self:GetValue( 'MentionTime' );
-
             --[[
             Test 1
 
@@ -1026,9 +1023,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
+        -- Wait for chat windoww to load
         self:Init();
-        C_Timer.After( 2,function()
-            self:CreateFrames();
+
+        Addon.CHAT.ChatFrame:SetScript( 'OnEvent',function( self,Event )
+            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' ) then
+                Addon.FILTER:CreateFrames();
+            end
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
