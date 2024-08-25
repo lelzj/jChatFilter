@@ -1031,15 +1031,9 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
-        -- Wait for chat windoww to load
         self:Init();
-
-        local ChatFrame = CreateFrame( 'Frame' );
-        ChatFrame:RegisterEvent( 'UPDATE_FLOATING_CHAT_WINDOWS' );
-        ChatFrame:SetScript( 'OnEvent',function( self,Event )
-            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' and not Addon.CONFIG.Config ) then
-                Addon.CONFIG:CreateFrames();
-            end
+        C_Timer.After( 2,function()
+            Addon.CONFIG:CreateFrames();
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
