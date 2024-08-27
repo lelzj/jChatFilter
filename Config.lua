@@ -450,7 +450,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     order = Order,
                     name = 'Channel Colors',
                 };
-                for _,ChannelData in pairs( Addon.CHAT:GetChannels() ) do
+                for _,ChannelData in pairs( self.persistence.Channels ) do
                     Order = Order+1;
                     Settings[ ChannelData.Name..'Color' ] = {
                         type = 'color',
@@ -541,6 +541,30 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CONFIG.CreateFrames = function( self )
+
+            -- Set default channel colors
+            for Id,ChannelData in pairs( Addon.CHAT.GetChannels() ) do
+                self.persistence.Channels[ ChannelData.Name ] = self.persistence.Channels[ ChannelData.Name ] or {};
+                self.persistence.Channels[ ChannelData.Name ].Id = ChannelData.Id;
+                self.persistence.Channels[ ChannelData.Name ].Name = ChannelData.Name;
+
+                if( not self.persistence.Channels[ ChannelData.Name ].Color ) then
+                    self.persistence.Channels[ ChannelData.Name ].Color = Addon.CONFIG:GetDefaults().ChannelColor;
+                end
+            end
+
+            -- Remove orphan channels
+            local ChannelList = {}
+            for i,v in pairs( Addon.CHAT.GetChannels() ) do
+                ChannelList[ v.Name ] = v;
+            end
+            for Name,_ in pairs( self.persistence.Channels ) do
+                if( not ChannelList[ Name ] ) then
+                    self.persistence.Channels[ Name ] = nil;
+                end
+            end
+
+            -- Initialize window
             local AppName = string.upper( 'jChat' );
             local BlizOptions = LibStub( 'AceConfigDialog-3.0' ).BlizOptions;
             if( not BlizOptions[ AppName ] ) then
@@ -556,14 +580,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Addon.CHAT.db:ResetDB();
                 end
                 LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( AppName,self:GetSettings() );
-            end
-
-            for Id,ChannelData in pairs( Addon.CHAT.GetChannels() ) do
-                if( not Addon.CONFIG.persistence.Channels[ ChannelData.Name ] ) then
-                    Addon.CONFIG.persistence.Channels[ ChannelData.Name ] = {
-                        Color = Addon.CONFIG:GetDefaults().ChannelColor;
-                    }
-                end
             end
             --[[
             Test 1
