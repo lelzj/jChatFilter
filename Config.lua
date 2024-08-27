@@ -26,6 +26,12 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 ScrollBack = true,
                 QuestAlert = true,
+                ChannelColor = {
+                    254 / 255,
+                    191 / 255,
+                    191 / 255,
+                    1,
+                },
                 AlertColor = {
                     224 / 255,
                     157 / 255,
@@ -550,6 +556,14 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Addon.CHAT.db:ResetDB();
                 end
                 LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( AppName,self:GetSettings() );
+            end
+
+            for Id,ChannelData in pairs( Addon.CHAT.GetChannels() ) do
+                if( not Addon.CONFIG.persistence.Channels[ ChannelData.Name ] ) then
+                    Addon.CONFIG.persistence.Channels[ ChannelData.Name ] = {
+                        Color = Addon.CONFIG:GetDefaults().ChannelColor;
+                    }
+                end
             end
             --[[
             Test 1
