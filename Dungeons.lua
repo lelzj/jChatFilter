@@ -423,11 +423,14 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                         Instances[ Key ].Disabled = true;
                     end
 
+                    -- Best level
+                    Instances[ Key ].BestLevel = Instance.BestLevels[1]+1;
+
                     -- Name
                     Instances[ Key ].Name = Key;
-                    Instances[ Key ].Name = Instances[ Key ].Name..' ['..Instances[ Key ].LevelBracket[1];
-                    if( Instances[ Key ].LevelBracket[2] ) then
-                        Instances[ Key ].Name = Instances[ Key ].Name..','..Instances[ Key ].LevelBracket[2];
+                    Instances[ Key ].Name = Instances[ Key ].Name..' ['..Instances[ Key ].BestLevels[1];
+                    if( Instances[ Key ].BestLevels[2] ) then
+                        Instances[ Key ].Name = Instances[ Key ].Name..','..Instances[ Key ].BestLevels[2];
                     end
                     Instances[ Key ].Name = Instances[ Key ].Name..']';
 
@@ -452,7 +455,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                     } );
                     ]]
 
-                    local Color = GetQuestDifficultyColor( Instances[ Key ].ReqLevel );
+                    local Color = GetQuestDifficultyColor( Instances[ Key ].BestLevel );
                     Instances[ Key ].Color = { Color.r,Color.g,Color.b };
                 end
             end
