@@ -371,7 +371,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Queue check
-            local Dungeons = Addon.DUNGEONS:GetDungeonsF( UnitLevel( 'player' ) );
+            local Dungeons = Addon.DUNGEONS:GetDungeons();
             for ABBREV,IsQueued in pairs( Addon.DUNGEONS:GetDungeonQueue() ) do
                 if( IsQueued ) then
                     for _,Abbrev in pairs( Dungeons[ ABBREV ].Abbrevs ) do
@@ -379,12 +379,12 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                             Watched = Abbrev;
                         end
                     end
-                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Dungeons[ ABBREV ].Name ) ) ) then
-                        Watched = Dungeons[ ABBREV ].Name;
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( ABBREV ) ) ) then
+                        Watched = ABBREV;
                     end
                 end
             end
-            local Raids = Addon.DUNGEONS:GetRaidsF( UnitLevel( 'player' ) );
+            local Raids = Addon.DUNGEONS:GetRaids();
             for ABBREV,IsQueued in pairs( Addon.DUNGEONS:GetRaidQueue() ) do
                 if( IsQueued ) then
                     for _,Abbrev in pairs( Raids[ ABBREV ].Abbrevs ) do
@@ -392,8 +392,8 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                             Watched = Abbrev;
                         end
                     end
-                    if( Addon:Minify( OriginalText ):find( Addon:Minify( Raids[ ABBREV ].Name ) ) ) then
-                        Watched = Raids[ ABBREV ].Name;
+                    if( Addon:Minify( OriginalText ):find( Addon:Minify( ABBREV ) ) ) then
+                        Watched = ABBREV;
                     end
                 end
             end

@@ -5,7 +5,7 @@ Addon.DUNGEONS:RegisterEvent( 'ADDON_LOADED' );
 Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jChatFilter' ) then
         -- https://www.zockify.com/wowclassic/dungeons/
-        local GetDungeons = function()
+        Addon.DUNGEONS.GetDungeons = function()
             return {
                 RFC = {
                     Abbrevs = {
@@ -269,7 +269,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             return Rules;
         end
 
-        local GetRaids = function()
+        Addon.DUNGEONS.GetRaids = function()
             return {
                 MC = {
                     Abbrevs = {
@@ -426,8 +426,11 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                     -- Best level
                     Instances[ Key ].BestLevel = Instance.BestLevels[1]+1;
 
+                    -- High level
+                    Instances[ Key ].HighLevel = ( Instance.BestLevels[2] or Instance.BestLevels[1] )-1;
+
                     -- Name
-                    Instances[ Key ].Name = Key;
+                    Instances[ Key ].Name = Instances[ Key ].Name or Key;
                     Instances[ Key ].Name = Instances[ Key ].Name..' ['..Instances[ Key ].BestLevels[1];
                     if( Instances[ Key ].BestLevels[2] ) then
                         Instances[ Key ].Name = Instances[ Key ].Name..','..Instances[ Key ].BestLevels[2];
@@ -454,8 +457,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                         GetQuestDifficultyColor = GetQuestDifficultyColor( Instances[ Key ].ReqLevel ),
                     } );
                     ]]
-
-                    local Color = GetQuestDifficultyColor( Instances[ Key ].BestLevel );
+                    local Color = GetQuestDifficultyColor( Instances[ Key ].AvgLevel+1 );
                     Instances[ Key ].Color = { Color.r,Color.g,Color.b };
                 end
             end
@@ -464,7 +466,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.DUNGEONS.GetDungeonsF = function( self,MyLevel,PartySize )
             local Instances = {};
-            local InstanceData = GetDungeons();
+            local InstanceData = self:GetDungeons();
 
             for Key,Instance in pairs( InstanceData ) do
                 Instances[ Key ] = Instance;
@@ -481,7 +483,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.DUNGEONS.GetRaidsF = function( self,MyLevel,PartySize )
             local Instances = {};
-            local InstanceData = GetRaids();
+            local InstanceData = self:GetRaids();
 
             for Key,Instance in pairs( InstanceData ) do
                 Instances[ Key ] = Instance;

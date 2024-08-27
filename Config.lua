@@ -1071,10 +1071,12 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- Wait for chat windoww to load
         self:Init();
 
+        local Iterator = 1;
         local ChatFrame = CreateFrame( 'Frame' );
         ChatFrame:RegisterEvent( 'UPDATE_FLOATING_CHAT_WINDOWS' );
         ChatFrame:SetScript( 'OnEvent',function( self,Event )
-            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' ) then
+            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' and not ( Iterator > 1 ) ) then
+                Iterator = Iterator+1;
                 C_Timer.After( 2,function()
                     Addon.CONFIG:CreateFrames();
                 end );
