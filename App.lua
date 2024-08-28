@@ -593,8 +593,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         local Iterator = 1;
         LibStub( 'AceHook-3.0' ):SecureHookScript( DEFAULT_CHAT_FRAME,'OnEvent',function( self,Event,... )
             if( Event == 'UPDATE_CHAT_WINDOWS' and not( Iterator > 1 ) ) then
+                Iterator = Iterator+1;
                 C_Timer.After( 2,function()
-                    Iterator = Iterator+1;
                     Addon.APP:Init();
                     Addon.CONFIG:CreateFrames();
                 end );
