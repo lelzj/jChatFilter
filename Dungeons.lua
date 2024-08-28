@@ -478,6 +478,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             for Key,Instance in pairs( Rules ) do
                 Instances[ Key ] = Instance;
             end
+            MyLevel = MyLevel or UnitLevel( 'player' );
             return FormatData( Instances,MyLevel,PartySize );
         end
 
@@ -495,6 +496,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             for Key,Instance in pairs( Rules ) do
                 Instances[ Key ] = Instance;
             end
+            MyLevel = MyLevel or UnitLevel( 'player' );
             return FormatData( Instances,MyLevel,PartySize );
         end
 

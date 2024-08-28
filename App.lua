@@ -375,7 +375,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Queue check
-            local Dungeons = Addon.DUNGEONS:GetDungeons();
+            local Dungeons = Addon.DUNGEONS:GetDungeonsF();
             for ABBREV,IsQueued in pairs( Addon.APP:GetDungeonQueue() ) do
                 if( IsQueued ) then
                     for _,Abbrev in pairs( Dungeons[ ABBREV ].Abbrevs ) do
@@ -388,7 +388,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end
-            local Raids = Addon.DUNGEONS:GetRaids();
+            local Raids = Addon.DUNGEONS:GetRaidsF();
             for ABBREV,IsQueued in pairs( Addon.APP:GetRaidQueue() ) do
                 if( IsQueued ) then
                     for _,Abbrev in pairs( Raids[ ABBREV ].Abbrevs ) do
