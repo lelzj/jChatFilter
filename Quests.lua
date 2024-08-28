@@ -90,28 +90,7 @@ Addon.QUESTS:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.QuestEvents:UnregisterEvent( 'QUEST_ACCEPTED' );
             self.QuestEvents:UnregisterEvent( 'QUEST_TURNED_IN' );
         end
-
-        --
-        --  Module init
-        --
-        --  @return void
-        Addon.QUESTS.Init = function( self )
-            if( not self.ActiveQuests ) then
-                self.ActiveQuests = {};
-            end
-
-            -- Quest events
-            if( Addon.CONFIG.persistence.QuestAlert ) then
-                self:EnableQuestEvents();
-            else
-                self:DisableQuestEvents();
-            end
-
-            -- Active quests
-            self:RebuildQuests();
-        end
-
-        self:Init();
+        
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );

@@ -4,19 +4,19 @@ Addon.CHAT = CreateFrame( 'Frame' );
 Addon.CHAT:RegisterEvent( 'ADDON_LOADED' );
 Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jChatFilter' ) then
-        Addon.CHAT.SetFont = function( self,Font )
+        Addon.CHAT.SetFont = function( self,Font,ChatFrame )
             if( Font ) then
-                self.ChatFrame:SetFont( 'Fonts\\'..Font.Family..'.ttf',Font.Size,Font.Flags );
-                self.ChatFrame:SetShadowOffset( 0,0 );
-                self.ChatFrame:SetShadowColor( 0,0,0,0 );
+                ChatFrame:SetFont( 'Fonts\\'..Font.Family..'.ttf',Font.Size,Font.Flags );
+                ChatFrame:SetShadowOffset( 0,0 );
+                ChatFrame:SetShadowColor( 0,0,0,0 );
             end
         end
-        Addon.CHAT.SetFading = function( self,Value )
-            self.ChatFrame:SetFading( Value );
+        Addon.CHAT.SetFading = function( self,Value,ChatFrame )
+            ChatFrame:SetFading( Value );
         end
-        Addon.CHAT.SetScrolling = function( self,Value )
+        Addon.CHAT.SetScrolling = function( self,Value,ChatFrame )
             if( Value ) then
-                self.ChatFrame:SetMaxLines( 10000 );
+                ChatFrame:SetMaxLines( 10000 );
             end
         end
 
@@ -104,21 +104,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             return ChannelList;
         end
-
-        Addon.CHAT.Init = function( self )
-            -- Chat frame
-            self.ChatFrame = DEFAULT_CHAT_FRAME;
-
-            -- Chat defaults
-            self.ChatFrame.DefaultSettings = {};
-
-            -- List channels
-            for i,Channel in pairs( self:GetChannels() ) do
-                print( 'You have joined '..Channel.Id..')'..Channel.Name );
-            end
-        end
-
-        self:Init();
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );

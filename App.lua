@@ -1,14 +1,14 @@
 local _, Addon = ...;
 
-Addon.FILTER = CreateFrame( 'Frame' );
-Addon.FILTER:RegisterEvent( 'ADDON_LOADED' );
-Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
+Addon.APP = CreateFrame( 'Frame' );
+Addon.APP:RegisterEvent( 'ADDON_LOADED' );
+Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jChatFilter' ) then
         --
         -- Set chant filter
         --
         -- @return void
-        Addon.FILTER.SetFilter = function( self,Filter,Value )
+        Addon.APP.SetFilter = function( self,Filter,Value )
             if( Value ) then
                 ChatFrame_AddMessageEventFilter( Filter,self.Filter );
             else
@@ -20,17 +20,17 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- Set chat group
         --
         -- @return void
-        Addon.FILTER.SetGroup = function( self,Group,Value )
+        Addon.APP.SetGroup = function( self,Group,Value )
             if ( Value ) then
-                --print( Addon.CHAT.ChatFrame:GetName(),'add',Group )
-                ChatFrame_AddMessageGroup( Addon.CHAT.ChatFrame,Group );
+                --print( self.ChatFrame:GetName(),'add',Group )
+                ChatFrame_AddMessageGroup( self.ChatFrame,Group );
             else
-                --print( Addon.CHAT.ChatFrame:GetName(),'remove',Group )
-                ChatFrame_RemoveMessageGroup( Addon.CHAT.ChatFrame,Group );
+                --print( self.ChatFrame:GetName(),'remove',Group )
+                ChatFrame_RemoveMessageGroup( self.ChatFrame,Group );
             end
         end
 
-        Addon.FILTER.GetURLPatterns = function()
+        Addon.APP.GetURLPatterns = function()
             return {
                         -- X://Y url
                     { "https?://www%.[^/]+(/v/%d+/)%w+", "%s"},
@@ -86,7 +86,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  Watched
         --  @param  bool    Mentioned
         --  @return list
-        Addon.FILTER.Format = function( Event,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId,IconReplacement,Watched,Mentioned )
+        Addon.APP.Format = function( Event,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId,IconReplacement,Watched,Mentioned )
             local OriginalText = MessageText;
             local ChatType = strsub( Event,10 );
             local Info = ChatTypeInfo[ ChatType ];
@@ -110,13 +110,14 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Chat color
             local r,g,b,a = Info.r,Info.g,Info.b,0;
+            local Channels = Addon.APP:GetValue( 'Channels' );
             if( tonumber( ChannelId ) > 0 ) then
-                if( Addon.CONFIG.persistence.Channels[ ChannelName ] and Addon.CONFIG.persistence.Channels[ ChannelName ].Color ) then
-                    r,g,b,a = unpack( Addon.CONFIG.persistence.Channels[ ChannelName ].Color );
+                if( Channels[ ChannelName ] and Channels[ ChannelName ].Color ) then
+                    r,g,b,a = unpack( Channels[ ChannelName ].Color );
                 end
             end
             if( Watched and ( ChatType == 'WHISPER' ) == false ) then
-                r,g,b,a = unpack( Addon.CONFIG:GetValue( 'AlertColor' ) );
+                r,g,b,a = unpack( Addon.APP:GetValue( 'AlertColor' ) );
             elseif( Mentioned ) then
                 if( ChatTypeInfo.WHISPER ) then
                     r,g,b,a = ChatTypeInfo.WHISPER.r,ChatTypeInfo.WHISPER.g,ChatTypeInfo.WHISPER.b,1;
@@ -124,7 +125,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Class color
-            if( PlayerName and Addon.CONFIG:GetValue( 'ColorNamesByClass' ) ) then
+            if( PlayerName and Addon.APP:GetValue( 'ColorNamesByClass' ) ) then
                 if( EnglishClass ) then
                     local ClassColorTable = RAID_CLASS_COLORS[ EnglishClass ];
                     if ( ClassColorTable ) then
@@ -145,7 +146,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Text;
             if( QuestieLoader ) then
                 local QuestieFilter = QuestieLoader:ImportModule( 'ChatFilter' );
-                _,Text = QuestieFilter.Filter( Addon.CHAT.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
+                _,Text = QuestieFilter.Filter( Addon.APP.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
             end
             if( Text ) then
                 MessageText = Text;
@@ -173,7 +174,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Timestamp
             local TimeStamp = '';
-            local chatTimestampFmt = Addon.CONFIG:GetValue( 'showTimestamps' );
+            local chatTimestampFmt = Addon.APP:GetValue( 'showTimestamps' );
             if ( chatTimestampFmt ~= 'none' ) then
                 TimeStamp = BetterDate( chatTimestampFmt,time() );
             end
@@ -206,12 +207,10 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
 
 
             -- url copy
-
             local Color = 'ffffff';
             local ALink = '|cff'..Color..'|Haddon:jChat:url|h[>%1$s<]|h|r';
-
             if strlen( MessageText ) > 7 then
-                local Patterns = Addon.FILTER:GetURLPatterns();
+                local Patterns = Addon.APP:GetURLPatterns();
                 for i = 1, #Patterns do
                     local v = Patterns[i]
                     MessageText = gsub(MessageText, v[1], function(str)
@@ -269,7 +268,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             end]]
 
             -- Return
-            if( Addon.CONFIG:GetValue( 'FullHighlight' ) ) then
+            if( Addon.APP:GetValue( 'FullHighlight' ) ) then
                 return MessageText,r,g,b,a,Info.id;
             end
             return MessageText,Info.r,Info.g,Info.b,1,Info.id;
@@ -281,7 +280,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  Event
         --  @param  list    ...
         --  @return bool
-        Addon.FILTER.Filter = function( self,Event,... )
+        Addon.APP.Filter = function( self,Event,... )
             local ChatType = strsub( Event,10 );
             local MessageText = select( 1,... );
             local OriginalText = MessageText;
@@ -301,8 +300,13 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             local MyPlayerName,MyRealm = UnitName( 'player' );
 
             -- Invite check
-            if( ChatType == 'WHISPER' and Addon.CONFIG:GetValue( 'AutoInvite' ) ) then
+            if( ChatType == 'WHISPER' and Addon.APP:GetValue( 'AutoInvite' ) ) then
                 if( Addon:Minify( OriginalText ):find( 'inv' ) ) then
+                    if( GetNumGroupMembers and GetNumGroupMembers() > 4 ) then
+                        if( C_PartyInfo and C_PartyInfo.ConvertToRaid ) then
+                            C_PartyInfo.ConvertToRaid();
+                        end
+                    end
                     InviteUnit( PlayerName );
                 end
             end
@@ -326,7 +330,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     PossibleTypes[ MessageType ] = Type;
                 end
             end
-            local Values = Addon.CONFIG:GetValue( 'ChatGroups' );
+            local Values = Addon.APP:GetValue( 'ChatGroups' );
             if( PossibleTypes[ Event ] and not Values[ PossibleTypes[ Event ] ] ) then
                 print( 'stopped sending',Event,MessageText )
                 return true;
@@ -334,10 +338,10 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Prevent repeat messages for 1 minute
             local CacheKey = Addon:Minify( PlayerRealm..MessageText..date( "%H:%M" ) );
-            if( Addon.FILTER.Cache[ CacheKey ] ) then
+            if( Addon.APP.Cache[ CacheKey ] ) then
                 return true;
             end
-            Addon.FILTER.Cache[ CacheKey ] = true;
+            Addon.APP.Cache[ CacheKey ] = true;
 
             -- Watch check
             local Watched,Mentioned = false,false;
@@ -349,14 +353,14 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end
-            if( Addon.CONFIG:GetValue( 'QuestAlert' ) ) then
+            if( Addon.APP:GetValue( 'QuestAlert' ) ) then
                 for i,ActiveQuest in pairs( Addon.QUESTS.ActiveQuests ) do
                     if( Addon:Minify( OriginalText ):find( ActiveQuest ) ) then
                         Watched = ActiveQuest;
                     end
                 end
             end
-            if( Addon.CONFIG:GetValue( 'MentionAlert' ) ) then
+            if( Addon.APP:GetValue( 'MentionAlert' ) ) then
                 if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
                     Mentioned = true;
                 end
@@ -372,7 +376,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Queue check
             local Dungeons = Addon.DUNGEONS:GetDungeons();
-            for ABBREV,IsQueued in pairs( Addon.DUNGEONS:GetDungeonQueue() ) do
+            for ABBREV,IsQueued in pairs( Addon.APP:GetDungeonQueue() ) do
                 if( IsQueued ) then
                     for _,Abbrev in pairs( Dungeons[ ABBREV ].Abbrevs ) do
                         if( Addon:Minify( OriginalText ):find( Addon:Minify( Abbrev ) ) ) then
@@ -385,7 +389,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             local Raids = Addon.DUNGEONS:GetRaids();
-            for ABBREV,IsQueued in pairs( Addon.DUNGEONS:GetRaidQueue() ) do
+            for ABBREV,IsQueued in pairs( Addon.APP:GetRaidQueue() ) do
                 if( IsQueued ) then
                     for _,Abbrev in pairs( Raids[ ABBREV ].Abbrevs ) do
                         if( Addon:Minify( OriginalText ):find( Addon:Minify( Abbrev ) ) ) then
@@ -399,7 +403,7 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Format message
-            MessageText,r,g,b,a,id = Addon.FILTER.Format(
+            MessageText,r,g,b,a,id = Addon.APP.Format(
                 Event,
                 MessageText,
                 PlayerRealm,
@@ -425,41 +429,132 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                Addon.FRAMES:PopUpMessage( { Name='Mention',Value=MessageText,r=r,g=g,b=b,a=a },UIParent,Addon.FILTER );
+                Addon.FRAMES:PopUpMessage( { Name='Mention',Value=MessageText,r=r,g=g,b=b,a=a },UIParent,Addon.APP );
             end
             -- Conditionally sound alerts
             if( Watched ) then
-                if( Addon.CONFIG:GetValue( 'AlertSound' ) ) then
+                if( Addon.APP:GetValue( 'AlertSound' ) ) then
                     PlaySound( SOUNDKIT.TELL_MESSAGE );
                 end
             end
 
             -- Display
-            Addon.CHAT.ChatFrame:AddMessage( MessageText,r,g,b,id ); 
+            Addon.APP.ChatFrame:AddMessage( MessageText,r,g,b,id ); 
             return true;
         end;
 
         --
-        --  Module run
+        -- Set DB value
         --
-        --  @return void
-        Addon.FILTER.Run = function( self )
-            -- Chat filter
-            for Filter,FilterData in pairs( Addon.CONFIG:GetChatFilters() ) do
-                for _,FilterName in pairs( FilterData ) do
-                    self:SetFilter( FilterName,Addon.CONFIG.persistence.ChatFilters[ Filter ] );
-                end
+        -- @return table
+        Addon.APP.SetValue = function( self,Index,Value )
+            if( self.persistence[ Index ] ~= nil ) then
+                self.persistence[ Index ] = Value;
             end
-            self.Ran = true;
+        end
+
+        --
+        -- Get DB value
+        --
+        -- @return table
+        Addon.APP.GetValue = function( self,Index )
+            if( self.persistence[ Index ] ~= nil ) then
+                return self.persistence[ Index ];
+            end
+        end
+
+        --
+        -- Get dungeon queue
+        --
+        -- @return table
+        Addon.APP.GetDungeonQueue = function( self )
+            return self.persistence['DungeonQueue'] or {};
+        end
+
+        --
+        -- Get raid queue
+        --
+        -- @return table
+        Addon.APP.GetRaidQueue = function( self )
+            return self.persistence['RaidQueue'] or {};
         end
 
         --
         --  Module init
         --
         --  @return void
-        Addon.FILTER.Init = function( self )
-            -- Watch cache
+        Addon.APP.Init = function( self )
+            -- Database
+            self.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = Addon.CONFIG:GetDefaults() },true );
+            if( not self.db ) then
+                return;
+            end
+            self.persistence = self.db.char;
+            if( not self.persistence ) then
+                return;
+            end
+
+            -- Message cache
             self.Cache = {};
+
+            -- Quests
+            if( self:GetValue( 'QuestAlert' ) ) then
+                Addon.QUESTS:EnableQuestEvents();
+            else
+                Addon.QUESTS:DisableQuestEvents();
+            end
+            Addon.QUESTS:RebuildQuests();
+
+            -- Chat link clicks
+            hooksecurefunc( 'SetItemRef',function( Pattern,FullText )
+                local linkType,addon,param1 = strsplit( ':',Pattern )
+                if( linkType == 'addon' and addon == 'jChat' ) then
+                    if( param1 == 'url' ) then
+                        self.ChatFrame.editBox:SetText( FullText:match( ">(.-)<" ) );
+
+                        ChatEdit_ActivateChat( self.ChatFrame.editBox );
+                    end
+                end
+            end );
+
+            -- Set default channel colors
+            for Id,ChannelData in pairs( Addon.CHAT.GetChannels() ) do
+                self.persistence.Channels[ ChannelData.Name ] = self.persistence.Channels[ ChannelData.Name ] or {};
+                self.persistence.Channels[ ChannelData.Name ].Id = ChannelData.Id;
+                self.persistence.Channels[ ChannelData.Name ].Name = ChannelData.Name;
+
+                if( not self.persistence.Channels[ ChannelData.Name ].Color ) then
+                    self.persistence.Channels[ ChannelData.Name ].Color = Addon.CONFIG:GetDefaults().ChannelColor;
+                end
+            end
+
+            -- Remove orphan channels
+            local ChannelList = {}
+            for i,v in pairs( Addon.CHAT.GetChannels() ) do
+                ChannelList[ v.Name ] = v;
+            end
+            for Name,_ in pairs( self.persistence.Channels ) do
+                if( not ChannelList[ Name ] ) then
+                    self.persistence.Channels[ Name ] = nil;
+                end
+            end
+
+            -- List channels
+            for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
+                print( 'You have joined '..Channel.Id..')'..Channel.Name );
+            end
+
+            -- Chatframe
+            self.ChatFrame = DEFAULT_CHAT_FRAME;
+
+            -- Chat text
+            Addon.CHAT:SetFont( self:GetValue( 'Font' ),self.ChatFrame);
+
+            -- Fading
+            Addon.CHAT:SetFading( self:GetValue( 'FadeOut' ),self.ChatFrame );
+
+            -- Scrolling
+            Addon.CHAT:SetScrolling( self:GetValue( 'ScrollBack' ),self.ChatFrame );
 
             -- Chat types
             for Group,GroupData in pairs( Addon.CONFIG:GetMessageGroups() ) do
@@ -467,32 +562,42 @@ Addon.FILTER:SetScript( 'OnEvent',function( self,Event,AddonName )
                     -- Always allow outgoing whispers
                     if( Addon:Minify( GroupName ):find( 'whisperinform' ) ) then
                         self:SetGroup( GroupName,true );
+                    -- Respect checked options
                     else
-                        self:SetGroup( GroupName,Addon.CONFIG.persistence.ChatGroups[ Group ] );
+                        local Groups = self:GetValue( 'ChatGroups' );
+                        if( Groups ) then
+                            self:SetGroup( GroupName,Groups[ Group ] );
+                        end
                     end
                 end
             end
 
-            hooksecurefunc( 'SetItemRef',function( Pattern,FullText )
-                local linkType,addon,param1 = strsplit( ':',Pattern )
-                if( linkType == 'addon' and addon == 'jChat' ) then
-                    if( param1 == 'url' ) then
-                        Addon.CHAT.ChatFrame.editBox:SetText( FullText:match( ">(.-)<" ) );
-
-                        ChatEdit_ActivateChat( Addon.CHAT.ChatFrame.editBox );
+            -- Chat filter
+            for Filter,FilterData in pairs( Addon.CONFIG:GetChatFilters() ) do
+                for _,FilterName in pairs( FilterData ) do
+                    local Filters = self:GetValue( 'ChatFilters' );
+                    if( Filters ) then
+                        self:SetFilter( FilterName,Filters[ Filter ] );
                     end
                 end
-            end );
+            end
+
+            -- Slash command
+            SLASH_JCHAT1, SLASH_JCHAT2 = '/jc', '/jchat';
+            SlashCmdList['JCHAT'] = function( Msg,EditBox )
+                Settings.OpenToCategory( 'jChat' );
+            end
         end
 
         -- Wait for chat windoww to load
-        self:Init();
-
-        local ChatFrame = CreateFrame( 'Frame' );
-        ChatFrame:RegisterEvent( 'UPDATE_FLOATING_CHAT_WINDOWS' );
-        ChatFrame:SetScript( 'OnEvent',function( self,Event )
-            if( Event == 'UPDATE_FLOATING_CHAT_WINDOWS' and not Addon.FILTER.Ran ) then
-                Addon.FILTER:Run();
+        local Iterator = 1;
+        LibStub( 'AceHook-3.0' ):SecureHookScript( DEFAULT_CHAT_FRAME,'OnEvent',function( self,Event,... )
+            if( Event == 'UPDATE_CHAT_WINDOWS' and not( Iterator > 1 ) ) then
+                C_Timer.After( 2,function()
+                    Iterator = Iterator+1;
+                    Addon.APP:Init();
+                    Addon.CONFIG:CreateFrames();
+                end );
             end
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );

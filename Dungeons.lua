@@ -498,22 +498,6 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             return FormatData( Instances,MyLevel,PartySize );
         end
 
-        --
-        -- Get dungeon queue
-        --
-        -- @return table
-        Addon.DUNGEONS.GetDungeonQueue = function( self )
-            return Addon.CONFIG.persistence.DungeonQueue;
-        end
-
-        --
-        -- Get raid queue
-        --
-        -- @return table
-        Addon.DUNGEONS.GetRaidQueue = function( self )
-            return Addon.CONFIG.persistence.RaidQueue;
-        end
-
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );
