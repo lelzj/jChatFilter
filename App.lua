@@ -209,12 +209,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- url copy
             local Color = 'ffffff';
             local ALink = '|cff'..Color..'|Haddon:jChat:url|h[>%1$s<]|h|r';
-            if strlen( MessageText ) > 7 then
+            if( strlen( MessageText ) > 7 ) then
                 local Patterns = Addon.APP:GetURLPatterns();
                 for i = 1, #Patterns do
-                    local v = Patterns[i]
-                    MessageText = gsub(MessageText, v[1], function(str)
-                        return format(ALink, str)
+                    local v = Patterns[i];
+                    MessageText = gsub( MessageText,v[1],function( str )
+                        return format( ALink,str );
                     end );
                 end
             end
@@ -258,9 +258,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
 
             -- Highlight
+            --[[
             if( Watched ) then
                 MessageText = Addon:GiSub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
             end
+            ]]
 
             --[[-- Append what was watched
             if( Watched ) then
