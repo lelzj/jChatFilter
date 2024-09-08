@@ -540,7 +540,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Chat link clicks
             hooksecurefunc( 'SetItemRef',function( Pattern,FullText )
-                local linkType,addon,param1 = strsplit( ':',Pattern )
+                local linkType,addon,param1 = strsplit( ':',Pattern );
                 if( linkType == 'addon' and addon == 'jChat' ) then
                     if( param1 == 'url' ) then
                         self.ChatFrame.editBox:SetText( FullText:match( ">(.-)<" ) );
@@ -567,7 +567,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChannelList[ v.Name ] = v;
             end
             for Name,_ in pairs( self.persistence.Channels ) do
-                if( not ChannelList[ Name ] ) then
+                if( ChannelList and not ChannelList[ Name ] ) then
                     self.persistence.Channels[ Name ] = nil;
                 end
             end

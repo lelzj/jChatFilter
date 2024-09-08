@@ -443,34 +443,36 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     name = 'Channel Colors',
                 };
                 for _,ChannelData in pairs( Addon.APP.persistence.Channels ) do
-                    Order = Order+1;
-                    Settings[ ChannelData.Name..'Color' ] = {
-                        type = 'color',
-                        order = Order,
-                        get = function( Info )
-                            if( Addon.APP.persistence.Channels[ Info.arg ] ~= nil and Addon.APP.persistence.Channels[ Info.arg ].Color ~= nil ) then
-                                return unpack( Addon.APP.persistence.Channels[ Info.arg ].Color );
-                            end
-                        end,
-                        set = function( Info,R,G,B,A )
-                            if( Addon.APP.persistence.Channels[ Info.arg ] ~= nil ) then
-                                Addon.APP.persistence.Channels[ Info.arg ].Color = { R,G,B,A };
-                                local Community,ClubId,StreamId = unpack( Addon:Explode( Info.arg,':' ) );
-                                if( Addon:Minify( Community ) == 'community' ) then
-                                    local Channel = Chat_GetCommunitiesChannel( ClubId,StreamId );
-                                elseif( Channel ) then
-                                    ChangeChatColor( Channel,R,G,B,A );
+                    if( ChannelData.Name ) then
+                        Order = Order+1;
+                        Settings[ ChannelData.Name..'Color' ] = {
+                            type = 'color',
+                            order = Order,
+                            get = function( Info )
+                                if( Addon.APP.persistence.Channels[ Info.arg ] ~= nil and Addon.APP.persistence.Channels[ Info.arg ].Color ~= nil ) then
+                                    return unpack( Addon.APP.persistence.Channels[ Info.arg ].Color );
                                 end
-                            end
-                            local Channel = Addon.CHAT:GetChannelId( Info.arg );
-                            if( Channel ) then
-                                ChangeChatColor( 'CHANNEL'..tostring( Channel ),R,G,B,A );
-                            end
-                        end,
-                        name = ChannelData.Name..' Color',
-                        desc = 'Set the color of '..ChannelData.Name..' chat',
-                        arg = ChannelData.Name,
-                    };
+                            end,
+                            set = function( Info,R,G,B,A )
+                                if( Addon.APP.persistence.Channels[ Info.arg ] ~= nil ) then
+                                    Addon.APP.persistence.Channels[ Info.arg ].Color = { R,G,B,A };
+                                    local Community,ClubId,StreamId = unpack( Addon:Explode( Info.arg,':' ) );
+                                    if( Addon:Minify( Community ) == 'community' ) then
+                                        local Channel = Chat_GetCommunitiesChannel( ClubId,StreamId );
+                                    elseif( Channel ) then
+                                        ChangeChatColor( Channel,R,G,B,A );
+                                    end
+                                end
+                                local Channel = Addon.CHAT:GetChannelId( Info.arg );
+                                if( Channel ) then
+                                    ChangeChatColor( 'CHANNEL'..tostring( Channel ),R,G,B,A );
+                                end
+                            end,
+                            name = ChannelData.Name..' Color',
+                            desc = 'Set the color of '..ChannelData.Name..' chat',
+                            arg = ChannelData.Name,
+                        };
+                    end
                 end
 
                 return Settings;
