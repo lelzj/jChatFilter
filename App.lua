@@ -277,6 +277,36 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
+        --  Time Cache Rules
+        --
+        --  @param  list    ...
+        --  @return string
+        Addon.APP.GetCacheKey = function( self,... )
+            local ChatType = strsub( Event,10 );
+            local MessageText = select( 1,... );
+            local PlayerName = select( 5,... );
+            local PlayerId = select( 12,... );
+
+            local MyPlayerName,MyRealm = UnitName( 'player' );
+
+            local OncePerMinute = "%H:%M";
+            local OncePerSecond = "%H:%M:%S";
+
+            -- My own messages
+            if( Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
+                return Addon:Minify( PlayerId..MessageText..date( OncePerSecond ) );
+
+            -- Guild messages
+            elseif( Addon:Minify( ChatType ):find( 'guild' ) ) then
+                return Addon:Minify( PlayerId..MessageText..date( OncePerSecond ) )
+
+            -- Everyone else
+            else
+                return Addon:Minify( PlayerId..MessageText..date( OncePerMinute ) );
+            end
+        end
+
+        --
         --  Filter Chat Message
         --
         --  @param  string  Event
@@ -338,8 +368,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return true;
             end
 
-            -- Prevent repeat messages for 1 minute
-            local CacheKey = Addon:Minify( PlayerRealm..MessageText..date( "%H:%M" ) );
+            -- Prevent repeat messages
+            local CacheKey = Addon.APP:GetCacheKey( ... );
             if( Addon.APP.Cache[ CacheKey ] ) then
                 return true;
             end

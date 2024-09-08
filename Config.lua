@@ -500,6 +500,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             Order = Order+1;
             Settings.args[ 'tab'..Order ] = {
+                hidden = Addon:IsRetail(),
                 type = 'group',
                 name = 'Dungeon Alerts',
                 width = 'full',
