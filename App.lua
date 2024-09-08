@@ -288,21 +288,22 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             local PlayerId = select( 12,... );
 
             local MyPlayerName,MyRealm = UnitName( 'player' );
+            local Player = PlayerId or PlayerName;
 
             local OncePerMinute = "%H:%M";
             local OncePerSecond = "%H:%M:%S";
 
             -- My own messages
             if( Addon:Minify( PlayerName ):find( Addon:Minify( MyPlayerName ) ) ) then
-                return Addon:Minify( PlayerId..MessageText..date( OncePerSecond ) );
+                return Addon:Minify( Player..MessageText..date( OncePerSecond ) );
 
             -- Guild messages
             elseif( Addon:Minify( ChatType ):find( 'guild' ) ) then
-                return Addon:Minify( PlayerId..MessageText..date( OncePerSecond ) )
+                return Addon:Minify( Player..MessageText..date( OncePerSecond ) )
 
             -- Everyone else
             else
-                return Addon:Minify( PlayerId..MessageText..date( OncePerMinute ) );
+                return Addon:Minify( Player..MessageText..date( OncePerMinute ) );
             end
         end
 
