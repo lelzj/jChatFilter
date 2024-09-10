@@ -80,6 +80,11 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 RaidQueue = {
                 },
                 ColorNamesByClass = true,
+                Roles = {
+                    DPS = true,
+                    HEALER = false,
+                    TANK = false,
+                },
             };
         end
 
@@ -239,14 +244,80 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return Settings;
             end
             local function GetDungeons()
+
                 local Order = 1;
                 local Settings = {
                     DungeonGroups = {
                         type = 'header',
                         order = Order,
-                        name = 'Classic Dungeon Groups',
+                        name = 'Classic Dungeon Groups'..CreateColor(
+                            Addon.Theme.Error.r,
+                            Addon.Theme.Error.g,
+                            Addon.Theme.Error.b ):WrapTextInColorCode( ' EXPERIMENTAL CHANGES ADDED' ),
                     },
                 };
+                Order = Order + 1;
+                Settings.Role = {
+                    type = 'group',
+                    name = 'Your Roles',
+                    width = 'full',
+                    order = Order,
+                    args = {
+
+                    },
+                };
+
+                Order = Order + 1;
+                Settings.Role.args.DPS = {
+                    type = 'toggle',
+                    order = Order,
+                    name = 'DPS',
+                    desc = 'Damage dealer',
+                    arg = 'DPS',
+                    get = function( Info )
+                        if( Addon.APP.persistence.Roles[ Info.arg ] ~= nil ) then
+                            return Addon.APP.persistence.Roles[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        Addon.APP.persistence.Roles[ Info.arg ] = Value;
+                    end
+                };
+
+                Order = Order + 1;
+                Settings.Role.args.HEALER = {
+                    type = 'toggle',
+                    order = Order,
+                    name = 'Healer',
+                    desc = '',
+                    arg = 'HEALER',
+                    get = function( Info )
+                        if( Addon.APP.persistence.Roles[ Info.arg ] ~= nil ) then
+                            return Addon.APP.persistence.Roles[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        Addon.APP.persistence.Roles[ Info.arg ] = Value;
+                    end
+                };
+
+                Order = Order + 1;
+                Settings.Role.args.TANK = {
+                    type = 'toggle',
+                    order = Order,
+                    name = 'Tank',
+                    desc = '',
+                    arg = 'TANK',
+                    get = function( Info )
+                        if( Addon.APP.persistence.Roles[ Info.arg ] ~= nil ) then
+                            return Addon.APP.persistence.Roles[ Info.arg ];
+                        end
+                    end,
+                    set = function( Info,Value )
+                        Addon.APP.persistence.Roles[ Info.arg ] = Value;
+                    end
+                };
+
                 for Abbrev,Instance in pairs( Addon.DUNGEONS:GetDungeonsF( UnitLevel( 'player' ) ) ) do
                     Order = Order + 1;
                     Settings[ Abbrev ] = {
@@ -262,7 +333,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                             end
                         end,
                         set = function( Info,Value )
-                            Addon.APP.persistence.DungeonQueue[ Info.arg ] = Value;
+                            local ABBREV = Info.arg;
+                            Addon.APP.persistence.DungeonQueue[ ABBREV ] = Value;
+
+                            local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
+                            local Roles = Addon.APP.persistence.Roles;
+
+                            Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Value );
                         end,
                     };
                 end

@@ -27,14 +27,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CHAT.JoinChannel = function( self,ChannelName )
             if( ChannelName ) then
                 local Type,Name = JoinPermanentChannel( ChannelName );
-                Addon.CONFIG.persistence.Channels[ ChannelName ] = {
+                Addon.APP.persistence.Channels[ ChannelName ] = {
                     Color = {
                         254 / 255,
                         191 / 255,
                         191 / 255,
                         1,
                     },
-                    Id = #Addon.CONFIG.ChatFrame.channelList+1,
+                    Id = #Addon.APP.ChatFrame.channelList+1,
                 };
                 return true;
             end
@@ -48,7 +48,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CHAT.LeaveChannel = function( self,ChannelName )
             if( ChannelName ) then
                 LeaveChannelByName( ChannelName );
-                Addon.CONFIG.persistence.Channels[ ChannelName ] = nil;
+                Addon.APP.persistence.Channels[ ChannelName ] = nil;
                 return true;
             end
             return false;

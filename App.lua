@@ -330,6 +330,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             local BNId = select( 13,... );
             local IconReplacement = select( 17,... );
 
+            local Prefix,ABBREV,Queued,_,_,_,Tank,Healer,DPS = strsplit( ':',MessageText );
             local MyPlayerName,MyRealm = UnitName( 'player' );
 
             -- Invite check
@@ -395,7 +396,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             if( Addon.APP:GetValue( 'MentionAlert' ) ) then
                 if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
-                    Mentioned = true;
+                    if( Prefix and Prefix ~= Addon.DUNGEONS.PREFIX ) then
+                        Mentioned = true;
+                    end
                 end
             end
             local AliasList = Addon.CONFIG:GetAliasList();
@@ -431,6 +434,92 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                     if( Addon:Minify( OriginalText ):find( Addon:Minify( ABBREV ) ) ) then
                         Watched = ABBREV;
+                    end
+                end
+            end
+            if( Prefix and Prefix == Addon.DUNGEONS.PREFIX ) then
+                local tobool = function( Value )
+                    if( Value == 'true' ) then
+                        return true;
+                    end
+                    return false;
+                end
+
+                --print( 'received from comms:',MessageText );
+
+                Queued = tobool( Queued );
+                Tank = tobool( Tank );
+                Healer = tobool( Healer );
+                DPS = tobool( DPS );
+
+                --[[
+                Addon:Dump( {
+                    Action = 'OnComReceived',
+                    Prefix = Prefix,
+                    ABBREV = ABBREV,
+                    Queued = Queued,
+                    PlayerRealm = PlayerRealm,
+                    Tank = Tank,
+                    Healer = Healer,
+                    DPS = DPS,
+                });
+                ]]
+
+                -- track players.. need to sort out groups and fill them until appropriate
+                self.YourGroups = self.YourGroups or {};
+                self.YourGroups[ ABBREV ] = self.YourGroups[ ABBREV ] or {
+                    TANK = false,
+                    HEAL = false,
+                    DPS = {},
+                };
+
+                if( Queued and Tank ) then
+                    if( not self.YourGroups[ ABBREV ]['TANK'] ) then
+                        self.YourGroups[ ABBREV ]['TANK'] = {
+                            PlayerRealm = PlayerRealm,
+                        };
+                    end
+                elseif( not Queued and Tank ) then
+                    self.YourGroups[ ABBREV ]['TANK'] = false;
+                end
+
+                if( Queued and Healer ) then
+                    if( not self.YourGroups[ ABBREV ]['HEAL'] ) then
+                        self.YourGroups[ ABBREV ]['HEAL'] = {
+                            PlayerRealm = PlayerRealm,
+                        };
+                    end
+                elseif( not Queued and Healer ) then
+                    self.YourGroups[ ABBREV ]['HEAL'] = false;
+                end
+
+                if( Queued and DPS ) then
+                    self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = PlayerRealm;
+                elseif( not Queued and DPS ) then
+                    self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
+                end
+
+                -- add queued players
+                local Ready;
+                if( Queued ) then
+                    if( self.YourGroups[ ABBREV ]['TANK'] and self.YourGroups[ ABBREV ]['HEAL'] ) then
+                        if( tonumber( #self.YourGroups[ ABBREV ]['DPS'] ) > 2 ) then
+                            Ready = true;
+                        end
+                    end
+                end
+
+                Addon:Dump( self.YourGroups );
+
+                if( Queued and Ready ) then
+                    for ABBREV,Data in pairs( self.YourGroups ) do
+                        Addon.FRAMES.Notify( Addon.Dungeons[ABBREV].Description..' group seems ready!' );
+                        Addon.FRAMES.Notify( 'Message the following people...' );
+                        Addon.FRAMES.Notify( 'TANK:',Data.TANK.PlayerRealm );
+                        Addon.FRAMES.Notify( 'HEAL:',Data.HEAL.PlayerRealm );
+                        for _,PlayerName in pairs( Data.DPS ) do
+                            Addon.FRAMES.Notify( 'DPS:',PlayerName );
+                        end
                     end
                 end
             end
@@ -572,11 +661,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
 
-            -- List channels
-            for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
-                print( 'You have joined '..Channel.Id..')'..Channel.Name );
-            end
-
             -- Chatframe
             self.ChatFrame = DEFAULT_CHAT_FRAME;
 
@@ -619,6 +703,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             SLASH_JCHAT1, SLASH_JCHAT2 = '/jc', '/jchat';
             SlashCmdList['JCHAT'] = function( Msg,EditBox )
                 Settings.OpenToCategory( 'jChat' );
+            end
+
+            -- List channels
+            for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
+                print( 'You have joined '..Channel.Id..')'..Channel.Name );
             end
         end
 

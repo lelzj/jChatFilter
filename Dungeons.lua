@@ -4,6 +4,214 @@ Addon.DUNGEONS = CreateFrame( 'Frame' );
 Addon.DUNGEONS:RegisterEvent( 'ADDON_LOADED' );
 Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jChatFilter' ) then
+
+        Addon.DUNGEONS.EXPIRE_TIME = 1800; -- 30 minutes in seconds
+        Addon.DUNGEONS.PREFIX = 'JDUNGEON';
+        Addon.DUNGEONS.CHANNEL_NAME = 'ASDF';
+
+        Addon.DUNGEONS.SendMessage = function( self,Abbrev,ReqLevel,Roles,Queued )
+            local Player = UnitName( 'player' );
+            local Realm = GetRealmName();
+            local PlayerRealm = Player..'-'..Realm;
+            local Tank,Healer,DPS,AllowMultiRoles = self:GetRoles( Roles );
+            local PlayerLevel = UnitLevel( 'player' );
+            local Prefix = self.PREFIX;
+            local NewPingTime = time();
+            local CanQueue = PlayerLevel >= ReqLevel;
+            local Type = 'CHANNEL';
+
+            for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
+                if( Channel.Name == self.CHANNEL_NAME ) then
+                    self.CHANNEL_ID = Channel.Id;
+                end
+            end
+
+            --[[
+            Addon:Dump( {
+                AllowMultiRoles = AllowMultiRoles,
+                Roles = {
+                    Tank = Tank,
+                    Healer = Healer,
+                    DPS = DPS,
+                },
+                PlayerRealm = PlayerRealm,
+                PlayerLevel = PlayerLevel,
+                Prefix = Prefix,
+                NewPingTime = NewPingTime,
+                CanQueue = CanQueue,
+                Roles = Roles,
+                Queued = Queued,
+                Type = Type,
+            });
+            ]]
+
+            if( CanQueue ) then
+                local MessageText = Prefix
+                    ..':'..Abbrev
+                    ..':'..tostring( Queued )
+                    ..':'..PlayerRealm
+                    ..':'..PlayerLevel
+                    ..':'..tostring( AllowMultiRoles )
+                    ..':'..tostring( Tank )
+                    ..':'..tostring( Healer )
+                    ..':'..tostring( DPS );
+
+                --print( 'sending',Prefix,MessageText,Type,self.CHANNEL_ID );
+                if( not( tonumber( self.CHANNEL_ID or 0 ) > 0 ) ) then
+                    Addon.FRAMES:Error( 'Unable to ping the server for other players!' );
+                    Addon.FRAMES:Error( 'You will need to /join '..self.CHANNEL_NAME );
+                    Addon.FRAMES:Error( 'Once this is done, reload your UI and try again' );
+                else
+                    SendChatMessage( MessageText,Type,nil,self.CHANNEL_ID );
+                end
+            end
+            return NewPingTime;
+        end
+
+        --[[
+        LibStub( 'AceComm-3.0' ):RegisterComm( self.PREFIX,function( Prefix,MessageText,Distribution,Sender )
+            print( 'receiving',Prefix,MessageText,Distribution,Sender );
+            --self:OnCommReceived( Prefix,MessageText,Distribution,Sender );
+        end );
+
+        Addon.DUNGEONS.OnCommReceived = function( self,Prefix,MessageText,Distribution,Sender )
+            print( 'receiving',Prefix,MessageText,Distribution,Sender );
+            if( MessageText ) then
+                local ABBREV,Queued,PlayerRealm,_,_,Tank,Heaaler,DPS = strsplit( ':',MessageText );
+
+                print( 'received from comms:',MessageText );
+
+                -- track players.. need to sort out groups and fill them until appropriate
+                self.YourGroups = self.YourGroups or {};
+                self.YourGroups[ ABBREV ] = self.YourGroups[ ABBREV ] or {
+                    TANK = false,
+                    HEAL = false,
+                    DPS = false,
+                };
+
+                if( Queued and Tank ) then
+                    if( not self.YourGroups[ ABBREV ]['TANK'] ) then
+                        self.YourGroups[ ABBREV ]['TANK'] = {
+                            PlayerRealm = PlayerRealm,
+                        };
+                    end
+                elseif( not Queued and Tank ) then
+                    self.YourGroups[ ABBREV ]['TANK'] = false;
+                end
+
+                if( Queued and Healer ) then
+                    if( not self.YourGroups[ ABBREV ]['HEAL'] ) then
+                        self.YourGroups[ ABBREV ]['HEAL'] = {
+                            PlayerRealm = PlayerRealm,
+                        };
+                    end
+                elseif( not Queued and Healer ) then
+                    self.YourGroups[ ABBREV ]['HEAL'] = false;
+                end
+
+                if( Queued and DPS ) then
+                    self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = PlayerRealm;
+                elseif( not Queued and DPS ) then
+                    self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
+                end
+
+                -- add queued players
+                if( Queued ) then
+                    if( self.YourGroups[ ABBREV ]['TANK'] and self.YourGroups[ ABBREV ]['HEAL'] ) then
+                        if( tonumber( #self.YourGroups[ ABBREV ]['DPS'] ) > 2 ) then
+                            -- group ready
+                        end
+                    end
+                end
+            end
+        end
+
+        Addon.DUNGEONS.SendMessage = function( self,Abbrev,ReqLevel,Roles,Queued )
+            local Player = UnitName( 'player' );
+            local Realm = GetRealmName();
+            local PlayerRealm = Player..'-'..Realm;
+            local Tank,Healer,DPS,AllowMultiRoles = self:GetRoles( Roles );
+            local PlayerLevel = UnitLevel( 'player' );
+            local Prefix = self.PREFIX;
+            local NewPingTime = time();
+            local CanQueue = PlayerLevel >= ReqLevel;
+            local Type;
+            if( UnitInParty( 'player' ) ) then
+                Type = 'PARTY';
+            elseif( IsInRaid() ) then
+                Type = 'RAID';
+            end
+            Type = 'CHANNEL';
+            Addon:Dump( {
+                AllowMultiRoles = AllowMultiRoles,
+                Roles = {
+                    Tank = Tank,
+                    Healer = Healer,
+                    DPS = DPS,
+                },
+                PlayerRealm = PlayerRealm,
+                PlayerLevel = PlayerLevel,
+                Prefix = Prefix,
+                NewPingTime = NewPingTime,
+                CanQueue = CanQueue,
+                Roles = Roles,
+                Queued = Queued,
+                Type = Type,
+            });
+
+            if( CanQueue ) then
+                local MessageText = Prefix
+                    ..':'..Abbrev
+                    ..':'..tostring( Queued )
+                    ..':'..PlayerRealm
+                    ..':'..PlayerLevel
+                    ..':'..tostring( AllowMultiRoles )
+                    ..':'..tostring( Tank )
+                    ..':'..tostring( Healer )
+                    ..':'..tostring( DPS );
+
+                print( 'sending',Prefix,MessageText,Type,self.CHANNEL_ID );
+                LibStub( 'AceComm-3.0' ):SendCommMessage( Prefix,MessageText,Type,self.CHANNEL_ID );
+            end
+            return NewPingTime;
+        end
+        ]]
+
+        Addon.DUNGEONS.IsQueued = function( self )
+            local Queued;
+            if( tonumber( #Addon.APP.persistence.DungeonQueue ) > 0 ) then
+                for ABBREV,IsQueued in pairs( Addon.APP:GetDungeonQueue() ) do
+                    if( IsQueued ) then
+                        Queued = IsQueued;
+                    end
+                end
+            end
+            return Queued;
+        end
+
+        Addon.DUNGEONS.GetRoles = function( self,Roles )
+            local Tank,Healer,DPS,AllowMultiRoles = false,false,false,false;
+
+            Tank = Roles.TANK;
+            Healer = Roles.HEALER;
+            DPS = Roles.DPS;
+
+            if( DPS and Healer or Healer and Tank or Tank and DPS ) then
+                AllowMultiRoles = true;
+            end
+            return Tank,Healer,DPS,AllowMultiRoles;
+        end
+
+        Addon.DUNGEONS.ShouldExpire = function( self,PingTime )
+            local Expired = false;
+            if( tonumber( PingTime ) > 0 ) then
+                local CurrentTime = time();
+                local SecondsDiff = tonumber( CurrentTime - PingTime );
+                Expired = SecondsDiff > self.EXPIRE_TIME;
+            end
+            return Expired;
+        end
+
         -- https://www.zockify.com/wowclassic/dungeons/
         Addon.DUNGEONS.GetDungeons = function()
             return {

@@ -21,5 +21,6 @@ externals:
   Libs/AceGUI-3.0: https://repos.wowace.com/wow/ace3/trunk/AceGUI-3.0
   Libs/AceConsole-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConsole-3.0
   Libs/AceConfig-3.0: https://repos.wowace.com/wow/ace3/trunk/AceConfig-3.0
+  Libs/AceComm-3.0: https://repos.wowace.com/wow/ace3/trunk/AceComm-3.0
   Libs/LibWindow-1.1: https://repos.wowace.com/wow/libwindow-1-1/trunk/LibWindow-1.1
   Libs/jUI: https://github.com/jadissa/jUI.git
