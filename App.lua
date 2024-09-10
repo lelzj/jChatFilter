@@ -465,7 +465,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 });
                 ]]
 
-                -- track players.. need to sort out groups and fill them until appropriate
                 self.YourGroups = self.YourGroups or {};
                 self.YourGroups[ ABBREV ] = self.YourGroups[ ABBREV ] or {
                     TANK = false,
@@ -499,7 +498,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
                 end
 
-                -- add queued players
                 local Ready;
                 if( Queued ) then
                     if( self.YourGroups[ ABBREV ]['TANK'] and self.YourGroups[ ABBREV ]['HEAL'] ) then
@@ -509,16 +507,18 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
 
-                Addon:Dump( self.YourGroups );
+                local GetLink = function( Value )
+                    return "|Hplayer:"..Value.."|h".."["..Value.."]|h"
+                end
 
                 if( Queued and Ready ) then
                     for ABBREV,Data in pairs( self.YourGroups ) do
                         Addon.FRAMES.Notify( Addon.Dungeons[ABBREV].Description..' group seems ready!' );
                         Addon.FRAMES.Notify( 'Message the following people...' );
-                        Addon.FRAMES.Notify( 'TANK:',Data.TANK.PlayerRealm );
-                        Addon.FRAMES.Notify( 'HEAL:',Data.HEAL.PlayerRealm );
+                        Addon.FRAMES.Notify( 'TANK:',GetLink( Data.TANK.PlayerRealm ) );
+                        Addon.FRAMES.Notify( 'HEAL:',GetLink( Data.HEAL.PlayerRealm ) );
                         for _,PlayerName in pairs( Data.DPS ) do
-                            Addon.FRAMES.Notify( 'DPS:',PlayerName );
+                            Addon.FRAMES.Notify( 'DPS:',GetLink( PlayerName ) );
                         end
                     end
                 end
