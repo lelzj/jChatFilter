@@ -7,7 +7,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.DUNGEONS.EXPIRE_TIME = 1800; -- 30 minutes in seconds
         Addon.DUNGEONS.PREFIX = 'JDUNGEON';
-        Addon.DUNGEONS.CHANNEL_NAME = 'jLFG';
+        Addon.DUNGEONS.YourGroups = Addon.DUNGEONS.YourGroups or {};
 
         Addon.DUNGEONS.SendMessage = function( self,Abbrev,ReqLevel,Roles,Queued )
             local Player = UnitName( 'player' );
@@ -18,13 +18,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Prefix = self.PREFIX;
             local NewPingTime = time();
             local CanQueue = PlayerLevel >= ReqLevel;
-            local Type = 'CHANNEL';
-
-            for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
-                if( Channel.Name == self.CHANNEL_NAME ) then
-                    self.CHANNEL_ID = Channel.Id;
-                end
-            end
+            local Type = 'WHISPER';
 
             --[[
             Addon:Dump( {
@@ -56,36 +50,46 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                     ..':'..tostring( Healer )
                     ..':'..tostring( DPS );
 
-                --print( 'sending',Prefix,MessageText,Type,self.CHANNEL_ID );
-                if( not( tonumber( self.CHANNEL_ID or 0 ) > 0 ) ) then
-                    Addon.FRAMES:Error( 'Unable to ping the server for other players!' );
-                    Addon.FRAMES:Error( 'You will need to /join '..self.CHANNEL_NAME );
-                else
-                    SendChatMessage( MessageText,Type,nil,self.CHANNEL_ID );
-                end
+                --print( 'sending',MessageText,Type,PlayerRealm );
+                self:OnCommReceived( Prefix,MessageText,Type,PlayerRealm );
             end
             return NewPingTime;
         end
 
-        --[[
-        LibStub( 'AceComm-3.0' ):RegisterComm( self.PREFIX,function( Prefix,MessageText,Distribution,Sender )
-            print( 'receiving',Prefix,MessageText,Distribution,Sender );
-            --self:OnCommReceived( Prefix,MessageText,Distribution,Sender );
-        end );
-
         Addon.DUNGEONS.OnCommReceived = function( self,Prefix,MessageText,Distribution,Sender )
-            print( 'receiving',Prefix,MessageText,Distribution,Sender );
-            if( MessageText ) then
-                local ABBREV,Queued,PlayerRealm,_,_,Tank,Heaaler,DPS = strsplit( ':',MessageText );
+            --print( 'receiving',Prefix,self.PREFIX,( Prefix and Prefix == self.PREFIX ),MessageText,Distribution,Sender );
+            if( Prefix and Prefix == self.PREFIX ) then
 
-                print( 'received from comms:',MessageText );
+                Addon.FRAMES:Notify( 'Updating dungeon queue...' );
 
-                -- track players.. need to sort out groups and fill them until appropriate
-                self.YourGroups = self.YourGroups or {};
+                local Prefix,ABBREV,Queued,PlayerRealm,_,_,Tank,Healer,DPS = strsplit( ':',MessageText );
+                local tobool = function( Value )
+                    if( Value == 'true' ) then
+                        return true;
+                    end
+                    return false;
+                end
+
+                Queued = tobool( Queued );
+                Tank = tobool( Tank );
+                Healer = tobool( Healer );
+                DPS = tobool( DPS );
+                --[[
+                Addon:Dump( {
+                    Action = 'OnComReceived',
+                    Prefix = Prefix,
+                    ABBREV = ABBREV,
+                    Queued = Queued,
+                    PlayerRealm = PlayerRealm,
+                    Tank = Tank,
+                    Healer = Healer,
+                    DPS = DPS,
+                });
+                ]]
                 self.YourGroups[ ABBREV ] = self.YourGroups[ ABBREV ] or {
                     TANK = false,
                     HEAL = false,
-                    DPS = false,
+                    DPS = {},
                 };
 
                 if( Queued and Tank ) then
@@ -94,38 +98,131 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                             PlayerRealm = PlayerRealm,
                         };
                     end
-                elseif( not Queued and Tank ) then
-                    self.YourGroups[ ABBREV ]['TANK'] = false;
                 end
 
-                if( Queued and Healer ) then
+                if( Queued and not Tank ) then
+                    if( self.YourGroups[ ABBREV ]['TANK'] ) then
+                        if( self.YourGroups[ ABBREV ]['TANK'].PlayerRealm == PlayerRealm ) then
+                            self.YourGroups[ ABBREV ]['TANK'] = false;
+                        end
+                    end
+                end
+
+                if( Queued and Healer and not Tank ) then
                     if( not self.YourGroups[ ABBREV ]['HEAL'] ) then
                         self.YourGroups[ ABBREV ]['HEAL'] = {
                             PlayerRealm = PlayerRealm,
                         };
+                        if( self.YourGroups[ ABBREV ]['DPS'] ) then
+                            if( self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] ) then
+                                self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
+                            end
+                        end
                     end
-                elseif( not Queued and Healer ) then
-                    self.YourGroups[ ABBREV ]['HEAL'] = false;
                 end
 
-                if( Queued and DPS ) then
+                if( Queued and not Healer ) then
+                    if( self.YourGroups[ ABBREV ]['HEAL'] ) then
+                        if( self.YourGroups[ ABBREV ]['HEAL'].PlayerRealm == PlayerRealm ) then
+                            self.YourGroups[ ABBREV ]['HEAL'] = false;
+                        end
+                    end
+                end
+
+                if( Queued and Tank ) then
+                    if( Queued and Healer ) then
+                        if( self.YourGroups[ ABBREV ]['HEAL'] ) then
+                            if( self.YourGroups[ ABBREV ]['HEAL'].PlayerRealm == PlayerRealm ) then
+                                self.YourGroups[ ABBREV ]['HEAL'] = false;
+                            end
+                        end
+                    end
+                    if( self.YourGroups[ ABBREV ]['DPS'] ) then
+                        if( self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] ) then
+                            self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
+                        end
+                    end
+                end
+
+                if( Queued and DPS and not Healer and not Tank ) then
                     self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = PlayerRealm;
                 elseif( not Queued and DPS ) then
                     self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
                 end
 
-                -- add queued players
-                if( Queued ) then
-                    if( self.YourGroups[ ABBREV ]['TANK'] and self.YourGroups[ ABBREV ]['HEAL'] ) then
-                        if( tonumber( #self.YourGroups[ ABBREV ]['DPS'] ) > 2 ) then
-                            -- group ready
+                if( not Queued ) then
+                    if( self.YourGroups[ ABBREV ]['TANK'] ) then
+                        if( self.YourGroups[ ABBREV ]['TANK'].PlayerRealm and self.YourGroups[ ABBREV ]['TANK'].PlayerRealm == PlayerRealm ) then
+                            self.YourGroups[ ABBREV ]['TANK'] = false;
+                        end
+                    end
+                    if( self.YourGroups[ ABBREV ]['HEAL'] ) then
+                        if( self.YourGroups[ ABBREV ]['HEAL'].PlayerRealm and self.YourGroups[ ABBREV ]['HEAL'].PlayerRealm == PlayerRealm ) then
+                            self.YourGroups[ ABBREV ]['HEAL'] = false;
+                        end
+                    end
+                    if( self.YourGroups[ ABBREV ]['DPS'] ) then
+                        if( self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] ) then
+                            self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
                         end
                     end
                 end
+
+                local Ready;
+                if( Queued ) then
+                    if( self.YourGroups[ ABBREV ]['TANK'] and self.YourGroups[ ABBREV ]['HEAL'] ) then
+                        if( tonumber( #self.YourGroups[ ABBREV ]['DPS'] ) > 2 ) then
+                            Ready = true;
+                        end
+                    end
+                end
+
+                local GetLink = function( Value )
+
+                    Value = Value:gsub("%s+", "");
+
+                    Value = "|Hplayer:"..Value.."|h".."["..Value.."]|h";
+
+                    return Value;
+                end
+
+                if( Queued and Ready ) then
+                    for ABBREV,Data in pairs( self.YourGroups ) do
+                        if( Addon.DUNGEONS:GetDungeons()[ABBREV] ) then
+                            Addon.FRAMES:Notify( Addon.DUNGEONS:GetDungeons()[ABBREV].Description..' group seems ready!' );
+                        end
+                        Addon.FRAMES:Notify( 'Message the following people...' );
+                        Addon.FRAMES:Notify( 'TANK:',GetLink( Data.TANK.PlayerRealm ) );
+                        Addon.FRAMES:Notify( 'HEAL:',GetLink( Data.HEAL.PlayerRealm ) );
+                        for _,PlayerName in pairs( Data.DPS ) do
+                            Addon.FRAMES:Notify( 'DPS:',GetLink( PlayerName ) );
+                        end
+                    end
+                elseif( Queued ) then
+                    for ABBREV,Data in pairs( self.YourGroups ) do
+                        if( Addon.DUNGEONS:GetDungeons()[ABBREV] ) then
+                            Addon.FRAMES:Warn( 'You are queued for',Addon.DUNGEONS:GetDungeons()[ABBREV].Description );
+                        end
+                        if( Data.TANK ) then
+                            Addon.FRAMES:Notify( 'TANK:',GetLink( Data.TANK.PlayerRealm ),'has joined the queue!' );
+                        end
+                        if( Data.HEAL ) then
+                            Addon.FRAMES:Notify( 'HEAL:',GetLink( Data.HEAL.PlayerRealm ),'has joined the queue!' );
+                        end
+                        for _,PlayerName in pairs( Data.DPS ) do
+                            Addon.FRAMES:Notify( 'DPS:',GetLink( PlayerName ),'has joined the queue!' );
+                        end
+                    end
+                end
+                Addon.FRAMES:Error( 'Once people queueing using this addon and the role selector, they should start getting a notice when a group fills' );
             end
         end
 
-        Addon.DUNGEONS.SendMessage = function( self,Abbrev,ReqLevel,Roles,Queued )
+        LibStub( 'AceComm-3.0' ):RegisterComm( self.PREFIX,function( Prefix,MessageText,Distribution,Sender )
+            self:OnCommReceived( Prefix,MessageText,Distribution,Sender );
+        end );
+
+        Addon.DUNGEONS.SendAddonMessage = function( self,Abbrev,ReqLevel,Roles,Queued )
             local Player = UnitName( 'player' );
             local Realm = GetRealmName();
             local PlayerRealm = Player..'-'..Realm;
@@ -134,13 +231,9 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Prefix = self.PREFIX;
             local NewPingTime = time();
             local CanQueue = PlayerLevel >= ReqLevel;
-            local Type;
-            if( UnitInParty( 'player' ) ) then
-                Type = 'PARTY';
-            elseif( IsInRaid() ) then
-                Type = 'RAID';
-            end
-            Type = 'CHANNEL';
+            local Type = 'WHISPER';
+
+            --[[
             Addon:Dump( {
                 AllowMultiRoles = AllowMultiRoles,
                 Roles = {
@@ -157,6 +250,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Queued = Queued,
                 Type = Type,
             });
+            ]]
 
             if( CanQueue ) then
                 local MessageText = Prefix
@@ -169,12 +263,11 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                     ..':'..tostring( Healer )
                     ..':'..tostring( DPS );
 
-                print( 'sending',Prefix,MessageText,Type,self.CHANNEL_ID );
-                LibStub( 'AceComm-3.0' ):SendCommMessage( Prefix,MessageText,Type,self.CHANNEL_ID );
+                --print( 'sending',MessageText,Type,PlayerRealm );
+                LibStub( 'AceComm-3.0' ):SendCommMessage( Prefix,MessageText,Type,PlayerRealm );
             end
             return NewPingTime;
         end
-        ]]
 
         Addon.DUNGEONS.IsQueued = function( self )
             local Queued;

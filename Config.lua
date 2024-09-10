@@ -281,6 +281,17 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end,
                     set = function( Info,Value )
                         Addon.APP.persistence.Roles[ Info.arg ] = Value;
+
+                        if( Addon.DUNGEONS.YourGroups ) then
+                            for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
+
+                                local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
+                                local Roles = Addon.APP.persistence.Roles;
+                                local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
+
+                                Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
+                            end
+                        end
                     end
                 };
 
@@ -298,6 +309,17 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end,
                     set = function( Info,Value )
                         Addon.APP.persistence.Roles[ Info.arg ] = Value;
+
+                        if( Addon.DUNGEONS.YourGroups ) then
+                            for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
+
+                                local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
+                                local Roles = Addon.APP.persistence.Roles;
+                                local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
+
+                                Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
+                            end
+                        end
                     end
                 };
 
@@ -315,6 +337,17 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end,
                     set = function( Info,Value )
                         Addon.APP.persistence.Roles[ Info.arg ] = Value;
+
+                        if( Addon.DUNGEONS.YourGroups ) then
+                            for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
+
+                                local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
+                                local Roles = Addon.APP.persistence.Roles;
+                                local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
+
+                                Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
+                            end
+                        end
                     end
                 };
 
