@@ -7,7 +7,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.DUNGEONS.EXPIRE_TIME = 1800; -- 30 minutes in seconds
         Addon.DUNGEONS.PREFIX = 'JDUNGEON';
-        Addon.DUNGEONS.CHANNEL_NAME = 'ASDF';
+        Addon.DUNGEONS.CHANNEL_NAME = 'jLFG';
 
         Addon.DUNGEONS.SendMessage = function( self,Abbrev,ReqLevel,Roles,Queued )
             local Player = UnitName( 'player' );

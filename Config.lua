@@ -250,10 +250,10 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     DungeonGroups = {
                         type = 'header',
                         order = Order,
-                        name = 'Classic Dungeon Groups'..CreateColor(
+                        name = 'Classic Dungeon Groups '..CreateColor(
                             Addon.Theme.Error.r,
                             Addon.Theme.Error.g,
-                            Addon.Theme.Error.b ):WrapTextInColorCode( ' EXPERIMENTAL CHANGES ADDED' ),
+                            Addon.Theme.Error.b ):WrapTextInColorCode( 'EXPERIMENTAL CHANGES ADDED' ),
                     },
                 };
                 Order = Order + 1;
