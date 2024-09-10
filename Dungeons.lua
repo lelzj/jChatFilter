@@ -60,7 +60,6 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( not( tonumber( self.CHANNEL_ID or 0 ) > 0 ) ) then
                     Addon.FRAMES:Error( 'Unable to ping the server for other players!' );
                     Addon.FRAMES:Error( 'You will need to /join '..self.CHANNEL_NAME );
-                    Addon.FRAMES:Error( 'Once this is done, reload your UI and try again' );
                 else
                     SendChatMessage( MessageText,Type,nil,self.CHANNEL_ID );
                 end

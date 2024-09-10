@@ -396,9 +396,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             if( Addon.APP:GetValue( 'MentionAlert' ) ) then
                 if( Addon:Minify( OriginalText ):find( Addon:Minify( MyPlayerName ) ) ) then
-                    if( Prefix and Prefix ~= Addon.DUNGEONS.PREFIX ) then
-                        Mentioned = true;
-                    end
+                    Mentioned = true;
+                end
+                if( Prefix and Prefix == Addon.DUNGEONS.PREFIX ) then
+                    Mentioned = false;
                 end
             end
             local AliasList = Addon.CONFIG:GetAliasList();
@@ -407,6 +408,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     if( Addon:Minify( OriginalText ):find( Addon:Minify( Alias ) ) ) then
                         Mentioned = true;
                     end
+                end
+                if( Prefix and Prefix == Addon.DUNGEONS.PREFIX ) then
+                    Mentioned = false;
                 end
             end
 
@@ -495,6 +499,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( Queued and DPS ) then
                     self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = PlayerRealm;
                 elseif( not Queued and DPS ) then
+                    self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
+                end
+                if( Healer and self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] ) then
+                    self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
+                end
+                if( Tank and self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] ) then
                     self.YourGroups[ ABBREV ]['DPS'][ PlayerRealm ] = nil;
                 end
 
