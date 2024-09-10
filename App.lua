@@ -505,6 +505,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                             Ready = true;
                         end
                     end
+                    Addon.FRAMES:Notify( 'Once people queueing using this addon and the role selector, they should start getting a notice when a group fills' );
+                    Addon:Dump( self.YourGroups );
                 end
 
                 local GetLink = function( Value )
