@@ -253,7 +253,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         name = 'Classic Dungeon Groups '..CreateColor(
                             Addon.Theme.Error.r,
                             Addon.Theme.Error.g,
-                            Addon.Theme.Error.b ):WrapTextInColorCode( 'EXPERIMENTAL CHANGES ADDED' ),
+                            Addon.Theme.Error.b ):WrapTextInColorCode( 'Automatic LFG REMOVED due to Blizzard addon rules' ),
                     },
                 };
                 Order = Order + 1;
@@ -282,6 +282,11 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     set = function( Info,Value )
                         Addon.APP.persistence.Roles[ Info.arg ] = Value;
 
+                    -- Requeue
+                    --[[
+                    -- blizz disabled this functionality
+
+                    -- see Dungeons:OnCommReceived() for more details
                         if( Addon.DUNGEONS.YourGroups ) then
                             for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
 
@@ -292,6 +297,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                                 Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
                             end
                         end
+                    ]]
                     end
                 };
 
@@ -310,6 +316,12 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     set = function( Info,Value )
                         Addon.APP.persistence.Roles[ Info.arg ] = Value;
 
+                    -- Requeue
+                    --[[
+                    -- blizz disabled this functionality
+
+                    -- see Dungeons:OnCommReceived() for more details
+
                         if( Addon.DUNGEONS.YourGroups ) then
                             for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
 
@@ -320,6 +332,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                                 Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
                             end
                         end
+                    ]]
                     end
                 };
 
@@ -337,6 +350,11 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end,
                     set = function( Info,Value )
                         Addon.APP.persistence.Roles[ Info.arg ] = Value;
+                    -- Requeue
+                    --[[
+                    -- blizz disabled this functionality
+
+                    -- see Dungeons:OnCommReceived() for more details
 
                         if( Addon.DUNGEONS.YourGroups ) then
                             for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
@@ -348,6 +366,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                                 Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
                             end
                         end
+                        ]]
                     end
                 };
 
@@ -368,11 +387,17 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         set = function( Info,Value )
                             local ABBREV = Info.arg;
                             Addon.APP.persistence.DungeonQueue[ ABBREV ] = Value;
+                    -- Requeue
+                    --[[
+                    -- blizz disabled this functionality
+
+                    -- see Dungeons:OnCommReceived() for more details
 
                             local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
                             local Roles = Addon.APP.persistence.Roles;
 
                             Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Value );
+                    ]]
                         end,
                     };
                 end

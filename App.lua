@@ -443,7 +443,15 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             if( Prefix and Prefix == Addon.DUNGEONS.PREFIX ) then
-                Addon.DUNGEONS:OnCommReceived( Prefix,MessageText,'WHISPER',PlayerRealm );
+                local ChannelId;
+                for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
+                    if( Channel.Name == Addon.DUNGEONS.CHANNEL_NAME ) then
+                        ChannelId = Channel.Id;
+                    end
+                end
+                if( ChannelId ) then
+                    Addon.DUNGEONS:OnCommReceived( Prefix,MessageText,'CHANNEL',ChannelId );
+                end
             end
 
             -- Format message
@@ -633,24 +641,23 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Requeue
+            --[[
+                    -- blizz disabled this functionality
+
+                    -- see Dungeons:OnCommReceived() for more details
+
             C_Timer.After( 5,function()
                 for ABBREV,Instance in pairs( Addon.DUNGEONS:GetDungeonsF( UnitLevel( 'player' ) ) ) do
                     if( Addon.APP.persistence.DungeonQueue[ ABBREV ] ) then
                         local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
                         local Roles = Addon.APP.persistence.Roles;
                         local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
-                        --[[
-                        Addon:Dump( {
-                            ABBREV = ABBREV,
-                            ReqLevel = ReqLevel,
-                            Roles = Roles,
-                            Queued = Queued,
-                        });
-                        ]]
+
                         Addon.DUNGEONS:SendAddonMessage( ABBREV,ReqLevel,Roles,Queued );
                     end
                 end
             end );
+            ]]
         end
 
         -- Wait for chat windoww to load

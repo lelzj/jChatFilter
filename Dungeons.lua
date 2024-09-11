@@ -7,6 +7,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.DUNGEONS.EXPIRE_TIME = 1800; -- 30 minutes in seconds
         Addon.DUNGEONS.PREFIX = 'JDUNGEON';
+        Addon.DUNGEONS.CHANNEL_NAME = 'jLFG';
         Addon.DUNGEONS.YourGroups = Addon.DUNGEONS.YourGroups or {};
 
         Addon.DUNGEONS.SendMessage = function( self,Abbrev,ReqLevel,Roles,Queued )
@@ -19,6 +20,12 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             local NewPingTime = time();
             local CanQueue = PlayerLevel >= ReqLevel;
             local Type = 'WHISPER';
+
+            for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
+                if( Channel.Name == self.CHANNEL_NAME ) then
+                    self.CHANNEL_ID = Channel.Id;
+                end
+            end
 
             --[[
             Addon:Dump( {
@@ -178,11 +185,16 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
 
                 local GetLink = function( Value )
-
+                    if( Value and Addon.APP:GetValue( 'ColorNamesByClass' ) ) then
+                        if( EnglishClass ) then
+                            local ClassColorTable = RAID_CLASS_COLORS[ EnglishClass ];
+                            if ( ClassColorTable ) then
+                                Value = string.format( "\124cff%.2x%.2x%.2x", ClassColorTable.r*255, ClassColorTable.g*255, ClassColorTable.b*255 )..Value.."\124r";
+                            end
+                        end
+                    end
                     Value = Value:gsub("%s+", "");
-
                     Value = "|Hplayer:"..Value.."|h".."["..Value.."]|h";
-
                     return Value;
                 end
 
@@ -204,17 +216,25 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                             Addon.FRAMES:Warn( 'You are queued for',Addon.DUNGEONS:GetDungeons()[ABBREV].Description );
                         end
                         if( Data.TANK ) then
-                            Addon.FRAMES:Notify( 'TANK:',GetLink( Data.TANK.PlayerRealm ),'has joined the queue!' );
+                            Addon.FRAMES:Notify( 'TANK:',GetLink( Data.TANK.PlayerRealm ),'is in the queue!' );
                         end
                         if( Data.HEAL ) then
-                            Addon.FRAMES:Notify( 'HEAL:',GetLink( Data.HEAL.PlayerRealm ),'has joined the queue!' );
+                            Addon.FRAMES:Notify( 'HEAL:',GetLink( Data.HEAL.PlayerRealm ),'is in the queue!' );
                         end
                         for _,PlayerName in pairs( Data.DPS ) do
-                            Addon.FRAMES:Notify( 'DPS:',GetLink( PlayerName ),'has joined the queue!' );
+                            Addon.FRAMES:Notify( 'DPS:',GetLink( PlayerName ),'is in the queue!' );
                         end
                     end
                 end
-                Addon.FRAMES:Error( 'Once people queueing using this addon and the role selector, they should start getting a notice when a group fills' );
+                if( not( tonumber( self.CHANNEL_ID or 0 ) > 0 ) ) then
+                    Addon.FRAMES:Error( 'Unable to ping the server for other players!' );
+                    Addon.FRAMES:Error( 'You will need to /join '..self.CHANNEL_NAME );
+                else
+                    -- blizz disabled this functionality
+                    -- https://www.reddit.com/r/wowaddons/comments/da9gbz/help_sendchatmessage_doesnt_work_on_custom_chat/
+                    --SendChatMessage( MessageText,'CHANNEL',nil,self.CHANNEL_ID );
+                    Addon.FRAMES:Error( 'Blizz has disabled this functionality' );
+                end
             end
         end
 
@@ -232,6 +252,12 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
             local NewPingTime = time();
             local CanQueue = PlayerLevel >= ReqLevel;
             local Type = 'WHISPER';
+
+            for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
+                if( Channel.Name == self.CHANNEL_NAME ) then
+                    self.CHANNEL_ID = Channel.Id;
+                end
+            end
 
             --[[
             Addon:Dump( {
