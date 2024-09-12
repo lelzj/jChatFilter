@@ -250,126 +250,9 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     DungeonGroups = {
                         type = 'header',
                         order = Order,
-                        name = 'Classic Dungeon Groups '..CreateColor(
-                            Addon.Theme.Error.r,
-                            Addon.Theme.Error.g,
-                            Addon.Theme.Error.b ):WrapTextInColorCode( 'Automatic LFG REMOVED due to Blizzard addon rules' ),
+                        name = 'Classic Dungeon Groups',
                     },
                 };
-                Order = Order + 1;
-                Settings.Role = {
-                    type = 'group',
-                    name = 'Your Roles',
-                    width = 'full',
-                    order = Order,
-                    args = {
-
-                    },
-                };
-
-                Order = Order + 1;
-                Settings.Role.args.DPS = {
-                    type = 'toggle',
-                    order = Order,
-                    name = 'DPS',
-                    desc = 'Damage dealer',
-                    arg = 'DPS',
-                    get = function( Info )
-                        if( Addon.APP.persistence.Roles[ Info.arg ] ~= nil ) then
-                            return Addon.APP.persistence.Roles[ Info.arg ];
-                        end
-                    end,
-                    set = function( Info,Value )
-                        Addon.APP.persistence.Roles[ Info.arg ] = Value;
-
-                    -- Requeue
-                    --[[
-                    -- blizz disabled this functionality
-
-                    -- see Dungeons:OnCommReceived() for more details
-                        if( Addon.DUNGEONS.YourGroups ) then
-                            for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
-
-                                local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
-                                local Roles = Addon.APP.persistence.Roles;
-                                local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
-
-                                Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
-                            end
-                        end
-                    ]]
-                    end
-                };
-
-                Order = Order + 1;
-                Settings.Role.args.HEALER = {
-                    type = 'toggle',
-                    order = Order,
-                    name = 'Healer',
-                    desc = '',
-                    arg = 'HEALER',
-                    get = function( Info )
-                        if( Addon.APP.persistence.Roles[ Info.arg ] ~= nil ) then
-                            return Addon.APP.persistence.Roles[ Info.arg ];
-                        end
-                    end,
-                    set = function( Info,Value )
-                        Addon.APP.persistence.Roles[ Info.arg ] = Value;
-
-                    -- Requeue
-                    --[[
-                    -- blizz disabled this functionality
-
-                    -- see Dungeons:OnCommReceived() for more details
-
-                        if( Addon.DUNGEONS.YourGroups ) then
-                            for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
-
-                                local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
-                                local Roles = Addon.APP.persistence.Roles;
-                                local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
-
-                                Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
-                            end
-                        end
-                    ]]
-                    end
-                };
-
-                Order = Order + 1;
-                Settings.Role.args.TANK = {
-                    type = 'toggle',
-                    order = Order,
-                    name = 'Tank',
-                    desc = '',
-                    arg = 'TANK',
-                    get = function( Info )
-                        if( Addon.APP.persistence.Roles[ Info.arg ] ~= nil ) then
-                            return Addon.APP.persistence.Roles[ Info.arg ];
-                        end
-                    end,
-                    set = function( Info,Value )
-                        Addon.APP.persistence.Roles[ Info.arg ] = Value;
-                    -- Requeue
-                    --[[
-                    -- blizz disabled this functionality
-
-                    -- see Dungeons:OnCommReceived() for more details
-
-                        if( Addon.DUNGEONS.YourGroups ) then
-                            for ABBREV,_ in pairs( Addon.DUNGEONS.YourGroups ) do
-
-                                local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
-                                local Roles = Addon.APP.persistence.Roles;
-                                local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
-
-                                Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Queued );
-                            end
-                        end
-                        ]]
-                    end
-                };
-
                 for Abbrev,Instance in pairs( Addon.DUNGEONS:GetDungeonsF( UnitLevel( 'player' ) ) ) do
                     Order = Order + 1;
                     Settings[ Abbrev ] = {
@@ -387,17 +270,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         set = function( Info,Value )
                             local ABBREV = Info.arg;
                             Addon.APP.persistence.DungeonQueue[ ABBREV ] = Value;
-                    -- Requeue
-                    --[[
-                    -- blizz disabled this functionality
-
-                    -- see Dungeons:OnCommReceived() for more details
-
-                            local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
-                            local Roles = Addon.APP.persistence.Roles;
-
-                            Addon.DUNGEONS:SendMessage( ABBREV,ReqLevel,Roles,Value );
-                    ]]
                         end,
                     };
                 end
