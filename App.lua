@@ -664,14 +664,17 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         -- Wait for chat windoww to load
         local Iterator = 1;
-        LibStub( 'AceHook-3.0' ):SecureHookScript( DEFAULT_CHAT_FRAME,'OnEvent',function( self,Event,... )
-            if( Event == 'UPDATE_CHAT_WINDOWS' and not( Iterator > 1 ) ) then
-                Iterator = Iterator+1;
-                C_Timer.After( 2,function()
-                    Addon.APP:Init();
-                    Addon.CONFIG:CreateFrames();
-                end );
-            end
+        local EventFrame = CreateFrame( 'Frame' );
+        EventFrame:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
+        EventFrame:SetScript( 'OnEvent',function( self,... )
+            print( 'happening' )
+            Iterator = Iterator+1;
+            C_Timer.After( 2,function()
+                print( 'happened' )
+                Addon.APP:Init();
+                Addon.CONFIG:CreateFrames();
+            end );
+            EventFrame:UnregisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
