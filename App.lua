@@ -442,6 +442,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
             end
+            --[[
             if( Prefix and Prefix == Addon.DUNGEONS.PREFIX ) then
                 local ChannelId;
                 for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
@@ -453,6 +454,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Addon.DUNGEONS:OnCommReceived( Prefix,MessageText,'CHANNEL',ChannelId );
                 end
             end
+            ]]
 
             -- Format message
             MessageText,r,g,b,a,id = Addon.APP.Format(
