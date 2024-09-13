@@ -518,7 +518,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 TRIBUTE = {
                     Abbrevs = {
-                        'dmn','tribute',
+                        'dmn','tribute','dmt',
                     },
                     Description = 'Dire Maul Tribute',
                     LevelBracket = {52,60},
