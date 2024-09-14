@@ -325,7 +325,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                                     if( Addon:Minify( GroupName ):find( 'whisperinform' ) ) then
                                         Value = true;
                                     end
-                                    Addon.FILTER:SetGroup( GroupName,Value );
+                                    Addon.APP:SetGroup( GroupName,Value );
                                 end
                             end
                         end,
@@ -578,6 +578,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 GUILD = {
                     'CHAT_MSG_GUILD',
+                    'CHAT_MSG_OFFICER',
                     'GUILD_MOTD',
                     'PLAYER_GUILD_UPDATE',
                 },
@@ -617,6 +618,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 GUILD = {
                     'GUILD',
+                    'OFFICER',
                 },
                 WHISPER = {
                     'WHISPER',
@@ -779,6 +781,14 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @return table
         Addon.CONFIG.GetAliasList = function( self )
             return Addon.APP.persistence.AliasList;
+        end
+
+        Addon.CONFIG.RegisterCallbacks = function( self,ChatLib )
+            hooksecurefunc( 'ToggleChatMessageGroup',function( Checked,Group )
+                if( ChatFrame_ContainsMessageGroup and ChatFrame_ContainsMessageGroup( ChatLib.ChatFrame,Group ) ~= nil ) then
+                    ChatLib:SetGroup( Group,Checked );
+                end
+            end );
         end
 
         self:UnregisterEvent( 'ADDON_LOADED' );

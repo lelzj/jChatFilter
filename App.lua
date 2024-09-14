@@ -23,10 +23,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @return void
         Addon.APP.SetGroup = function( self,Group,Value )
             if ( Value ) then
-                --print( self.ChatFrame:GetName(),'add',Group )
                 ChatFrame_AddMessageGroup( self.ChatFrame,Group );
             else
-                --print( self.ChatFrame:GetName(),'remove',Group )
                 ChatFrame_RemoveMessageGroup( self.ChatFrame,Group );
             end
         end
@@ -185,7 +183,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
             local ChannelLink = '';
             if( tonumber( ChannelId ) > 0 ) then
-                ChannelLink = "|Hchannel:channel:"..ChannelId.."|h["..ChannelNameId.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
+                ChannelLink = "|Hchannel:channel:"..ChannelId.."|h["..ChannelId..')'..ChannelBaseName.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
             elseif( ChatType == 'PARTY' ) then
                 ChannelLink = "|Hchannel:PARTY|h[Party]|h";
             elseif( ChatType == 'PARTY_LEADER' ) then
@@ -616,6 +614,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                         local Groups = self:GetValue( 'ChatGroups' );
                         if( Groups ) then
                             self:SetGroup( GroupName,Groups[ Group ] );
+                            ToggleChatColorNamesByClassGroup( Groups[ Group ],GroupName );
                         end
                     end
                 end
@@ -639,7 +638,20 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- List channels
             for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
-                print( 'You have joined '..Channel.Id..')'..Channel.Name );
+                local ChannelLink = Channel.Id..')'..Channel.Name;
+                if( tonumber( Channel.Id ) > 0 ) then
+                    ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..Channel.Name.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
+                end
+
+                local r,g,b,id = 1,1,1,nil;
+                local Channels = Addon.APP:GetValue( 'Channels' );
+                if( tonumber( Channel.Id ) > 0 ) then
+                    if( Channels[ Channel.Name ] and Channels[ Channel.Name ].Color ) then
+                        r,g,b = unpack( Channels[ Channel.Name ].Color );
+                    end
+                end
+
+                self.ChatFrame:AddMessage( 'You have joined '..ChannelLink,r,g,b,id );
             end
 
             -- Requeue
@@ -660,19 +672,19 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
             ]]
+            Addon.CONFIG:RegisterCallbacks( self );
         end
 
         -- Wait for chat windoww to load
         local Iterator = 1;
-        local EventFrame = CreateFrame( 'Frame' );
-        EventFrame:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
-        EventFrame:SetScript( 'OnEvent',function( self,... )
-            Iterator = Iterator+1;
-            C_Timer.After( 2,function()
-                Addon.APP:Init();
-                Addon.CONFIG:CreateFrames();
-            end );
-            EventFrame:UnregisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
+        hooksecurefunc( 'ChatFrame_RegisterForChannels',function( self,...)
+            if( not( Iterator > 1 ) ) then
+                C_Timer.After( 5,function()
+                    Addon.APP:Init();
+                    Addon.CONFIG:CreateFrames();
+                end );
+                Iterator = Iterator+1;
+            end
         end );
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
