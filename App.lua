@@ -667,10 +667,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         local EventFrame = CreateFrame( 'Frame' );
         EventFrame:RegisterEvent( 'CHAT_MSG_CHANNEL_NOTICE' );
         EventFrame:SetScript( 'OnEvent',function( self,... )
-            print( 'happening' )
             Iterator = Iterator+1;
             C_Timer.After( 2,function()
-                print( 'happened' )
                 Addon.APP:Init();
                 Addon.CONFIG:CreateFrames();
             end );
