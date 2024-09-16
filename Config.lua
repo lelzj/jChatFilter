@@ -593,6 +593,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHAT_MSG_CHANNEL_JOIN',
                     'CHAT_MSG_CHANNEL_LEAVE',
                     'CHAT_MSG_COMMUNITIES_CHANNEL',
+                    'CHAT_MSG_CHANNEL_NOTICE_USER',
                 },
                 WHISPER = {
                     'CHAT_MSG_WHISPER',

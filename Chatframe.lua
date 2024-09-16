@@ -20,6 +20,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
+        Addon.CHAT.GetBaseColor = function( self )
+            return {
+                        254 / 255,
+                        191 / 255,
+                        191 / 255,
+                        1,
+                    };
+        end
+
         --
         --  Join channel
         --
@@ -28,12 +37,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( ChannelName ) then
                 local Type,Name = JoinPermanentChannel( ChannelName );
                 Addon.APP.persistence.Channels[ ChannelName ] = {
-                    Color = {
-                        254 / 255,
-                        191 / 255,
-                        191 / 255,
-                        1,
-                    },
+                    Color = self:GetBaseColor(),
                     Id = #Addon.APP.ChatFrame.channelList+1,
                 };
                 return true;
@@ -104,6 +108,31 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             return ChannelList;
         end
+
+        Addon.CHAT.InitCommunity = function( self,ChatFrame,ClubId,StreamId )
+            C_Club.AddClubStreamChatChannel( ClubId,StreamId );
+            
+            local ChannelName = Chat_GetCommunitiesChannelName( ClubId,StreamId );
+            
+            local ChannelColor = CreateColor( unpack( self:GetBaseColor() ) );
+
+            local SetEditBoxToChannel;
+
+            local function ChatFrame_AddCommunitiesChannel(chatFrame, channelName, channelColor, setEditBoxToChannel)
+                local channelIndex = ChatFrame_AddChannel(chatFrame, channelName);
+                --chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex, ChatFrame_ResolveChannelName(channelName)), channelColor:GetRGB());
+
+                if setEditBoxToChannel then
+                    chatFrame.editBox:SetAttribute("channelTarget", channelIndex);
+                    chatFrame.editBox:SetAttribute("chatType", "CHANNEL");
+                    chatFrame.editBox:SetAttribute("stickyType", "CHANNEL");
+                    ChatEdit_UpdateHeader(chatFrame.editBox);
+                end
+            end
+
+            ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
+        end
+
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );

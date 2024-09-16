@@ -220,8 +220,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             --[[
             -- todo: fix communities link
-            -- while we are at it, prob should make it so that when we join a community..
-            -- it automatically adds it to the chat window
 
             if( ChatType == 'COMMUNITIES_CHANNEL' ) then
                 local IsBattleNetCommunity = BNId ~= nil and BNId ~= 0;
@@ -576,7 +574,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 self.persistence.Channels[ ChannelData.Name ].Name = ChannelData.Name;
 
                 if( not self.persistence.Channels[ ChannelData.Name ].Color ) then
-                    self.persistence.Channels[ ChannelData.Name ].Color = Addon.CONFIG:GetDefaults().ChannelColor;
+                    self.persistence.Channels[ ChannelData.Name ].Color = Addon.CHAT:GetBaseColor();
                 end
             end
 
@@ -630,10 +628,18 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
 
-            -- Slash command
-            SLASH_JCHAT1, SLASH_JCHAT2 = '/jc', '/jchat';
-            SlashCmdList['JCHAT'] = function( Msg,EditBox )
-                Settings.OpenToCategory( 'jChat' );
+            -- Communities
+            local Clubs = C_Club.GetSubscribedClubs();
+            for i,Club in pairs( Clubs ) do
+                if( Club.clubType ~= 2 ) then -- guild
+                    local ClubStreams = C_Club.GetStreams( Club.clubId );
+                    local ClubInfo = C_Club.GetClubInfo( Club.clubId );
+                    for v,Stream in pairs( ClubStreams ) do
+                        if( Stream.streamId ) then
+                            Addon.CHAT:InitCommunity( self.ChatFrame,Club.clubId,Stream.streamId );
+                        end
+                    end
+                end
             end
 
             -- List channels
@@ -641,6 +647,16 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 local ChannelLink = Channel.Id..')'..Channel.Name;
                 if( tonumber( Channel.Id ) > 0 ) then
                     ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..Channel.Name.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
+                end;if( Channel.Name and Addon:Minify( Channel.Name ):find( 'community' ) ) then
+
+                    local ClubData = Addon:Explode( Channel.Name,':' );
+                    if( ClubData and tonumber( #ClubData ) > 0 ) then
+                        local ClubId = ClubData[2] or nil;
+                        local ClubInfo = C_Club.GetClubInfo( ClubId );
+                        if( ClubInfo ) then
+                            ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..ClubInfo.name.."]|h";
+                        end
+                    end
                 end
 
                 local r,g,b,id = 1,1,1,nil;
@@ -672,7 +688,15 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
             ]]
+
+            -- Config callbacks
             Addon.CONFIG:RegisterCallbacks( self );
+
+            -- Slash command
+            SLASH_JCHAT1, SLASH_JCHAT2 = '/jc', '/jchat';
+            SlashCmdList['JCHAT'] = function( Msg,EditBox )
+                Settings.OpenToCategory( 'jChat' );
+            end
         end
 
         -- Wait for chat windoww to load
