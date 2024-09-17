@@ -688,6 +688,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- List channels
             for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
+                Channel.Name = Addon.CHAT:GetClubName( Channel.Name ) or Channel.Name;
                 local ChannelLink = Channel.Id..')'..Channel.Name;
                 if( tonumber( Channel.Id ) > 0 ) then
                     ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..Channel.Name.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"s
