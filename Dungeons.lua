@@ -783,7 +783,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                         GetQuestDifficultyColor = GetQuestDifficultyColor( Instances[ Key ].ReqLevel ),
                     } );
                     ]]
-                    local Color = GetQuestDifficultyColor( Instances[ Key ].AvgLevel+1 );
+                    local Color = GetQuestDifficultyColor( Instances[ Key ].AvgLevel );
                     Instances[ Key ].Color = { Color.r,Color.g,Color.b };
                 end
             end

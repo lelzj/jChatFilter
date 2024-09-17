@@ -109,6 +109,17 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             return ChannelList;
         end
 
+        Addon.CHAT.GetClubName = function( self,ChannelName )
+            local ClubData = Addon:Explode( ChannelName,':' );
+            if( ClubData and tonumber( #ClubData ) > 0 ) then
+                local ClubId = ClubData[2] or 0;
+                local ClubInfo = C_Club.GetClubInfo( ClubId );
+                if( ClubInfo ) then
+                    return ClubInfo.name;
+                end
+            end
+        end
+
         Addon.CHAT.InitCommunity = function( self,ChatFrame,ClubId,StreamId )
             C_Club.AddClubStreamChatChannel( ClubId,StreamId );
             

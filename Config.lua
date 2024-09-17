@@ -452,6 +452,16 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 for _,ChannelData in pairs( Addon.APP.persistence.Channels ) do
                     if( ChannelData.Name ) then
                         Order = Order+1;
+                        local ClubData = Addon:Explode( ChannelData.Name,':' );
+                        if( ClubData and tonumber( #ClubData ) > 0 ) then
+                            local ClubId = ClubData[2] or 0;
+                            if( tonumber( ClubId ) > 0 ) then
+                                local ClubInfo = C_Club.GetClubInfo( ClubId );
+                                if( ClubInfo ) then
+                                    ChannelData.Name = ClubInfo.name;
+                                end
+                            end
+                        end
                         Settings[ ChannelData.Name..'Color' ] = {
                             type = 'color',
                             order = Order,

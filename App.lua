@@ -95,6 +95,16 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 };
             end
             local _, ChannelName = GetChannelName( ChannelId );
+
+            local GetName = function( Id )
+                local Channels = Addon.APP:GetValue( 'Channels' ) or {};
+                for _,ChannelData in pairs( Channels ) do
+                    if( ChannelData.Id == Id ) then
+                        return ChannelData.Name;
+                    end
+                end
+            end
+            ChannelName = GetName( ChannelId ) or ChannelName;
             local ChatGroup = Chat_GetChatCategory( ChatType );
 
             -- Player info
@@ -122,6 +132,21 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     r,g,b,a = ChatTypeInfo.WHISPER.r,ChatTypeInfo.WHISPER.g,ChatTypeInfo.WHISPER.b,1;
                 end
             end
+
+            --[[
+            if( Event == 'CHAT_MSG_CHANNEL_NOTICE_USER' ) then
+                local Type = MessageText;
+                local UserAffected = PlayerRealm;
+                local ChannelWithNum = LangHeader;
+                local CausedBy = ChannelNameId;
+                Addon:Dump( {
+                    Type = Type,
+                    UserAffected = UserAffected,
+                    ChannelWithNum = ChannelWithNum,
+                    CausedBy = CausedBy,
+                })
+            end
+            ]]
 
             -- Class color
             if( PlayerName and Addon.APP:GetValue( 'ColorNamesByClass' ) ) then
@@ -567,14 +592,28 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
 
-            -- Set default channel colors
+            -- Initialize channel persistence
             for Id,ChannelData in pairs( Addon.CHAT.GetChannels() ) do
-                self.persistence.Channels[ ChannelData.Name ] = self.persistence.Channels[ ChannelData.Name ] or {};
-                self.persistence.Channels[ ChannelData.Name ].Id = ChannelData.Id;
-                self.persistence.Channels[ ChannelData.Name ].Name = ChannelData.Name;
+                local Club;
+                local ClubData = Addon:Explode( ChannelData.Name,':' );
+                if( ClubData and tonumber( #ClubData ) > 0 ) then
+                    local ClubId = ClubData[2] or 0;
+                    if( tonumber( ClubId ) > 0 ) then
+                        Club = C_Club.GetClubInfo( ClubId );
+                    end
+                end
+                local Key = ChannelData.Name;
+                if( Club ) then
+                    Key = Club.name;
+                    self.persistence.Channels[ Key ] = self.persistence.Channels[ Key ] or {};
+                end
 
-                if( not self.persistence.Channels[ ChannelData.Name ].Color ) then
-                    self.persistence.Channels[ ChannelData.Name ].Color = Addon.CHAT:GetBaseColor();
+                self.persistence.Channels[ Key ] = self.persistence.Channels[ Key ] or {};
+                self.persistence.Channels[ Key ].Id = ChannelData.Id;
+                self.persistence.Channels[ Key ].Name = Key;
+
+                if( not self.persistence.Channels[ Key ].Color ) then
+                    self.persistence.Channels[ Key ].Color = Addon.CHAT:GetBaseColor();
                 end
             end
 
@@ -587,6 +626,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( ChannelList and not ChannelList[ Name ] ) then
                     self.persistence.Channels[ Name ] = nil;
                 end
+            end
+
+            -- Update chat options
+            for _,Channel in pairs( self.persistence.Channels ) do
+                ChangeChatColor( 'CHANNEL'..Channel.Id,unpack( Channel.Color ) );
             end
 
             -- Chatframe
@@ -646,17 +690,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
                 local ChannelLink = Channel.Id..')'..Channel.Name;
                 if( tonumber( Channel.Id ) > 0 ) then
-                    ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..Channel.Name.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
-                end;if( Channel.Name and Addon:Minify( Channel.Name ):find( 'community' ) ) then
-
-                    local ClubData = Addon:Explode( Channel.Name,':' );
-                    if( ClubData and tonumber( #ClubData ) > 0 ) then
-                        local ClubId = ClubData[2] or nil;
-                        local ClubInfo = C_Club.GetClubInfo( ClubId );
-                        if( ClubInfo ) then
-                            ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..ClubInfo.name.."]|h";
-                        end
-                    end
+                    ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..Channel.Name.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"s
                 end
 
                 local r,g,b,id = 1,1,1,nil;
