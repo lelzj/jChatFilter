@@ -141,7 +141,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
 
-            ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
+            local Found;
+            for ChannelId,CName in pairs( ChatFrame.channelList ) do
+                if( CName == ChannelName ) then
+                    Found = true;
+                end
+            end
+            if( not Found ) then
+                ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
+            end
         end
 
         self:UnregisterEvent( 'ADDON_LOADED' );
