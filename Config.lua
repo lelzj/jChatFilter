@@ -22,6 +22,8 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 MentionAlert = true,
                 MentionTime = 20,
+                MentionY = 0,
+                MentionX = 0,
                 AliasList = {
                 },
                 ScrollBack = true,
@@ -135,40 +137,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     width = 'full',
                 };
                 Order = Order+1;
-                Settings.AlertMention = {
-                    type = 'toggle',
-                    order = Order,
-                    name = 'Mention Alert',
-                    desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound and have the whisper color',
-                    arg = 'MentionAlert',
-                };
-                Order = Order+1;
-                Settings.MentionTime = {
-                    type = 'range',
-                    order = Order,
-                    name = 'Mention Duration',
-                    desc = 'The duration of time in seconds to show mention alerts',
-                    min = 10, max = 120, step = 10,
-                    arg = 'MentionTime',
-                };
-                Order = Order+1;
-                Settings.AliasList = {
-                    type = 'input',
-                    order = Order,
-                    multiline = true,
-                    get = function( Info )
-                        return Addon:Implode( self:GetAliasList(),',' );
-                    end,
-                    set = function( Info,Value )
-                        self:SetAliasList( Value );
-                    end,
-                    name = 'Alias List',
-                    desc = 'Comma seperated list of aliases for your character name, to be used in mention alerts',
-                    arg = 'Aliases',
-                    width = 'normal',
-                    multiline = false,
-                };
-                Order = Order+1;
                 Settings.AlertQuest = {
                     type = 'toggle',
                     order = Order,
@@ -240,6 +208,111 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'FullHighlight',
                 };
                 ]]
+
+                return Settings;
+            end
+            local function GetMentions()
+                local Order = 1;
+                local Settings = {
+                    Alerts = {
+                        type = 'header',
+                        order = Order,
+                        name = 'Custom Alerts',
+                    },
+                };
+
+                Order = Order+1;
+                Settings.AlertMention = {
+                    type = 'toggle',
+                    order = Order,
+                    name = 'Mention Alert',
+                    desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound and have the whisper color',
+                    arg = 'MentionAlert',
+                };
+                Order = Order+1;
+                Settings.MentionTime = {
+                    type = 'range',
+                    order = Order,
+                    name = 'Mention Duration',
+                    desc = 'The duration of time in seconds to show mention alerts',
+                    min = 10, max = 120, step = 10,
+                    arg = 'MentionTime',
+                };
+                Order = Order+1;
+                Settings.AliasList = {
+                    type = 'input',
+                    order = Order,
+                    multiline = true,
+                    get = function( Info )
+                        return Addon:Implode( self:GetAliasList(),',' );
+                    end,
+                    set = function( Info,Value )
+                        self:SetAliasList( Value );
+                    end,
+                    name = 'Alias List',
+                    desc = 'Comma seperated list of aliases for your character name, to be used in mention alerts',
+                    arg = 'Aliases',
+                    width = 'normal',
+                    multiline = false,
+                };
+
+                local ScreenWidth = GetScreenWidth();
+                local Center = 0;
+                local Left = 0 -ScreenWidth/2;
+                local Right = 0 +ScreenWidth/2;
+
+                Order = Order+1;
+                Settings.MentionX = {
+                    width = 'full',
+                    type = 'range',
+                    order = Order,
+                    name = 'Horizontal Mention Position',
+                    desc = 'The duration of time in seconds to show mention alerts',
+                    min = Left, max = Right, step = 10,
+                    arg = 'MentionX',
+                    set = function( Info,Value )
+                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
+                            Addon.APP.persistence[ Info.arg ] = Value;
+                        end
+                        if( not self.MentionFrame:IsVisible() ) then
+                            self.MentionFrame:Show();
+                        end
+                        local p,rt,rp,x,y = self.MentionFrame:GetPoint();
+                        self.MentionFrame:SetPoint( p,rt,rp,Value,y );
+                        C_Timer.After( 5,function()
+                            self.MentionFrame:Hide();
+                        end );
+                    end,
+                };
+
+                local ScreenHeight = GetScreenHeight();
+                local Center = 0;
+                local Bottom = 0 - ScreenHeight/2;
+                local Top = 0 + ScreenHeight/2;
+
+                Order = Order+1;
+                Settings.MentionY = {
+                    width = 'full',
+                    type = 'range',
+                    order = Order,
+                    name = 'Vertical Mention Position',
+                    desc = 'The duration of time in seconds to show mention alerts',
+                    min = Bottom, max = Top, step = 10,
+                    arg = 'MentionY',
+                    set = function( Info,Value )
+                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
+                            Addon.APP.persistence[ Info.arg ] = Value;
+                        end
+                        if( not self.MentionFrame:IsVisible() ) then
+                            self.MentionFrame:Show();
+                        end
+                        local p,rt,rp,x,y = self.MentionFrame:GetPoint();
+                        self.MentionFrame:SetPoint( p,rt,rp,x,Value );
+                        C_Timer.After( 5,function()
+                            self.MentionFrame:Hide();
+                        end );
+                    end,
+                };
 
                 return Settings;
             end
@@ -519,6 +592,15 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             Order = Order+1;
             Settings.args[ 'tab'..Order ] = {
+                type = 'group',
+                name = 'Personal Mentions',
+                width = 'full',
+                order = Order,
+                args = GetMentions(),
+            };
+
+            Order = Order+1;
+            Settings.args[ 'tab'..Order ] = {
                 hidden = Addon:IsRetail(),
                 type = 'group',
                 name = 'Dungeon Alerts',
@@ -553,6 +635,15 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.CONFIG.CreateFrames = function( self )
+
+            -- Setup Mention
+            local VarData = {
+                Name = 'Mention Alert',
+                Value = "Mention Alert Position\r Drag to your desired location",
+            };
+            self.MentionFrame = Addon.FRAMES:AddMoveResizable( VarData,SettingsPanel );
+            self.MentionFrame:Hide();
+
             -- Initialize window
             local AppName = string.upper( 'jChat' );
             local BlizOptions = LibStub( 'AceConfigDialog-3.0' ).BlizOptions;

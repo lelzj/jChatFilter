@@ -388,7 +388,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             local Values = Addon.APP:GetValue( 'ChatGroups' );
             if( PossibleTypes[ Event ] and not Values[ PossibleTypes[ Event ] ] ) then
-                print( 'stopped sending',Event,MessageText )
+                --print( 'stopped sending',Event,MessageText )
                 return true;
             end
 
@@ -504,7 +504,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                Addon.FRAMES:PopUpMessage( { Name='Mention',Value=MessageText,r=r,g=g,b=b,a=a },UIParent,Addon.APP );
+                local F = Addon.FRAMES:PopUpMessage( { Name='Mention',Value=MessageText,r=r,g=g,b=b,a=a },UIParent,Addon.APP );
+                local p,rt,rp,x,y = Addon.CONFIG.MentionFrame:GetPoint();
+                if( Coords and Coords.x ) then
+                    F:SetPoint( p,rt,rp,Addon.APP:GetValue( 'MentionX' ),Addon.APP:GetValue( 'MentionY' ) );
+                end
             end
             -- Conditionally sound alerts
             if( Watched ) then
@@ -734,8 +738,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
-        -- Wait for chat windoww to load
         local Iterator = 1;
+        -- todo: solve issue where we can't join channels due to IsFlying()
+        -- seems rather silly that the game can't join channels when you log in while flying
         hooksecurefunc( 'ChatFrame_RegisterForChannels',function( self,...)
             if( not( Iterator > 1 ) ) then
                 C_Timer.After( 5,function()
