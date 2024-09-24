@@ -505,9 +505,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
                 local F = Addon.FRAMES:PopUpMessage( { Name='Mention',Value=MessageText,r=r,g=g,b=b,a=a },UIParent,Addon.APP );
-                local p,rt,rp,x,y = Addon.CONFIG.MentionFrame:GetPoint();
-                F:SetPoint( p,rt,rp,Addon.APP:GetValue( 'MentionX' ),Addon.APP:GetValue( 'MentionY' ) );
-            end
+                local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
+                if( MentionDrop.x and MentionDrop.y ) then
+                    F:SetPoint( MentionDrop.p,MentionDrop.rt,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+                else
+                    F:SetPoint( 'center' );
+                end
             -- Conditionally sound alerts
             if( Watched ) then
                 if( Addon.APP:GetValue( 'AlertSound' ) ) then

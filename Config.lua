@@ -22,8 +22,8 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 },
                 MentionAlert = true,
                 MentionTime = 20,
-                MentionY = 0,
-                MentionX = 0,
+                MentionDrop = {
+                },
                 AliasList = {
                 },
                 ScrollBack = true,
@@ -192,7 +192,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                             if( Addon.APP.persistence.ChatFilters[ Info.arg ] ~= nil ) then
                                 Addon.APP.persistence.ChatFilters[ Info.arg ] = Value;
                                 for _,FilterName in pairs( self:GetChatFilters()[ Info.arg ] ) do
-                                    Addon.FILTER:SetFilter( FilterName,Value );
+                                    Addon.APP:SetFilter( FilterName,Value );
                                 end
                             end
                         end,
@@ -254,64 +254,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'Aliases',
                     width = 'normal',
                     multiline = false,
-                };
-
-                local ScreenWidth = GetScreenWidth();
-                local Center = 0;
-                local Left = 0 -ScreenWidth/2;
-                local Right = 0 +ScreenWidth/2;
-
-                Order = Order+1;
-                Settings.MentionX = {
-                    width = 'full',
-                    type = 'range',
-                    order = Order,
-                    name = 'Horizontal Mention Position',
-                    desc = 'The duration of time in seconds to show mention alerts',
-                    min = Left, max = Right, step = 10,
-                    arg = 'MentionX',
-                    set = function( Info,Value )
-                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
-                            Addon.APP.persistence[ Info.arg ] = Value;
-                        end
-                        if( not self.MentionFrame:IsVisible() ) then
-                            self.MentionFrame:Show();
-                        end
-                        local p,rt,rp,x,y = self.MentionFrame:GetPoint();
-                        self.MentionFrame:SetPoint( p,rt,rp,Value,y );
-                        C_Timer.After( 5,function()
-                            self.MentionFrame:Hide();
-                        end );
-                    end,
-                };
-
-                local ScreenHeight = GetScreenHeight();
-                local Center = 0;
-                local Bottom = 0 - ScreenHeight/2;
-                local Top = 0 + ScreenHeight/2;
-
-                Order = Order+1;
-                Settings.MentionY = {
-                    width = 'full',
-                    type = 'range',
-                    order = Order,
-                    name = 'Vertical Mention Position',
-                    desc = 'The duration of time in seconds to show mention alerts',
-                    min = Bottom, max = Top, step = 10,
-                    arg = 'MentionY',
-                    set = function( Info,Value )
-                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
-                            Addon.APP.persistence[ Info.arg ] = Value;
-                        end
-                        if( not self.MentionFrame:IsVisible() ) then
-                            self.MentionFrame:Show();
-                        end
-                        local p,rt,rp,x,y = self.MentionFrame:GetPoint();
-                        self.MentionFrame:SetPoint( p,rt,rp,x,Value );
-                        C_Timer.After( 5,function()
-                            self.MentionFrame:Hide();
-                        end );
-                    end,
                 };
 
                 return Settings;
@@ -637,12 +579,33 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CONFIG.CreateFrames = function( self )
 
             -- Setup Mention
-            local VarData = {
+            self.MentionFrame = Addon.FRAMES:AddMoveResizable( {
                 Name = 'Mention Alert',
                 Value = "Mention Alert Position\r Drag to your desired location",
-            };
-            self.MentionFrame = Addon.FRAMES:AddMoveResizable( VarData,SettingsPanel );
+            } );
+            self.MentionFrame:SetScript( 'OnDragStop',function( self )
+
+                self:StopMovingOrSizing();
+                self:SetUserPlaced( true );
+
+                local p,rt,rp,x,y = self:GetPoint();
+                Addon.APP:SetValue( 'MentionDrop',{
+                    p = p,
+                    rt = rt,
+                    rp = rp,
+                    x = x,
+                    y = y,
+                } );
+
+            end );
             self.MentionFrame:Hide();
+
+            local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
+            if( MentionDrop.x and MentionDrop.y ) then
+                self.MentionFrame:SetPoint( MentionDrop.p,MentionDrop.rt,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+            else
+                self.MentionFrame:SetPoint( 'center' );
+            end
 
             -- Initialize window
             local AppName = string.upper( 'jChat' );
@@ -653,14 +616,25 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Key = AppName;
             if( not BlizOptions[ AppName ][ Key ] ) then
                 self.Config = LibStub( 'AceConfigDialog-3.0' ):AddToBlizOptions( AppName,'jChat' );
-                self.Config.okay = function( self )
-                    RestartGx();
-                end
-                self.Config.default = function( self )
-                    Addon.CHAT.db:ResetDB();
-                end
+
                 LibStub( 'AceConfigRegistry-3.0' ):RegisterOptionsTable( AppName,self:GetSettings() );
             end
+
+            hooksecurefunc( self.Config,'OnCommit',function()
+                -- handle like window close...
+                self.MentionFrame:Hide();
+            end );
+
+            hooksecurefunc( self.Config,'OnRefresh',function()
+                -- handle like window open...
+                self.MentionFrame:Show();
+            end );
+
+            hooksecurefunc( self.Config,'OnDefault',function()
+                --print( 'OnDefault',... )
+                --Addon.CHAT.db:ResetDB();
+            end );
+
         end
 
         Addon.CONFIG.GetChatFilters = function( self )
