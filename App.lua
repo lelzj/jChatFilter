@@ -511,6 +511,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 else
                     F:SetPoint( 'center' );
                 end
+            end
             -- Conditionally sound alerts
             if( Watched ) then
                 if( Addon.APP:GetValue( 'AlertSound' ) ) then

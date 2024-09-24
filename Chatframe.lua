@@ -142,9 +142,22 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             local Found;
+            local NewInfo = C_Club.GetClubInfo( ClubId );
             for ChannelId,CName in pairs( ChatFrame.channelList ) do
-                if( CName == ChannelName ) then
-                    Found = true;
+
+                local OldName = self:GetClubName( CName );
+                if( NewInfo and NewInfo.name and OldName ) then
+
+                    local ClubStreams = C_Club.GetStreams( NewInfo.clubId );
+                    if( ClubStreams ) then
+                        for v,Stream in pairs( ClubStreams ) do
+                            if( Stream.streamId ) then
+                                if( OldName == NewInfo.name and Stream.streamId == StreamId ) then
+                                    Found = true;
+                                end
+                            end
+                        end
+                    end
                 end
             end
             if( not Found ) then
