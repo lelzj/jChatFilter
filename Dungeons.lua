@@ -480,9 +480,9 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                     PlayerLimit = {5},
                 },
                 -- Adj for SoD
-                ST = {
+                SUNKT = {
                     Abbrevs = {
-                        'st','sunk','templeofat',
+                        'sunk','templeofat',
                     },
                     Description = 'The Temple of Atal\'Hakkar',
                     LevelBracket = {35,60},
@@ -576,7 +576,7 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
         local GetDungeonRules = function( Seasonal )
             local Rules = {};
             if( Seasonal ) then
-                Rules[ 'ST' ] = {
+                Rules[ 'SUNKT' ] = {
                 };
                 Rules[ 'GNOMER' ] = {
                 };
@@ -666,9 +666,9 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
         local GetRaidRules = function( Seasonal )
             local Rules = {};
             if( Seasonal ) then
-                Rules['ST'] = {
+                Rules['SUNKT'] = {
                     Abbrevs = {
-                        'st','sunk','templeofat',
+                        'sunk','templeofat',
                     },
                     Description = 'The Temple of Atal\'Hakkar',
                     LevelBracket = {50,60},
