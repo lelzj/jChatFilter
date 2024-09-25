@@ -229,20 +229,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
             local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h"; -- |Hplayer:Blasfemy-Grobbulus|h was here
 
-
-            -- url copy
-            local Color = 'ffffff';
-            local ALink = '|cff'..Color..'|Haddon:jChat:url|h[>%1$s<]|h|r';
-            if( strlen( MessageText ) > 7 ) then
-                local Patterns = Addon.APP:GetURLPatterns();
-                for i = 1, #Patterns do
-                    local v = Patterns[i];
-                    MessageText = gsub( MessageText,v[1],function( str )
-                        return format( ALink,str );
-                    end );
-                end
-            end
-
             --[[
             -- todo: fix communities link
 
@@ -291,10 +277,36 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 MessageText = MessageText..' : '..CreateColor( r,g,b ):WrapTextInColorCode( Watched );
             end]]
 
-            -- Return
+            -- url copy
+            if( Addon.APP:GetValue( 'LinksEnabled' ) ) then
+                local Color = 'ffffff';
+                local ALink = '|cff'..Color..'|Haddon:jChat:url|h[>%1$s<]|h|r';
+                if( strlen( MessageText ) > 7 ) then
+                    local Patterns = Addon.APP:GetURLPatterns();
+                    for i = 1, #Patterns do
+                        local v = Patterns[i];
+                        MessageText = gsub( MessageText,v[1],function( str )
+                            return format( ALink,str );
+                        end );
+                    end
+                end
+            end
+
+            -- Full highlight
             if( Addon.APP:GetValue( 'FullHighlight' ) ) then
                 return MessageText,r,g,b,a,Info.id;
             end
+
+            -- Partial highlight
+            if( Watched ) then
+                MessageText = Addon:GiSub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
+            end
+
+            -- Append highlight
+            if( Watched ) then
+                MessageText = MessageText..' : '..CreateColor( r,g,b ):WrapTextInColorCode( Watched );
+            end
+
             return MessageText,Info.r,Info.g,Info.b,1,Info.id;
         end
 
@@ -504,10 +516,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                local F = Addon.FRAMES:PopUpMessage( { Name='Mention',Value=MessageText,r=r,g=g,b=b,a=a },UIParent,Addon.APP );
+                local F = Addon.FRAMES:PopUpMessage( { Name='Mention',Value=OriginalText },UIParent,Addon.APP );
                 local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
                 if( MentionDrop.x and MentionDrop.y ) then
-                    F:SetPoint( MentionDrop.p,MentionDrop.rt,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+                    F:SetPoint( MentionDrop.p,'UIParent',MentionDrop.rp,MentionDrop.x,MentionDrop.y );
                 else
                     F:SetPoint( 'center' );
                 end
