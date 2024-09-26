@@ -197,6 +197,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Timestamp
+            -- todo: wrap in if GetCvar( showtimestamps' ) ~= chatTimestampFmt
             local TimeStamp = '';
             local chatTimestampFmt = Addon.APP:GetValue( 'showTimestamps' );
             if ( chatTimestampFmt ~= 'none' ) then
@@ -292,14 +293,38 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
 
+            -- Partial highlight
+            if( Watched ) then
+                MessageText = Addon:GiSub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
+            end
+
+            -- Always sound whispers
+            if ( ChatType == 'WHISPER' ) then
+                PlaySound( SOUNDKIT.TELL_MESSAGE );
+            end
+
+            -- Always sound mentions
+            if( Mentioned ) then
+                PlaySound( SOUNDKIT.TELL_MESSAGE );
+                local F = Addon.FRAMES:PopUpMessage( { Name='jChatMention',Value=MessageText },UIParent,Addon.APP );
+                local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
+                if( MentionDrop.x and MentionDrop.y ) then
+                    F:SetPoint( MentionDrop.p,nil,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+                else
+                    F:SetPoint( 'center' );
+                end
+            end
+
             -- Full highlight
             if( Addon.APP:GetValue( 'FullHighlight' ) ) then
                 return MessageText,r,g,b,a,Info.id;
             end
-
-            -- Partial highlight
+            
+            -- Conditionally sound alerts
             if( Watched ) then
-                MessageText = Addon:GiSub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
+                if( Addon.APP:GetValue( 'AlertSound' ) ) then
+                    PlaySound( SOUNDKIT.TELL_MESSAGE );
+                end
             end
 
             -- Append highlight
@@ -508,28 +533,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Watched,
                 Mentioned
             );
-
-            -- Always sound whispers
-            if ( ChatType == 'WHISPER' ) then
-                PlaySound( SOUNDKIT.TELL_MESSAGE );
-            end
-            -- Always sound mentions
-            if( Mentioned ) then
-                PlaySound( SOUNDKIT.TELL_MESSAGE );
-                local F = Addon.FRAMES:PopUpMessage( { Name='Mention',Value=OriginalText },UIParent,Addon.APP );
-                local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
-                if( MentionDrop.x and MentionDrop.y ) then
-                    F:SetPoint( MentionDrop.p,'UIParent',MentionDrop.rp,MentionDrop.x,MentionDrop.y );
-                else
-                    F:SetPoint( 'center' );
-                end
-            end
-            -- Conditionally sound alerts
-            if( Watched ) then
-                if( Addon.APP:GetValue( 'AlertSound' ) ) then
-                    PlaySound( SOUNDKIT.TELL_MESSAGE );
-                end
-            end
 
             -- Display
             Addon.APP.ChatFrame:AddMessage( MessageText,r,g,b,id ); 

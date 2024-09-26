@@ -24,6 +24,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 MentionTime = 20,
                 MentionDrop = {
                 },
+                MentionMove = 0,
                 AliasList = {
                 },
                 ScrollBack = true,
@@ -253,6 +254,41 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'Aliases',
                     width = 'normal',
                     multiline = false,
+                };
+                Order = Order+1;
+                Settings.MentionMove = {
+                    type = 'select',
+                    order = Order,
+                    name = 'Move Mention',
+                    desc = 'Reposition Mention Alert window placement',
+                    values = {
+                        [0] = 'Stop',
+                        [1] = 'Start',
+                    },
+                    get = function( Info )
+                        local Value;
+                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
+                            Value = Addon.APP.persistence[ Info.arg ];
+                        end
+                        if( Value > 0 ) then
+                            Addon.CONFIG.MentionPosition:Show();
+                        else
+                            Addon.CONFIG.MentionPosition:Hide();
+                        end
+                        return Value;
+                    end,
+                    set = function( Info,Value )
+                        if( Value > 0 ) then
+                            Addon.CONFIG.MentionPosition:Show();
+                        else
+                            Addon.CONFIG.MentionPosition:Hide();
+                        end
+                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
+                            Addon.APP.persistence[ Info.arg ] = Value;
+                        end
+                    end,
+                    style = 'radio',
+                    arg = 'MentionMove',
                 };
 
                 return Settings;
@@ -583,11 +619,12 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CONFIG.CreateFrames = function( self )
 
             -- Setup Mention
-            self.MentionFrame = Addon.FRAMES:AddMoveResizable( {
+            self.MentionPosition = Addon.FRAMES:AddMovable( {
                 Name = 'Mention Alert',
                 Value = "Mention Alert Position\r Drag to your desired location",
-            } );
-            self.MentionFrame:SetScript( 'OnDragStop',function( self )
+            },UIParent );
+            self.MentionPosition:Hide();
+            self.MentionPosition:SetScript( 'OnDragStop',function( self )
 
                 self:StopMovingOrSizing();
                 self:SetUserPlaced( true );
@@ -595,7 +632,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 local p,rt,rp,x,y = self:GetPoint();
                 Addon.APP:SetValue( 'MentionDrop',{
                     p = p,
-                    rt = rt,
+                    rt = rt or 'UIParent',
                     rp = rp,
                     x = x,
                     y = y,
@@ -604,11 +641,11 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
             local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
             if( MentionDrop.x and MentionDrop.y ) then
-                self.MentionFrame:SetPoint( MentionDrop.p,MentionDrop.rt,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+                self.MentionPosition:SetPoint( MentionDrop.p,MentionDrop.rt,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
             else
-                self.MentionFrame:SetPoint( 'center' );
+                self.MentionPosition:SetPoint( 'center' );
             end
-            self.MentionFrame:Hide();
+            self.MentionPosition:Hide();
 
             -- Initialize window
             local AppName = string.upper( 'jChat' );
@@ -625,12 +662,11 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             hooksecurefunc( self.Config,'OnCommit',function()
                 -- handle like window close...
-                self.MentionFrame:Hide();
+                self.MentionPosition:Hide();
             end );
 
             hooksecurefunc( self.Config,'OnRefresh',function()
                 -- handle like window open...
-                self.MentionFrame:Show();
             end );
 
             hooksecurefunc( self.Config,'OnDefault',function()
@@ -673,10 +709,12 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHAT_MSG_COMMUNITIES_CHANNEL',
                     'CHAT_MSG_CHANNEL_NOTICE_USER',
                 },
+                --[[
                 WHISPER = {
                     'CHAT_MSG_WHISPER',
                     'CHAT_MSG_WHISPER_INFORM',
                 },
+                ]]
             };
         end
 
