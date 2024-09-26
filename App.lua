@@ -266,18 +266,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
 
-            -- Highlight
-            --[[
-            if( Watched ) then
-                MessageText = Addon:GiSub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
-            end
-            ]]
-
-            --[[-- Append what was watched
-            if( Watched ) then
-                MessageText = MessageText..' : '..CreateColor( r,g,b ):WrapTextInColorCode( Watched );
-            end]]
-
             -- url copy
             if( Addon.APP:GetValue( 'LinksEnabled' ) ) then
                 local Color = 'ffffff';
