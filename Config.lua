@@ -89,6 +89,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     HEALER = false,
                     TANK = false,
                 },
+                WhisperMode = 'inline',
             };
         end
 
@@ -261,16 +262,16 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     order = Order,
                     name = 'Move Mention',
                     desc = 'Reposition Mention Alert window placement',
-                    values = {
-                        [0] = 'Stop',
-                        [1] = 'Start',
-                    },
+                    values = Addon:ArrayReverse( {
+                        Stop = 0,
+                        Start = 1,
+                    } ),
                     get = function( Info )
                         local Value;
                         if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
                             Value = Addon.APP.persistence[ Info.arg ];
                         end
-                        if( Value > 0 ) then
+                        if( tonumber( Value ) > 0 ) then
                             Addon.CONFIG.MentionPosition:Show();
                         else
                             Addon.CONFIG.MentionPosition:Hide();
@@ -547,6 +548,27 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'LinksEnabled',
                 };
 
+                Order = Order+1;
+                Settings.WhisperMode = {
+                    type = 'select',
+                    order = Order,
+                    name = 'Whisper Mode',
+                    desc = '',
+                    values = Addon:ArrayReverse( {
+                        popout = 'Pop Out',
+                        inline = 'Inline',
+                        popout_and_inline = 'Pop Out & Inline'
+                    } ),
+                    get = function( Info )
+                        return Addon.APP:GetValue( Info.arg );
+                    end,
+                    set = function( Info,Value )
+                        Addon.APP:SetValue( Info.arg,Value );
+                        SetCVar( Info.arg,Value );
+                    end,
+                    arg = 'WhisperMode',
+                };
+
                 return Settings;
             end
             local Settings = {
@@ -641,7 +663,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
             local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
             if( MentionDrop.x and MentionDrop.y ) then
-                self.MentionPosition:SetPoint( MentionDrop.p,MentionDrop.rt,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+                self.MentionPosition:SetPoint( MentionDrop.p,'UIParent',MentionDrop.rp,MentionDrop.x,MentionDrop.y );
             else
                 self.MentionPosition:SetPoint( 'center' );
             end

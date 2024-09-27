@@ -197,13 +197,14 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Timestamp
-            -- todo: wrap in if GetCvar( showtimestamps' ) ~= chatTimestampFmt
             local TimeStamp = '';
             local chatTimestampFmt = Addon.APP:GetValue( 'showTimestamps' );
             if ( chatTimestampFmt ~= 'none' ) then
                 TimeStamp = BetterDate( chatTimestampFmt,time() );
             end
-            SetCVar( 'showTimestamps',chatTimestampFmt );
+            if( GetCVar( 'showTimestamps' ) ~= chatTimestampFmt ) then
+                SetCVar( 'showTimestamps',chatTimestampFmt );
+            end
 
             -- Channel link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
