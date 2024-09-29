@@ -118,19 +118,25 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             --print( C_FriendList.SendWho( PlayerRealm ) );
 
             -- Chat color
-            local r,g,b,a = Info.r,Info.g,Info.b,0;
+            local ChannelColor = {
+                r = Info.r,
+                g = Info.g,
+                b = Info.b,
+                a = 1,
+            };
             local Channels = Addon.APP:GetValue( 'Channels' );
             if( tonumber( ChannelId ) > 0 ) then
                 if( Channels[ ChannelName ] and Channels[ ChannelName ].Color ) then
-                    r,g,b,a = unpack( Channels[ ChannelName ].Color );
+                    ChannelColor.r,ChannelColor.g,ChannelColor.b,ChannelColor.a = unpack( Channels[ ChannelName ].Color );
                 end
             end
-            if( Watched and ( ChatType == 'WHISPER' ) == false ) then
-                r,g,b,a = unpack( Addon.APP:GetValue( 'AlertColor' ) );
-            elseif( Mentioned ) then
+            local HighLightColor = {};
+            if( Mentioned ) then
                 if( ChatTypeInfo.WHISPER ) then
-                    r,g,b,a = ChatTypeInfo.WHISPER.r,ChatTypeInfo.WHISPER.g,ChatTypeInfo.WHISPER.b,1;
+                    HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a = ChatTypeInfo.WHISPER.r,ChatTypeInfo.WHISPER.g,ChatTypeInfo.WHISPER.b,1;
                 end
+            elseif( Watched and ( ChatType == 'WHISPER' ) == false ) then
+                HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a = unpack( Addon.APP:GetValue( 'AlertColor' ) );
             end
 
             --[[
@@ -284,7 +290,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Partial highlight
             if( Watched ) then
-                MessageText = Addon:GiSub( MessageText, Watched, CreateColor( r,g,b ):WrapTextInColorCode( Watched ) );
+                MessageText = Addon:GiSub( MessageText,Watched,CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched ) );
             end
 
             -- Always sound whispers
@@ -305,8 +311,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Full highlight
-            if( Addon.APP:GetValue( 'FullHighlight' ) ) then
-                return MessageText,r,g,b,a,Info.id;
+            if( Watched and Addon.APP:GetValue( 'FullHighlight' ) ) then
+                -- Append highlight
+                if( Watched ) then
+                    MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched );
+                end
+                return MessageText,HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a,Info.id;
             end
             
             -- Conditionally sound alerts
@@ -318,10 +328,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Append highlight
             if( Watched ) then
-                MessageText = MessageText..' : '..CreateColor( r,g,b ):WrapTextInColorCode( Watched );
+                MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched );
             end
 
-            return MessageText,Info.r,Info.g,Info.b,1,Info.id;
+            return MessageText,ChannelColor.r,ChannelColor.g,ChannelColor.b,ChannelColor.a,Info.id;
         end
 
         --

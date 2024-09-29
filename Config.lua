@@ -21,7 +21,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'boost',
                 },
                 MentionAlert = true,
-                MentionTime = 20,
                 MentionDrop = {
                 },
                 MentionMove = 0,
@@ -229,15 +228,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     name = 'Mention Alert',
                     desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound and have the whisper color',
                     arg = 'MentionAlert',
-                };
-                Order = Order+1;
-                Settings.MentionTime = {
-                    type = 'range',
-                    order = Order,
-                    name = 'Mention Duration',
-                    desc = 'The duration of time in seconds to show mention alerts',
-                    min = 10, max = 120, step = 10,
-                    arg = 'MentionTime',
                 };
                 Order = Order+1;
                 Settings.AliasList = {
@@ -560,7 +550,9 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         popout_and_inline = 'Pop Out & Inline'
                     } ),
                     get = function( Info )
-                        return Addon.APP:GetValue( Info.arg );
+                        local Value = Addon.APP:GetValue( Info.arg );
+                        SetCVar( Info.arg,Value );
+                        return Value;
                     end,
                     set = function( Info,Value )
                         Addon.APP:SetValue( Info.arg,Value );
