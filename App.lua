@@ -29,6 +29,26 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
+        Addon.APP.GetMentionFrame = function( self,MessageText )
+            local Frame = Addon.FRAMES:AddMovable( { Name='jChatMention',Value=MessageText },UIParent,Addon.APP );
+
+            Frame:SetScript( 'OnDragStop',function( self )
+                self:StopMovingOrSizing();
+                self:SetUserPlaced( true );
+            end );
+
+            Frame.Butt = CreateFrame( 'Button',nil,Frame,'UIPanelButtonTemplate' );
+            Frame.Butt:SetSize( 32,32 );
+            Frame.Butt:SetText( 'OK' );
+            Frame.Butt:SetScript( 'OnClick',function( self )
+                self:GetParent():Hide();
+            end );
+            Frame.Butt:SetPoint( 'topright',Frame,'topright',-10,-10 );
+            Frame.Butt:RegisterForClicks( 'AnyDown','AnyUp' );
+
+            return Frame;
+        end
+
         Addon.APP.GetURLPatterns = function()
             return {
                         -- X://Y url
@@ -301,7 +321,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned ) then
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
-                local F = Addon.FRAMES:PopUpMessage( { Name='jChatMention',Value=MessageText },UIParent,Addon.APP );
+                local F = Addon.APP:GetMentionFrame( MessageText );
                 local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
                 if( MentionDrop.x and MentionDrop.y ) then
                     F:SetPoint( MentionDrop.p,nil,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
@@ -395,9 +415,16 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( ChatType == 'WHISPER' and Addon.APP:GetValue( 'AutoInvite' ) ) then
                 if( Addon:Minify( OriginalText ):find( 'inv' ) ) then
                     if( GetNumGroupMembers and GetNumGroupMembers() > 4 ) then
-                        if( C_PartyInfo and C_PartyInfo.ConvertToRaid ) then
-                            C_PartyInfo.ConvertToRaid();
+                        if( Addon.APP:GetValue( 'Debug' ) ) then
+                            print( 'jChat:App','GetNumGroupMembers',GetNumGroupMembers() );
+                            print( 'jChat:App','C_PartyInfo',C_PartyInfo );
                         end
+                        if( C_PartyInfo and C_PartyInfo.ConvertToRaid ) then
+                            C_PartyInfo:ConvertToRaid();
+                        end
+                    end
+                    if( Addon.APP:GetValue( 'Debug' ) ) then
+                        print( 'jChat:App','Inviting Player',PlayerName );
                     end
                     InviteUnit( PlayerName );
                 end

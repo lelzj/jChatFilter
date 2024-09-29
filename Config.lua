@@ -89,6 +89,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     TANK = false,
                 },
                 WhisperMode = 'inline',
+                Debug = false,
             };
         end
 
@@ -559,6 +560,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         SetCVar( Info.arg,Value );
                     end,
                     arg = 'WhisperMode',
+                };
+                Settings.Debug = {
+                    type = 'toggle',
+                    order = Order,
+                    name = 'Debug',
+                    desc = 'Show any debug messages',
+                    arg = 'Debug',
                 };
 
                 return Settings;
