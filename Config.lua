@@ -663,7 +663,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             end );
             local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
             if( MentionDrop.x and MentionDrop.y ) then
-                self.MentionPosition:SetPoint( MentionDrop.p,'UIParent',MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+                self.MentionPosition:SetPoint( MentionDrop.p,MentionDrop.x,MentionDrop.y );
             else
                 self.MentionPosition:SetPoint( 'center' );
             end

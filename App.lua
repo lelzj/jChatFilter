@@ -30,7 +30,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         Addon.APP.GetMentionFrame = function( self,MessageText )
-            local Frame = Addon.FRAMES:AddMovable( { Name='jChatMention',Value=MessageText },UIParent,Addon.APP );
+            local Frame = Addon.FRAMES:AddMovable( { Name='jChatMention',Value=MessageText },nil,Addon.APP );
 
             Frame:SetScript( 'OnDragStop',function( self )
                 self:StopMovingOrSizing();
@@ -159,20 +159,17 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a = unpack( Addon.APP:GetValue( 'AlertColor' ) );
             end
 
-            --[[
+            -- Channel changes
             if( Event == 'CHAT_MSG_CHANNEL_NOTICE_USER' ) then
-                local Type = MessageText;
-                local UserAffected = PlayerRealm;
-                local ChannelWithNum = LangHeader;
-                local CausedBy = ChannelNameId;
-                Addon:Dump( {
-                    Type = Type,
-                    UserAffected = UserAffected,
-                    ChannelWithNum = ChannelWithNum,
-                    CausedBy = CausedBy,
-                })
+                local CausedPlayer = MessageText;
+                local AffectedPlayer = ChannelNameId;
+                local TypeOfEvent = Event;
+                if( AffectedPlayer ) then
+                    MessageText = AffectedPlayer..' '..TypeOfEvent;
+                else
+                    MessageText = CausedPlayer..' '..TypeOfEvent;
+                end
             end
-            ]]
 
             -- Class color
             if( PlayerName and Addon.APP:GetValue( 'ColorNamesByClass' ) ) then
@@ -319,15 +316,24 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Always sound mentions
-            if( Mentioned ) then
+            if( Mentioned and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ~= true ) then
+
                 PlaySound( SOUNDKIT.TELL_MESSAGE );
                 local F = Addon.APP:GetMentionFrame( MessageText );
                 local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
                 if( MentionDrop.x and MentionDrop.y ) then
-                    F:SetPoint( MentionDrop.p,nil,MentionDrop.rp,MentionDrop.x,MentionDrop.y );
+                    F:SetPoint( MentionDrop.p,MentionDrop.x,MentionDrop.y );
                 else
                     F:SetPoint( 'center' );
                 end
+                F.Butt:SetScript( 'OnClick',function( self )
+                    if( Addon.APP.Notices and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ) then
+                        Addon.APP.Notices[ Addon:Minify( MessageText ) ] = nil;
+                    end
+                    self:GetParent():Hide();
+                end );
+
+                Addon.APP.Notices[ Addon:Minify( MessageText ) ] = true;
             end
 
             -- Full highlight
@@ -618,6 +624,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Message cache
             self.Cache = {};
+
+            -- Notice cache
+            self.Notices = {};
 
             -- Quests
             if( self:GetValue( 'QuestAlert' ) ) then
