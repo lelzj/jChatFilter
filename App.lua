@@ -326,6 +326,19 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 else
                     F:SetPoint( 'center' );
                 end
+
+                local TextTheme = Addon.Theme.Text;
+                local r,g,b,a = TextTheme.r,TextTheme.g,TextTheme.b,1;
+
+                local Text = F:CreateFontString( nil,'ARTWORK','GameFontRedLarge' );
+                Text:SetTextColor( r,g,b,a );
+                Text:SetSize( 380,0 );
+                Text:SetJustifyH( 'CENTER' );
+                Text:SetJustifyV( 'MIDDLE' );
+                Text:SetNonSpaceWrap( true );
+                Text:SetPoint( 'CENTER' );
+                Text:SetText( MessageText );
+
                 F.Butt:SetScript( 'OnClick',function( self )
                     if( Addon.APP.Notices and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ) then
                         Addon.APP.Notices[ Addon:Minify( MessageText ) ] = nil;

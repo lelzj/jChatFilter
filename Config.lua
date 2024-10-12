@@ -643,9 +643,21 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Setup Mention
             self.MentionPosition = Addon.FRAMES:AddMovable( {
                 Name = 'Mention Alert',
-                Value = "Mention Alert Position\r Drag to your desired location",
             },UIParent );
             self.MentionPosition:Hide();
+
+            local TextTheme = Addon.Theme.Text;
+            local r,g,b,a = TextTheme.r,TextTheme.g,TextTheme.b,1;
+
+            local Text = self.MentionPosition:CreateFontString( nil,'ARTWORK','GameFontRedLarge' );
+            Text:SetTextColor( r,g,b,a );
+            Text:SetSize( 380,0 );
+            Text:SetJustifyH( 'CENTER' );
+            Text:SetJustifyV( 'MIDDLE' );
+            Text:SetNonSpaceWrap( true );
+            Text:SetPoint( 'CENTER' );
+            Text:SetText( 'Mention Alert Position\r Drag to your desired location' );
+
             self.MentionPosition:SetScript( 'OnDragStop',function( self )
 
                 self:StopMovingOrSizing();
