@@ -75,7 +75,7 @@ Addon.QUESTS:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( event == 'QUEST_ACCEPTED' ) then
                     Addon.QUESTS:AcceptQuest( ...  );
                 elseif( event == 'QUEST_TURNED_IN' ) then
-                    Addon.QUESTS:CompleteQuest( ... );
+                    Addon.QUESTS:RebuildQuests();
                 end
             end );
         end

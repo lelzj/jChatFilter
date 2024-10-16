@@ -420,13 +420,17 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Invite check
             if( ChatType == 'WHISPER' and Addon.APP:GetValue( 'AutoInvite' ) ) then
+                print( 'checking for "inv" message...' );
                 if( Addon:Minify( OriginalText ):find( 'inv' ) ) then
+                    print( 'found "inv"' );
                     if( GetNumGroupMembers and GetNumGroupMembers() > 4 ) then
                         if( Addon.APP:GetValue( 'Debug' ) ) then
                             print( 'jChat:App','GetNumGroupMembers',GetNumGroupMembers() );
                             print( 'jChat:App','C_PartyInfo',C_PartyInfo );
                         end
-                        if( C_PartyInfo and C_PartyInfo.ConvertToRaid ) then
+                        if( ConvertToRaid ) then
+                            ConvertToRaid();
+                        elseif( C_PartyInfo and C_PartyInfo.ConvertToRaid ) then
                             C_PartyInfo:ConvertToRaid();
                         end
                     end
