@@ -10,7 +10,7 @@
 ## X-WoWI-ID: 26743
 ## X-Wago-ID: QNlqea6e
 
-## DefaultState: disabled
+## DefaultState: enabled
 ## SavedVariables: jChatFilter
 
 ## Interface: 110005
