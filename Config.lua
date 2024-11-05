@@ -347,49 +347,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     },
                 };
 
-                for _,ChannelData in pairs( Addon.APP.persistence.Channels ) do
-                    if( ChannelData.Name ) then
-                        Order = Order+1;
-                        local ClubData = Addon:Explode( ChannelData.Name,':' );
-                        if( ClubData and tonumber( #ClubData ) > 0 ) then
-                            local ClubId = ClubData[2] or 0;
-                            if( tonumber( ClubId ) > 0 ) then
-                                local ClubInfo = C_Club.GetClubInfo( ClubId );
-                                if( ClubInfo ) then
-                                    ChannelData.Name = ClubInfo.name;
-                                end
-                            end
-                        end
-                        Settings[ ChannelData.Name..'Color' ] = {
-                            type = 'color',
-                            order = Order,
-                            get = function( Info )
-                                if( Addon.APP.persistence.Channels[ Info.arg ] ~= nil and Addon.APP.persistence.Channels[ Info.arg ].Color ~= nil ) then
-                                    return unpack( Addon.APP.persistence.Channels[ Info.arg ].Color );
-                                end
-                            end,
-                            set = function( Info,R,G,B,A )
-                                if( Addon.APP.persistence.Channels[ Info.arg ] ~= nil ) then
-                                    Addon.APP.persistence.Channels[ Info.arg ].Color = { R,G,B,A };
-                                    local Community,ClubId,StreamId = unpack( Addon:Explode( Info.arg,':' ) );
-                                    if( Addon:Minify( Community ) == 'community' ) then
-                                        local Channel = Chat_GetCommunitiesChannel( ClubId,StreamId );
-                                    elseif( Channel ) then
-                                        ChangeChatColor( Channel,R,G,B,A );
-                                    end
-                                end
-                                local Channel = Addon.CHAT:GetChannelId( Info.arg );
-                                if( Channel ) then
-                                    ChangeChatColor( 'CHANNEL'..tostring( Channel ),R,G,B,A );
-                                end
-                            end,
-                            name = ChannelData.Name..' Color',
-                            desc = 'Set the color of '..ChannelData.Name..' chat',
-                            arg = ChannelData.Name,
-                        };
-                    end
-                end
-
                 for GroupName,GroupData in pairs( self:GetMessageGroups() ) do
                     Order = Order+1;
                     Settings[ GroupName..'Message' ] = {
@@ -928,6 +885,9 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     ChatLib:SetGroup( Group,Checked );
                 end
             end );
+            hooksecurefunc( 'ToggleChatColorNamesByClassGroup',function( Checked,Group )
+                print( Checked,Group )
+            end)
         end
 
         self:UnregisterEvent( 'ADDON_LOADED' );

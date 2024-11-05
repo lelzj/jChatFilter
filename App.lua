@@ -665,7 +665,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 local Key = ChannelData.Name;
                 if( Club ) then
-                    Key = Club.name;
+                    Key = Club.shortName or Club.name;
+                    Key = Key:gsub( '%W','' );
+
                     self.persistence.Channels[ Key ] = self.persistence.Channels[ Key ] or {};
                 end
 
