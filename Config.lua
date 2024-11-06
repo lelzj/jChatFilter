@@ -160,13 +160,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     type = 'color',
                     order = Order,
                     get = function( Info )
-                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
-                            return unpack( Addon.APP.persistence[ Info.arg ] );
+                        if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                            return unpack( Addon.DB:GetPersistence()[ Info.arg ] );
                         end
                     end,
                     set = function( Info,R,G,B,A )
-                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
-                            Addon.APP.persistence[ Info.arg ] = { R,G,B,A };
+                        if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                            Addon.DB:GetPersistence()[ Info.arg ] = { R,G,B,A };
                         end
                     end,
                     name = 'Alert Color',
@@ -195,13 +195,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         desc = 'Enable/disable alerting for '..FilterName..' messages',
                         arg = FilterName,
                         get = function( Info )
-                            if( Addon.APP.persistence.ChatFilters[ Info.arg ] ~= nil ) then
-                                return Addon.APP.persistence.ChatFilters[ Info.arg ];
+                            if( Addon.DB:GetPersistence().ChatFilters[ Info.arg ] ~= nil ) then
+                                return Addon.DB:GetPersistence().ChatFilters[ Info.arg ];
                             end
                         end,
                         set = function( Info,Value )
-                            if( Addon.APP.persistence.ChatFilters[ Info.arg ] ~= nil ) then
-                                Addon.APP.persistence.ChatFilters[ Info.arg ] = Value;
+                            if( Addon.DB:GetPersistence().ChatFilters[ Info.arg ] ~= nil ) then
+                                Addon.DB:GetPersistence().ChatFilters[ Info.arg ] = Value;
                                 for _,FilterName in pairs( self:GetChatFilters()[ Info.arg ] ) do
                                     Addon.APP:SetFilter( FilterName,Value );
                                 end
@@ -259,8 +259,8 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     } ),
                     get = function( Info )
                         local Value;
-                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
-                            Value = Addon.APP.persistence[ Info.arg ];
+                        if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                            Value = Addon.DB:GetPersistence()[ Info.arg ];
                         end
                         if( tonumber( Value ) > 0 ) then
                             Addon.CONFIG.MentionPosition:Show();
@@ -275,8 +275,8 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         else
                             Addon.CONFIG.MentionPosition:Hide();
                         end
-                        if( Addon.APP.persistence[ Info.arg ] ~= nil ) then
-                            Addon.APP.persistence[ Info.arg ] = Value;
+                        if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                            Addon.DB:GetPersistence()[ Info.arg ] = Value;
                         end
                     end,
                     style = 'radio',
@@ -305,13 +305,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         arg = Abbrev,
                         disabled = Instance.Disabled,
                         get = function( Info )
-                            if( Addon.APP.persistence.DungeonQueue[ Info.arg ] ~= nil ) then
-                                return Addon.APP.persistence.DungeonQueue[ Info.arg ];
+                            if( Addon.DB:GetPersistence().DungeonQueue[ Info.arg ] ~= nil ) then
+                                return Addon.DB:GetPersistence().DungeonQueue[ Info.arg ];
                             end
                         end,
                         set = function( Info,Value )
                             local ABBREV = Info.arg;
-                            Addon.APP.persistence.DungeonQueue[ ABBREV ] = Value;
+                            Addon.DB:GetPersistence().DungeonQueue[ ABBREV ] = Value;
                         end,
                     };
                 end
@@ -325,12 +325,12 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         arg = Abbrev,
                         disabled = Instance.Disabled,
                         get = function( Info )
-                            if( Addon.APP.persistence.RaidQueue[ Info.arg ] ~= nil ) then
-                                return Addon.APP.persistence.RaidQueue[ Info.arg ];
+                            if( Addon.DB:GetPersistence().RaidQueue[ Info.arg ] ~= nil ) then
+                                return Addon.DB:GetPersistence().RaidQueue[ Info.arg ];
                             end
                         end,
                         set = function( Info,Value )
-                            Addon.APP.persistence.RaidQueue[ Info.arg ] = Value;
+                            Addon.DB:GetPersistence().RaidQueue[ Info.arg ] = Value;
                         end,
                     };
                 end
@@ -340,10 +340,10 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             local function GetChannels()
                 local Order = 1;
                 local Settings = {
-                    ChannelColors = {
+                    ChannelMessages = {
                         type = 'header',
                         order = Order,
-                        name = 'Channels',
+                        name = 'Message Types',
                     },
                 };
 
@@ -356,13 +356,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         desc = 'Enable/disable messages for '..GroupName,
                         arg = GroupName,
                         get = function( Info )
-                            if( Addon.APP.persistence.ChatGroups[ Info.arg ] ~= nil ) then
-                                return Addon.APP.persistence.ChatGroups[ Info.arg ];
+                            if( Addon.DB:GetPersistence().ChatGroups[ Info.arg ] ~= nil ) then
+                                return Addon.DB:GetPersistence().ChatGroups[ Info.arg ];
                             end
                         end,
                         set = function( Info,Value )
-                            if( Addon.APP.persistence.ChatGroups[ Info.arg ] ~= nil ) then
-                                Addon.APP.persistence.ChatGroups[ Info.arg ] = Value;
+                            if( Addon.DB:GetPersistence().ChatGroups[ Info.arg ] ~= nil ) then
+                                Addon.DB:GetPersistence().ChatGroups[ Info.arg ] = Value;
                                 for _,GroupName in pairs( self:GetMessageGroups()[ Info.arg ] ) do
                                     -- Always allow outgoing whispers
                                     if( Addon:Minify( GroupName ):find( 'whisperinform' ) ) then
@@ -373,6 +373,69 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                             end
                         end,
                     };
+                end
+
+                Settings.ChannelColors = {
+                    type = 'header',
+                    order = Order,
+                    name = 'Colors',
+                };
+
+                for i,ChannelData in pairs( Addon.CHAT:GetChannels() ) do
+                    if( ChannelData.Name ) then
+
+                        -- club
+                        local ClubData = Addon:Explode( ChannelData.Name,':' );
+                        if( ClubData and tonumber( #ClubData ) > 0 ) then
+                            local ClubId = ClubData[2] or 0;
+                            if( tonumber( ClubId ) > 0 ) then
+                                local ClubInfo = C_Club.GetClubInfo( ClubId );
+                                if( ClubInfo ) then
+                                    ChannelData.Name = ClubInfo.shortName or ClubInfo.name;
+                                    ChannelData.Name = ChannelData.Name:gsub( '%W','' );
+                                end
+                            end
+                        end
+                        
+                        Order = Order+1;
+
+                        Settings[ ChannelData.Name..'Color' ] = {
+                            type = 'color',
+                            order = Order,
+                            get = function( Info )
+                                if( Addon.DB:GetPersistence().Channels[ Info.arg ] ~= nil and Addon.DB:GetPersistence().Channels[ Info.arg ].Color ~= nil ) then
+                                    return unpack( Addon.DB:GetPersistence().Channels[ Info.arg ].Color );
+                                else
+                                    if( Addon.DB:GetValue( 'Debug' ) ) then
+                                        Addon:Dump( {
+                                            Arg = Info.arg,
+                                            AllData = Addon.DB:GetPersistence().Channels,
+                                            MyData = Addon.DB:GetPersistence().Channels[ Info.arg ],
+                                        });
+                                        Addon.FRAMES:Debug( Info.arg,'has no Addon.DB:GetPersistence().Channels entry' );
+                                    end
+                                end
+                            end,
+                            set = function( Info,R,G,B,A )
+                                if( Addon.DB:GetPersistence().Channels[ Info.arg ] ~= nil ) then
+                                    Addon.DB:GetPersistence().Channels[ Info.arg ].Color = { R,G,B,A };
+                                    local Community,ClubId,StreamId = unpack( Addon:Explode( Info.arg,':' ) );
+                                    if( Addon:Minify( Community ) == 'community' ) then
+                                        local Channel = Chat_GetCommunitiesChannel( ClubId,StreamId );
+                                    elseif( Channel ) then
+                                        ChangeChatColor( Channel,R,G,B,A );
+                                    end
+                                    local Channel = Addon.CHAT:GetChannelId( Info.arg );
+                                    if( Channel ) then
+                                        ChangeChatColor( 'CHANNEL'..tostring( Channel ),R,G,B,A );
+                                    end
+                                end
+                            end,
+                            name = '['..ChannelData.Id..')'..ChannelData.LongName..']',
+                            desc = 'Set the color of '..ChannelData.Name..' chat',
+                            arg = ChannelData.Name,
+                        };
+                    end
                 end
 
                 return Settings;
@@ -415,15 +478,15 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Settings.FontFamily = {
                     type = 'select',
                     get = function( Info )
-                        if( Addon.APP.persistence.Font[ Info.arg ] ~= nil ) then
-                            return Addon.APP.persistence.Font[ Info.arg ];
+                        if( Addon.DB:GetPersistence().Font[ Info.arg ] ~= nil ) then
+                            return Addon.DB:GetPersistence().Font[ Info.arg ];
                         end
                     end,
                     set = function( Info,Value )
-                        if( Addon.APP.persistence.Font[ Info.arg ] ~= nil ) then
-                            Addon.APP.persistence.Font[ Info.arg ] = Value;
+                        if( Addon.DB:GetPersistence().Font[ Info.arg ] ~= nil ) then
+                            Addon.DB:GetPersistence().Font[ Info.arg ] = Value;
                         end
-                        Addon.CHAT:SetFont( Addon.APP:GetValue( 'Font' ),Addon.APP.ChatFrame );
+                        Addon.CHAT:SetFont( Addon.APP:GetValue( 'Font' ),Addon.CHAT.ChatFrame );
                     end,
                     values = {
                         skurri = 'skurri',
@@ -440,15 +503,15 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Settings.FontSize = {
                     type = 'select',
                     get = function( Info )
-                        if( Addon.APP.persistence.Font[ Info.arg ] ~= nil ) then
-                            return Addon.APP.persistence.Font[ Info.arg ];
+                        if( Addon.DB:GetPersistence().Font[ Info.arg ] ~= nil ) then
+                            return Addon.DB:GetPersistence().Font[ Info.arg ];
                         end
                     end,
                     set = function( Info,Value )
-                        if( Addon.APP.persistence.Font[ Info.arg ] ~= nil ) then
-                            Addon.APP.persistence.Font[ Info.arg ] = Value;
+                        if( Addon.DB:GetPersistence().Font[ Info.arg ] ~= nil ) then
+                            Addon.DB:GetPersistence().Font[ Info.arg ] = Value;
                         end
-                        Addon.CHAT:SetFont( Addon.APP:GetValue( 'Font' ),Addon.APP.ChatFrame );
+                        Addon.CHAT:SetFont( Addon.APP:GetValue( 'Font' ),Addon.CHAT.ChatFrame );
                     end,
                     values = {
                         [10] = 10,
@@ -801,16 +864,16 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CONFIG.SetAlerts = function( self,watch )
             watch = Addon:Explode( watch,',' );
             if( type( watch ) == 'table' ) then
-                Addon.APP.persistence.AlertList = {};
+                Addon.DB:GetPersistence().AlertList = {};
                 for i,v in pairs( watch ) do
                     if( string.len( v ) > 0 ) then
-                        table.insert( Addon.APP.persistence.AlertList,Addon:Minify( v ) );
+                        table.insert( Addon.DB:GetPersistence().AlertList,Addon:Minify( v ) );
                     end
                 end
             else
-                Addon.APP.persistence.AlertList = { Addon:Minify( watch ) };
+                Addon.DB:GetPersistence().AlertList = { Addon:Minify( watch ) };
             end
-            --Addon:Dump( Addon.APP.persistence.AlertList )
+            --Addon:Dump( Addon.DB:GetPersistence().AlertList )
         end
 
         --
@@ -818,7 +881,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return table
         Addon.CONFIG.GetAlerts = function( self )
-            return Addon.APP.persistence.AlertList;
+            return Addon.DB:GetPersistence().AlertList;
         end
 
         --
@@ -830,16 +893,16 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CONFIG.SetIgnores = function( self,ignore )
             ignore = Addon:Explode( ignore,',' );
             if( type( ignore ) == 'table' ) then
-                Addon.APP.persistence.IgnoreList = {};
+                Addon.DB:GetPersistence().IgnoreList = {};
                 for i,v in pairs( ignore ) do
                     if( string.len( v ) > 0 ) then
-                        table.insert( Addon.APP.persistence.IgnoreList,Addon:Minify( v ) );
+                        table.insert( Addon.DB:GetPersistence().IgnoreList,Addon:Minify( v ) );
                     end
                 end
             else
-                Addon.APP.persistence.IgnoreList = { Addon:Minify( ignore ) };
+                Addon.DB:GetPersistence().IgnoreList = { Addon:Minify( ignore ) };
             end
-            --Addon:Dump( Addon.APP.persistence.IgnoreList )
+            --Addon:Dump( Addon.DB:GetPersistence().IgnoreList )
         end
 
         --
@@ -847,7 +910,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return table
         Addon.CONFIG.GetIgnores = function( self )
-            return Addon.APP.persistence.IgnoreList;
+            return Addon.DB:GetPersistence().IgnoreList;
         end
 
         --
@@ -859,16 +922,16 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         Addon.CONFIG.SetAliasList = function( self,Alias )
             Alias = Addon:Explode( Alias,',' );
             if( type( Alias ) == 'table' ) then
-                Addon.APP.persistence.AliasList = {};
+                Addon.DB:GetPersistence().AliasList = {};
                 for i,v in pairs( Alias ) do
                     if( string.len( v ) > 0 ) then
-                        table.insert( Addon.APP.persistence.AliasList,Addon:Minify( v ) );
+                        table.insert( Addon.DB:GetPersistence().AliasList,Addon:Minify( v ) );
                     end
                 end
             else
-                Addon.APP.persistence.AliasList = { Addon:Minify( Alias ) };
+                Addon.DB:GetPersistence().AliasList = { Addon:Minify( Alias ) };
             end
-            --Addon:Dump( Addon.APP.persistence.AliasList )
+            --Addon:Dump( Addon.DB:GetPersistence().AliasList )
         end
 
         --
@@ -876,7 +939,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return table
         Addon.CONFIG.GetAliasList = function( self )
-            return Addon.APP.persistence.AliasList;
+            return Addon.DB:GetPersistence().AliasList;
         end
 
         Addon.CONFIG.RegisterCallbacks = function( self,ChatLib )

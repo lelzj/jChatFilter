@@ -23,9 +23,9 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- @return void
         Addon.APP.SetGroup = function( self,Group,Value )
             if ( Value ) then
-                ChatFrame_AddMessageGroup( self.ChatFrame,Group );
+                ChatFrame_AddMessageGroup( Addon.CHAT.ChatFrame,Group );
             else
-                ChatFrame_RemoveMessageGroup( self.ChatFrame,Group );
+                ChatFrame_RemoveMessageGroup( Addon.CHAT.ChatFrame,Group );
             end
         end
 
@@ -193,7 +193,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             local Text;
             if( QuestieLoader ) then
                 local QuestieFilter = QuestieLoader:ImportModule( 'ChatFilter' );
-                _,Text = QuestieFilter.Filter( Addon.APP.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
+                _,Text = QuestieFilter.Filter( Addon.CHAT.ChatFrame,_,MessageText,PlayerRealm,LangHeader,ChannelNameId,PlayerName,GMFlag,ChannelNameId,ChannelId,ChannelBaseName,UnUsed,LineId,PlayerId,BNId );
             end
             if( Text ) then
                 MessageText = Text;
@@ -572,28 +572,24 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             );
 
             -- Display
-            Addon.APP.ChatFrame:AddMessage( MessageText,r,g,b,id ); 
+            Addon.CHAT.ChatFrame:AddMessage( MessageText,r,g,b,id ); 
             return true;
         end;
 
         --
         -- Set DB value
         --
-        -- @return table
+        -- @return void
         Addon.APP.SetValue = function( self,Index,Value )
-            if( self.persistence[ Index ] ~= nil ) then
-                self.persistence[ Index ] = Value;
-            end
+            Addon.DB:SetValue( Index,Value );
         end
 
         --
         -- Get DB value
         --
-        -- @return table
+        -- @return mixed
         Addon.APP.GetValue = function( self,Index )
-            if( self.persistence[ Index ] ~= nil ) then
-                return self.persistence[ Index ];
-            end
+            return Addon.DB:GetValue( Index,Value );
         end
 
         --
@@ -601,7 +597,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return table
         Addon.APP.GetDungeonQueue = function( self )
-            return self.persistence['DungeonQueue'] or {};
+            return Addon.DB:GetPersistence().DungeonQueue or {};
         end
 
         --
@@ -609,7 +605,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return table
         Addon.APP.GetRaidQueue = function( self )
-            return self.persistence['RaidQueue'] or {};
+            return Addon.DB:GetPersistence().RaidQueue or {};
         end
 
         --
@@ -617,13 +613,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         --  @return void
         Addon.APP.Init = function( self )
-            -- Database
-            self.db = LibStub( 'AceDB-3.0' ):New( AddonName,{ char = Addon.CONFIG:GetDefaults() },true );
-            if( not self.db ) then
-                return;
-            end
-            self.persistence = self.db.char;
-            if( not self.persistence ) then
+            if( not Addon.DB:GetPersistence() ) then
                 return;
             end
 
@@ -632,6 +622,15 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Notice cache
             self.Notices = {};
+
+            -- Chat text
+            Addon.CHAT:SetFont( self:GetValue( 'Font' ),Addon.CHAT.ChatFrame);
+
+            -- Fading
+            Addon.CHAT:SetFading( self:GetValue( 'FadeOut' ),Addon.CHAT.ChatFrame );
+
+            -- Scrolling
+            Addon.CHAT:SetScrolling( self:GetValue( 'ScrollBack' ),Addon.CHAT.ChatFrame );
 
             -- Quests
             if( self:GetValue( 'QuestAlert' ) ) then
@@ -646,67 +645,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 local linkType,addon,param1 = strsplit( ':',Pattern );
                 if( linkType == 'addon' and addon == 'jChat' ) then
                     if( param1 == 'url' ) then
-                        self.ChatFrame.editBox:SetText( FullText:match( ">(.-)<" ) );
+                        Addon.CHAT.ChatFrame.editBox:SetText( FullText:match( ">(.-)<" ) );
 
-                        ChatEdit_ActivateChat( self.ChatFrame.editBox );
+                        ChatEdit_ActivateChat( Addon.CHAT.ChatFrame.editBox );
                     end
                 end
             end );
-
-            -- Initialize channel persistence
-            for Id,ChannelData in pairs( Addon.CHAT.GetChannels() ) do
-                local Club;
-                local ClubData = Addon:Explode( ChannelData.Name,':' );
-                if( ClubData and tonumber( #ClubData ) > 0 ) then
-                    local ClubId = ClubData[2] or 0;
-                    if( tonumber( ClubId ) > 0 ) then
-                        Club = C_Club.GetClubInfo( ClubId );
-                    end
-                end
-                local Key = ChannelData.Name;
-                if( Club ) then
-                    Key = Club.shortName or Club.name;
-                    Key = Key:gsub( '%W','' );
-
-                    self.persistence.Channels[ Key ] = self.persistence.Channels[ Key ] or {};
-                end
-
-                self.persistence.Channels[ Key ] = self.persistence.Channels[ Key ] or {};
-                self.persistence.Channels[ Key ].Id = ChannelData.Id;
-                self.persistence.Channels[ Key ].Name = Key;
-
-                if( not self.persistence.Channels[ Key ].Color ) then
-                    self.persistence.Channels[ Key ].Color = Addon.CHAT:GetBaseColor();
-                end
-            end
-
-            -- Remove orphan channels
-            local ChannelList = {}
-            for i,v in pairs( Addon.CHAT.GetChannels() ) do
-                ChannelList[ v.Name ] = v;
-            end
-            for Name,_ in pairs( self.persistence.Channels ) do
-                if( ChannelList and not ChannelList[ Name ] ) then
-                    self.persistence.Channels[ Name ] = nil;
-                end
-            end
-
-            -- Update chat options
-            for _,Channel in pairs( self.persistence.Channels ) do
-                ChangeChatColor( 'CHANNEL'..Channel.Id,unpack( Channel.Color ) );
-            end
-
-            -- Chatframe
-            self.ChatFrame = DEFAULT_CHAT_FRAME;
-
-            -- Chat text
-            Addon.CHAT:SetFont( self:GetValue( 'Font' ),self.ChatFrame);
-
-            -- Fading
-            Addon.CHAT:SetFading( self:GetValue( 'FadeOut' ),self.ChatFrame );
-
-            -- Scrolling
-            Addon.CHAT:SetScrolling( self:GetValue( 'ScrollBack' ),self.ChatFrame );
 
             -- Chat types
             for Group,GroupData in pairs( Addon.CONFIG:GetMessageGroups() ) do
@@ -743,7 +687,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     local ClubInfo = C_Club.GetClubInfo( Club.clubId );
                     for v,Stream in pairs( ClubStreams ) do
                         if( Stream.streamId ) then
-                            Addon.CHAT:InitCommunity( self.ChatFrame,Club.clubId,Stream.streamId );
+                            Addon.CHAT:InitCommunity( Addon.CHAT.ChatFrame,Club.clubId,Stream.streamId );
                         end
                     end
                 end
@@ -752,6 +696,20 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- List channels
             for i,Channel in pairs( Addon.CHAT:GetChannels() ) do
                 Channel.Name = Addon.CHAT:GetClubName( Channel.Name ) or Channel.Name;
+
+                -- club
+                local ClubData = Addon:Explode( Channel.Name,':' );
+                if( ClubData and tonumber( #ClubData ) > 0 ) then
+                    local ClubId = ClubData[2] or 0;
+                    if( tonumber( ClubId ) > 0 ) then
+                        local ClubInfo = C_Club.GetClubInfo( ClubId );
+                        if( ClubInfo ) then
+                            Channel.Name = ClubInfo.shortName or ClubInfo.name;
+                            Channel.Name = ChannelData.Name:gsub( '%W','' );
+                        end
+                    end
+                end
+
                 local ChannelLink = Channel.Id..')'..Channel.Name;
                 if( tonumber( Channel.Id ) > 0 ) then
                     ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..Channel.Name.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"s
@@ -765,7 +723,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     end
                 end
 
-                self.ChatFrame:AddMessage( 'You have joined '..ChannelLink,r,g,b,id );
+                Addon.CHAT.ChatFrame:AddMessage( 'You have joined '..ChannelLink,r,g,b,id );
             end
 
             -- Requeue
@@ -776,10 +734,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             C_Timer.After( 5,function()
                 for ABBREV,Instance in pairs( Addon.DUNGEONS:GetDungeonsF( UnitLevel( 'player' ) ) ) do
-                    if( Addon.APP.persistence.DungeonQueue[ ABBREV ] ) then
+                    if( Addon.DB:GetPersistence().DungeonQueue[ ABBREV ] ) then
                         local ReqLevel = Addon.DUNGEONS:GetDungeons()[ ABBREV ].LevelBracket[1];
-                        local Roles = Addon.APP.persistence.Roles;
-                        local Queued = Addon.APP.persistence.DungeonQueue[ ABBREV ] or false;
+                        local Roles = Addon.DB:GetPersistence().Roles;
+                        local Queued = Addon.DB:GetPersistence().DungeonQueue[ ABBREV ] or false;
 
                         Addon.DUNGEONS:SendAddonMessage( ABBREV,ReqLevel,Roles,Queued );
                     end
