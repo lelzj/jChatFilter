@@ -375,6 +375,149 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     };
                 end
 
+                --[[
+                Order = Order+1;
+                Settings.Channels = {
+                    type = 'header',
+                    order = Order,
+                    name = 'Channels',
+                };
+
+                Order = Order+1;
+                Settings.GeneralChannel = {
+                    type = 'toggle',
+                    order = Order,
+                    name = '[1)General]',
+                    desc = 'Local General channel',
+                    arg = 'general:1',
+                    get = function( Info )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:GetConnectedChannel( ChannelName );
+                    end,
+                    set = function( Info,Value )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:SetConnectedChannel( ChannelName,ChannelId,Value )
+                    end,
+                };
+
+                Order = Order+1;
+                Settings.TradeChannel = {
+                    type = 'toggle',
+                    order = Order,
+                    name = '[2)Trade]',
+                    desc = 'Trade channel',
+                    arg = 'trade:2',
+                    get = function( Info )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:GetConnectedChannel( ChannelName );
+                    end,
+                    set = function( Info,Value )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:SetConnectedChannel( ChannelName,ChannelId,Value )
+                    end,
+                };
+
+                Order = Order+1;
+                Settings.LocalDefenseChannel = {
+                    type = 'toggle',
+                    order = Order,
+                    name = '[3)LocalDefense]',
+                    desc = 'Local Defense channel',
+                    arg = 'localdefense:3',
+                    get = function( Info )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:GetConnectedChannel( ChannelName );
+                    end,
+                    set = function( Info,Value )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:SetConnectedChannel( ChannelName,ChannelId,Value )
+                    end,
+                };
+
+                Order = Order+1;
+                Settings.WorldDefenseChannel = {
+                    type = 'toggle',
+                    order = Order,
+                    name = '[4)WorldDefense]',
+                    desc = 'World Defense channel',
+                    arg = 'worlddefense:4',
+                    get = function( Info )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:GetConnectedChannel( ChannelName );
+                    end,
+                    set = function( Info,Value )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:SetConnectedChannel( ChannelName,ChannelId,Value )
+                    end,
+                };
+
+                Order = Order+1;
+                Settings.LookingForGroupChannel = {
+                    type = 'toggle',
+                    order = Order,
+                    name = '[5)LookingForGroup]',
+                    desc = 'LFG/Looking For Group channel',
+                    arg = 'lookingforgroup:5',
+                    get = function( Info )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:GetConnectedChannel( ChannelName );
+                    end,
+                    set = function( Info,Value )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:SetConnectedChannel( ChannelName,ChannelId,Value )
+                    end,
+                };
+
+                Order = Order+1;
+                Settings.WorldChannel = {
+                    type = 'toggle',
+                    order = Order,
+                    name = '[6)World]',
+                    desc = 'World channel',
+                    arg = 'world:6',
+                    get = function( Info )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:GetConnectedChannel( ChannelName );
+                    end,
+                    set = function( Info,Value )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:SetConnectedChannel( ChannelName,ChannelId,Value )
+                    end,
+                };
+
+                Order = Order+1;
+                Settings.RPChannel = {
+                    type = 'toggle',
+                    order = Order,
+                    name = '[7)RP]',
+                    desc = 'RolePlay channel',
+                    arg = 'rp:7',
+                    get = function( Info )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:GetConnectedChannel( ChannelName );
+                    end,
+                    set = function( Info,Value )
+                        local Data = Addon:Explode( Info.arg,':' );
+                        local ChannelName,ChannelId = Data[1],Data[2];
+                        return self:SetConnectedChannel( ChannelName,ChannelId,Value )
+                    end,
+                };
+                ]]
+
+                Order = Order+1;
                 Settings.ChannelColors = {
                     type = 'header',
                     order = Order,
@@ -403,22 +546,22 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                             type = 'color',
                             order = Order,
                             get = function( Info )
-                                if( Addon.DB:GetPersistence().Channels[ Info.arg ] ~= nil and Addon.DB:GetPersistence().Channels[ Info.arg ].Color ~= nil ) then
-                                    return unpack( Addon.DB:GetPersistence().Channels[ Info.arg ].Color );
+                                if( Addon.CHAT:GetChannelPersistence()[ Info.arg ] ~= nil and Addon.CHAT:GetChannelPersistence()[ Info.arg ].Color ~= nil ) then
+                                    return unpack( Addon.CHAT:GetChannelPersistence()[ Info.arg ].Color );
                                 else
                                     if( Addon.DB:GetValue( 'Debug' ) ) then
                                         Addon:Dump( {
                                             Arg = Info.arg,
-                                            AllData = Addon.DB:GetPersistence().Channels,
-                                            MyData = Addon.DB:GetPersistence().Channels[ Info.arg ],
+                                            AllData = Addon.CHAT:GetChannelPersistence(),
+                                            MyData = Addon.CHAT:GetChannelPersistence()[ Info.arg ],
                                         });
-                                        Addon.FRAMES:Debug( Info.arg,'has no Addon.DB:GetPersistence().Channels entry' );
+                                        Addon.FRAMES:Debug( Info.arg,'has no Addon.CHAT:GetChannelPersistence() entry' );
                                     end
                                 end
                             end,
                             set = function( Info,R,G,B,A )
-                                if( Addon.DB:GetPersistence().Channels[ Info.arg ] ~= nil ) then
-                                    Addon.DB:GetPersistence().Channels[ Info.arg ].Color = { R,G,B,A };
+                                if( Addon.CHAT:GetChannelPersistence()[ Info.arg ] ~= nil ) then
+                                    Addon.CHAT:GetChannelPersistence()[ Info.arg ].Color = { R,G,B,A };
                                     local Community,ClubId,StreamId = unpack( Addon:Explode( Info.arg,':' ) );
                                     if( Addon:Minify( Community ) == 'community' ) then
                                         local Channel = Chat_GetCommunitiesChannel( ClubId,StreamId );
@@ -932,6 +1075,28 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Addon.DB:GetPersistence().AliasList = { Addon:Minify( Alias ) };
             end
             --Addon:Dump( Addon.DB:GetPersistence().AliasList )
+        end
+
+        --
+        -- Get channel persistence
+        --
+        -- @param  string
+        -- @return table
+        Addon.CONFIG.GetConnectedChannel = function( self,ChannelName )
+            return Addon.CHAT:IsChannelJoined( ChannelName );
+        end
+
+        --
+        -- Set channel persistence
+        --
+        -- @param  string
+        -- @return table
+        Addon.CONFIG.SetConnectedChannel = function( self,ChannelName,ChannelId,Connected )
+            if( Connected ) then
+                return Addon.CHAT:JoinChannel( ChannelName,ChannelId );
+            else
+                return Addon.CHAT:LeaveChannel( ChannelName );
+            end
         end
 
         --

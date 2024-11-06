@@ -117,7 +117,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             local _, ChannelName = GetChannelName( ChannelId );
 
             local GetName = function( Id )
-                local Channels = Addon.APP:GetValue( 'Channels' ) or {};
+                local Channels = Addon.CHAT:GetChannelPersistence() or {};
                 for _,ChannelData in pairs( Channels ) do
                     if( ChannelData.Id == Id ) then
                         return ChannelData.Name;
@@ -144,7 +144,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 b = Info.b,
                 a = 1,
             };
-            local Channels = Addon.APP:GetValue( 'Channels' );
+            local Channels = Addon.CHAT:GetChannelPersistence();
             if( tonumber( ChannelId ) > 0 ) then
                 if( Channels[ ChannelName ] and Channels[ ChannelName ].Color ) then
                     ChannelColor.r,ChannelColor.g,ChannelColor.b,ChannelColor.a = unpack( Channels[ ChannelName ].Color );
@@ -716,7 +716,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
 
                 local r,g,b,id = 1,1,1,nil;
-                local Channels = Addon.APP:GetValue( 'Channels' );
+                local Channels = Addon.CHAT:GetChannelPersistence();
                 if( tonumber( Channel.Id ) > 0 ) then
                     if( Channels[ Channel.Name ] and Channels[ Channel.Name ].Color ) then
                         r,g,b = unpack( Channels[ Channel.Name ].Color );
@@ -760,7 +760,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         -- seems rather silly that the game can't join channels when you log in while flying
         hooksecurefunc( 'ChatFrame_RegisterForChannels',function( self,...)
             if( not( Iterator > 1 ) ) then
-                C_Timer.After( 5,function()
+                C_Timer.After( 10,function()
                     Addon.APP:Init();
                     Addon.CONFIG:CreateFrames();
                 end );

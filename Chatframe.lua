@@ -30,32 +30,73 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
+        --  Get channel persistence
+        --
+        --  @return table
+        Addon.CHAT.GetChannelPersistence = function( self )
+            return Addon.DB:GetPersistence().Channels;
+        end
+
+        --
+        --  Is channel joined
+        --
+        --  @param  string  ChannelName
+        --  @return bool
+        Addon.CHAT.IsChannelJoined = function( self,ChannelName )
+            if( Addon.DB:GetValue( 'Debug' ) ) then
+                Addon:Dump( self.ChatFrame.channelList );
+            end
+
+            for Id,Name in pairs( self.ChatFrame.channelList ) do
+                if( Addon:Minify( ChannelName ) == Addon:Minify( Name ) ) then
+                    return true;
+                end
+            end
+        end
+
+        --
         --  Join channel
+        --  @todo blizz does not expose JoinChannel or LeaveChannel source code. as such, 
+        --  it seems impossible to manage joined and left channels in a precise ordering.
+        --  for now, this function should not be used until it can be updated to truly allow joining a channel in specifc order
         --
         --  @return bool
-        Addon.CHAT.JoinChannel = function( self,ChannelName )
+        Addon.CHAT.JoinChannel = function( self,ChannelName,ChannelId )
             if( ChannelName ) then
                 local Type,Name = JoinPermanentChannel( ChannelName );
-                Addon.APP.persistence.Channels[ ChannelName ] = {
-                    Color = self:GetBaseColor(),
-                    Id = #self.ChatFrame.channelList+1,
-                };
-                return true;
+
+                local NumEntries = #self.ChatFrame.channelList or 0;
+
+                local PreviousEntry = self.ChatFrame.channelList[tonumber( ChannelId )] or nil;
+
+                self.ChatFrame.channelList[tonumber( ChannelId )] = ChannelName;
+
+                if( PreviousEntry ) then
+                    self.ChatFrame.channelList[NumEntries+1] = PreviousEntry
+                end
+                if( Addon.DB:GetValue( 'Debug' ) ) then
+                    Addon.FRAMES:Debug( 'Joined',ChannelName,'Position',tonumber( ChannelId ) );
+                end
+                return Addon:Minify( self.ChatFrame.channelList[tonumber( ChannelId )] ) == Addon:Minify( ChannelName );
             end
-            return false;
         end
 
         --
         --  Leave channel
         --
-        --  @return bool
+        --  @return void
         Addon.CHAT.LeaveChannel = function( self,ChannelName )
             if( ChannelName ) then
-                LeaveChannelByName( ChannelName );
-                Addon.APP.persistence.Channels[ ChannelName ] = nil;
-                return true;
+                if( self:IsChannelJoined( ChannelName ) ) then
+
+                    local ChannelId = self:GetChannelId( ChannelName );
+
+                    if( tonumber( ChannelId ) > 0 ) then
+                        LeaveChannelByName( ChannelName );
+                        self.ChatFrame.channelList[tonumber( ChannelId )] = nil;
+                    end
+                end
             end
-            return false;
         end
 
         --
@@ -64,17 +105,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  ChannelName
         --  @return int
         Addon.CHAT.GetChannelId = function( self,ChannelName )
-            local ChannelId;
-            if( ChannelName ) then
-                local Channels = { GetChannelList() };
-                for i=1,#Channels,3 do
-                    local Id,Name = Channels[i],Channels[i+1];
-                    if( Addon:Minify( Name ):find( Addon:Minify( ChannelName ) ) ) then
-                        ChannelId = Id;
-                    end
+            for Id,Name in pairs( self.ChatFrame.channelList ) do
+                if( Addon:Minify( ChannelName ) == Addon:Minify( Name ) ) then
+                    return Id;
                 end
             end
-            return ChannelId;
         end
 
         --
@@ -83,17 +118,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  @param  string  Id
         --  @return int
         Addon.CHAT.GetChannelName = function( self,ChannelId )
-            local ChannelName;
-            if( ChannelId ) then
-                local Channels = { GetChannelList() };
-                for i=1,#Channels,3 do
-                    local Id,Name = Channels[i],Channels[i+1];
-                    if( Addon:Minify( ChannelId ):find( Addon:Minify( tostring( Id ) ) ) ) then
-                        ChannelName = Name;
-                    end
+            for Id,Name in pairs( self.ChatFrame.channelList ) do
+                if( tonumber( Id ) == tonumber( ChannelId ) ) then
+                    return Name;
                 end
             end
-            return ChannelName;
         end
 
         Addon.CHAT.GetChannels = function( self )
@@ -119,6 +148,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Name = Channels[i+1],
                     LongName = LongName,
                     Disabled = Channels[i+2],
+                    Color = self:GetBaseColor(),
                 };
             end
             return ChannelList;
@@ -156,6 +186,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     chatFrame.editBox:SetAttribute("stickyType", "CHANNEL");
                     ChatEdit_UpdateHeader(chatFrame.editBox);
                 end
+                return channelIndex;
             end
 
             local Found;
@@ -163,6 +194,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             for ChannelId,CName in pairs( ChatFrame.channelList ) do
 
                 local OldName = self:GetClubName( CName );
+                NewInfo.name = NewInfo.shortName or NewInfo.name;
+                NewInfo.name = NewInfo.name:gsub( '%W','' );
+
                 if( NewInfo and NewInfo.name and OldName ) then
 
                     local ClubStreams = C_Club.GetStreams( NewInfo.clubId );
@@ -178,7 +212,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             if( not Found ) then
-                ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
+                local channelIndex = ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
+                if( tonumber( channelIndex ) > 0 ) then
+                    chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex, ChatFrame_ResolveChannelName(ChannelName)), channelColor:GetRGB());
+                end
             end
         end
 
@@ -206,15 +243,15 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Key = Club.shortName or Club.name;
                     Key = Key:gsub( '%W','' );
 
-                    Addon.DB:GetPersistence().Channels[ Key ] = Addon.DB:GetPersistence().Channels[ Key ] or {};
+                    self:GetChannelPersistence()[ Key ] = self:GetChannelPersistence()[ Key ] or {};
                 end
 
-                Addon.DB:GetPersistence().Channels[ Key ] = Addon.DB:GetPersistence().Channels[ Key ] or {};
-                Addon.DB:GetPersistence().Channels[ Key ].Id = ChannelData.Id;
-                Addon.DB:GetPersistence().Channels[ Key ].Name = Key;
+                self:GetChannelPersistence()[ Key ] = self:GetChannelPersistence()[ Key ] or {};
+                self:GetChannelPersistence()[ Key ].Id = ChannelData.Id;
+                self:GetChannelPersistence()[ Key ].Name = Key;
 
-                if( not Addon.DB:GetPersistence().Channels[ Key ].Color ) then
-                    Addon.DB:GetPersistence().Channels[ Key ].Color = self:GetBaseColor();
+                if( not self:GetChannelPersistence()[ Key ].Color ) then
+                    self:GetChannelPersistence()[ Key ].Color = self:GetBaseColor();
                 end
             end
 
@@ -239,14 +276,14 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChannelList[ Key ] = v;
             end
 
-            for Name,_ in pairs( Addon.DB:GetPersistence().Channels ) do
+            for Name,_ in pairs( self:GetChannelPersistence() ) do
                 if( ChannelList and not ChannelList[ Name ] ) then
-                    Addon.DB:GetPersistence().Channels[ Name ] = nil;
+                    self:GetChannelPersistence()[ Name ] = nil;
                 end
             end
 
             -- Update chat options
-            for _,Channel in pairs( Addon.DB:GetPersistence().Channels ) do
+            for _,Channel in pairs( self:GetChannelPersistence() ) do
                 ChangeChatColor( 'CHANNEL'..Channel.Id,unpack( Channel.Color ) );
             end
         end
