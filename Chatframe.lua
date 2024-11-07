@@ -4,6 +4,13 @@ Addon.CHAT = CreateFrame( 'Frame' );
 Addon.CHAT:RegisterEvent( 'ADDON_LOADED' );
 Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jChatFilter' ) then
+
+        --
+        --  Set chat font
+        --
+        --  @param  table   Font
+        --  @param  string  ChatFrame
+        --  @return void
         Addon.CHAT.SetFont = function( self,Font,ChatFrame )
             if( Font ) then
                 ChatFrame:SetFont( 'Fonts\\'..Font.Family..'.ttf',Font.Size,Font.Flags );
@@ -11,22 +18,40 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChatFrame:SetShadowColor( 0,0,0,0 );
             end
         end
+
+        --
+        --  Set chat fading
+        --
+        --  @param  bool    Value
+        --  @param  string  ChatFrame
+        --  @return void
         Addon.CHAT.SetFading = function( self,Value,ChatFrame )
             ChatFrame:SetFading( Value );
         end
+
+        --
+        --  Set chat scrolling
+        --
+        --  @param  bool    Value
+        --  @param  string  ChatFrame
+        --  @return void
         Addon.CHAT.SetScrolling = function( self,Value,ChatFrame )
             if( Value ) then
                 ChatFrame:SetMaxLines( 10000 );
             end
         end
 
+        --
+        --  Get default channel colors
+        --
+        --  @return table
         Addon.CHAT.GetBaseColor = function( self )
             return {
-                        254 / 255,
-                        191 / 255,
-                        191 / 255,
-                        1,
-                    };
+                254 / 255,
+                191 / 255,
+                191 / 255,
+                1,
+            };
         end
 
         --
@@ -125,6 +150,10 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
         end
 
+        --
+        --  Get GetChannelList() results
+        --
+        --  @return table
         Addon.CHAT.GetChannels = function( self )
             local ChannelList = {};
             local Channels = { GetChannelList() };
@@ -154,6 +183,11 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             return ChannelList;
         end
 
+        --
+        --  Get club name
+        --
+        --  @param  string  ChannelName
+        --  @return string
         Addon.CHAT.GetClubName = function( self,ChannelName )
             local ClubData = Addon:Explode( ChannelName,':' );
             if( ClubData and tonumber( #ClubData ) > 0 ) then
@@ -178,7 +212,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             local function ChatFrame_AddCommunitiesChannel(chatFrame, channelName, channelColor, setEditBoxToChannel)
                 local channelIndex = ChatFrame_AddChannel(chatFrame, channelName);
-                --chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex, ChatFrame_ResolveChannelName(channelName)), channelColor:GetRGB());
+                chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex, ChatFrame_ResolveChannelName(channelName)), channelColor:GetRGB());
 
                 if setEditBoxToChannel then
                     chatFrame.editBox:SetAttribute("channelTarget", channelIndex);
@@ -186,7 +220,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     chatFrame.editBox:SetAttribute("stickyType", "CHANNEL");
                     ChatEdit_UpdateHeader(chatFrame.editBox);
                 end
-                return channelIndex;
             end
 
             local Found;
@@ -212,10 +245,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end
             if( not Found ) then
-                local channelIndex = ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
-                if( tonumber( channelIndex ) > 0 ) then
-                    chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex,ChatFrame_ResolveChannelName(ChannelName)),ChannelColor:GetRGB());
-                end
+                ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
             end
         end
 
@@ -287,7 +317,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChangeChatColor( 'CHANNEL'..Channel.Id,unpack( Channel.Color ) );
             end
         end
-        
+
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );
