@@ -214,7 +214,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( not Found ) then
                 local channelIndex = ChatFrame_AddCommunitiesChannel( ChatFrame,ChannelName,ChannelColor,SetEditBoxToChannel );
                 if( tonumber( channelIndex ) > 0 ) then
-                    chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex, ChatFrame_ResolveChannelName(ChannelName)), channelColor:GetRGB());
+                    chatFrame:AddMessage(COMMUNITIES_CHANNEL_ADDED_TO_CHAT_WINDOW:format(channelIndex,ChatFrame_ResolveChannelName(ChannelName)),ChannelColor:GetRGB());
                 end
             end
         end
@@ -287,8 +287,7 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChangeChatColor( 'CHANNEL'..Channel.Id,unpack( Channel.Color ) );
             end
         end
-
-        self:Init();
+        
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );

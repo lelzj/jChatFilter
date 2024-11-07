@@ -801,7 +801,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
         --  Create module config frames
         --
         --  @return void
-        Addon.CONFIG.CreateFrames = function( self )
+        Addon.CONFIG.Init = function( self )
 
             -- Setup Mention
             self.MentionPosition = Addon.FRAMES:AddMovable( {
@@ -894,12 +894,10 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     'CHAT_MSG_COMMUNITIES_CHANNEL',
                     'CHAT_MSG_CHANNEL_NOTICE_USER',
                 },
-                --[[
                 WHISPER = {
                     'CHAT_MSG_WHISPER',
                     'CHAT_MSG_WHISPER_INFORM',
                 },
-                ]]
             };
         end
 

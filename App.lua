@@ -306,7 +306,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Partial highlight
-            if( Watched ) then
+            if( Watched and ChatType ~= 'WHISPER' ) then
                 MessageText = Addon:GiSub( MessageText,Watched,CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched ) );
             end
 
@@ -338,7 +338,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Full highlight
-            if( Watched and Addon.APP:GetValue( 'FullHighlight' ) ) then
+            if( Watched and Addon.APP:GetValue( 'FullHighlight' ) and ChatType ~= 'WHISPER' ) then
                 -- Append highlight
                 if( Watched ) then
                     MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched );
@@ -354,7 +354,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Append highlight
-            if( Watched ) then
+            if( Watched and ChatType ~= 'WHISPER') then
                 MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched );
             end
 
@@ -761,8 +761,14 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         hooksecurefunc( 'ChatFrame_RegisterForChannels',function( self,...)
             if( not( Iterator > 1 ) ) then
                 C_Timer.After( 10,function()
+
+                    Addon.DB:Init();
+                    --Addon.DB:Reset();
+
+                    Addon.CHAT:Init();
+                    Addon.CONFIG:Init();
                     Addon.APP:Init();
-                    Addon.CONFIG:CreateFrames();
+
                 end );
                 Iterator = Iterator+1;
             end
