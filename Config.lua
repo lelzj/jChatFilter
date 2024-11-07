@@ -1112,7 +1112,9 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
             end );
             hooksecurefunc( 'ToggleChatColorNamesByClassGroup',function( Checked,Group )
-                print( Checked,Group )
+                if( Addon.DB:GetValue( 'Debug' ) ) then
+                    Addon.FRAMES:Debug( 'App.CONFIG','ToggleChatColorNamesByClassGroup',Checked,Group );
+                end
             end)
         end
 

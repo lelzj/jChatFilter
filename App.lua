@@ -30,7 +30,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         Addon.APP.GetMentionFrame = function( self,MessageText )
-            local Frame = Addon.FRAMES:AddMovable( { Name='jChatMention',Value=MessageText },nil,Addon.APP );
+            local Frame = Addon.FRAMES:AddMovable( { Name='jChatMention',Value=MessageText },nil,self );
 
             Frame:SetScript( 'OnDragStop',function( self )
                 self:StopMovingOrSizing();
@@ -318,23 +318,25 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Always sound mentions
             if( Mentioned and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ~= true ) then
 
-                PlaySound( SOUNDKIT.TELL_MESSAGE );
-                local F = Addon.APP:GetMentionFrame( MessageText );
-                local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
-                if( MentionDrop.x and MentionDrop.y ) then
-                    F:SetPoint( MentionDrop.p,MentionDrop.x,MentionDrop.y );
-                else
-                    F:SetPoint( 'center' );
-                end
-
-                F.Butt:SetScript( 'OnClick',function( self )
-                    if( Addon.APP.Notices and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ) then
-                        Addon.APP.Notices[ Addon:Minify( MessageText ) ] = nil;
+                if( Addon.APP:GetValue( 'MentionAlert' ) ) then
+                    PlaySound( SOUNDKIT.TELL_MESSAGE );
+                    local F = Addon.APP:GetMentionFrame( MessageText );
+                    local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
+                    if( MentionDrop.x and MentionDrop.y ) then
+                        F:SetPoint( MentionDrop.p,MentionDrop.x,MentionDrop.y );
+                    else
+                        F:SetPoint( 'center' );
                     end
-                    self:GetParent():Hide();
-                end );
 
-                Addon.APP.Notices[ Addon:Minify( MessageText ) ] = true;
+                    F.Butt:SetScript( 'OnClick',function( self )
+                        if( Addon.APP.Notices and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ) then
+                            Addon.APP.Notices[ Addon:Minify( MessageText ) ] = nil;
+                        end
+                        self:GetParent():Hide();
+                    end );
+
+                    Addon.APP.Notices[ Addon:Minify( MessageText ) ] = true;
+                end
             end
 
             -- Full highlight
