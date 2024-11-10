@@ -55,14 +55,6 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         --
-        --  Get channel persistence
-        --
-        --  @return table
-        Addon.CHAT.GetChannelPersistence = function( self )
-            return Addon.DB:GetPersistence().Channels;
-        end
-
-        --
         --  Is channel joined
         --
         --  @param  string  ChannelName
@@ -259,6 +251,9 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             self.ChatFrame = DEFAULT_CHAT_FRAME;
 
             -- Initialize channel persistence
+            local PreviousChannelPersistence = Addon.DB:GetPersistence().Channels;
+            Addon.DB:GetPersistence().Channels = {};
+
             for Id,ChannelData in pairs( self:GetChannels() ) do
                 local Club;
                 local ClubData = Addon:Explode( ChannelData.Name,':' );
@@ -273,47 +268,21 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Key = Club.shortName or Club.name;
                     Key = Key:gsub( '%W','' );
 
-                    self:GetChannelPersistence()[ Key ] = self:GetChannelPersistence()[ Key ] or {};
+                    Addon.DB:GetPersistence().Channels[ Key ] = Addon.DB:GetPersistence().Channels[ Key ] or {};
                 end
 
-                self:GetChannelPersistence()[ Key ] = self:GetChannelPersistence()[ Key ] or {};
-                self:GetChannelPersistence()[ Key ].Id = ChannelData.Id;
-                self:GetChannelPersistence()[ Key ].Name = Key;
+                Addon.DB:GetPersistence().Channels[ Key ] = Addon.DB:GetPersistence().Channels[ Key ] or {};
+                Addon.DB:GetPersistence().Channels[ Key ].Id = ChannelData.Id;
+                Addon.DB:GetPersistence().Channels[ Key ].Name = Key;
+                Addon.DB:GetPersistence().Channels[ Key ].Color = self:GetBaseColor();
 
-                if( not self:GetChannelPersistence()[ Key ].Color ) then
-                    self:GetChannelPersistence()[ Key ].Color = self:GetBaseColor();
-                end
-            end
-
-            -- Remove orphan channels
-            local ChannelList = {}
-            for i,v in pairs( self:GetChannels() ) do
-
-                local Club;
-                local ClubData = Addon:Explode( v.Name,':' );
-                if( ClubData and tonumber( #ClubData ) > 0 ) then
-                    local ClubId = ClubData[2] or 0;
-                    if( tonumber( ClubId ) > 0 ) then
-                        Club = C_Club.GetClubInfo( ClubId );
-                    end
-                end
-                local Key = v.Name;
-                if( Club ) then
-                    Key = Club.shortName or Club.name;
-                    Key = Key:gsub( '%W','' );
-                end
-
-                ChannelList[ Key ] = v;
-            end
-
-            for Name,_ in pairs( self:GetChannelPersistence() ) do
-                if( ChannelList and not ChannelList[ Name ] ) then
-                    self:GetChannelPersistence()[ Name ] = nil;
+                if( PreviousChannelPersistence[ Key ] and PreviousChannelPersistence[ Key ].Color ) then
+                    Addon.DB:GetPersistence().Channels[ Key ].Color = PreviousChannelPersistence[ Key ].Color;
                 end
             end
 
             -- Update chat options
-            for _,Channel in pairs( self:GetChannelPersistence() ) do
+            for _,Channel in pairs( Addon.DB:GetPersistence().Channels ) do
                 ChangeChatColor( 'CHANNEL'..Channel.Id,unpack( Channel.Color ) );
             end
         end

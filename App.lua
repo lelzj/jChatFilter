@@ -117,7 +117,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             local _, ChannelName = GetChannelName( ChannelId );
 
             local GetName = function( Id )
-                local Channels = Addon.CHAT:GetChannelPersistence() or {};
+                local Channels = Addon.DB:GetPersistence().Channels;
                 for _,ChannelData in pairs( Channels ) do
                     if( ChannelData.Id == Id ) then
                         return ChannelData.Name;
@@ -144,7 +144,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 b = Info.b,
                 a = 1,
             };
-            local Channels = Addon.CHAT:GetChannelPersistence();
+            local Channels = Addon.DB:GetPersistence().Channels;
             if( tonumber( ChannelId ) > 0 ) then
                 if( Channels[ ChannelName ] and Channels[ ChannelName ].Color ) then
                     ChannelColor.r,ChannelColor.g,ChannelColor.b,ChannelColor.a = unpack( Channels[ ChannelName ].Color );
@@ -429,7 +429,6 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     if( GetNumGroupMembers and GetNumGroupMembers() > 4 ) then
                         if( Addon.APP:GetValue( 'Debug' ) ) then
                             Addon.FRAMES:Debug( 'jChat:App','GetNumGroupMembers',GetNumGroupMembers() );
-                            Addon.FRAMES:Debug( 'jChat:App','C_PartyInfo',C_PartyInfo );
                         end
                         if( ConvertToRaid ) then
                             ConvertToRaid();
@@ -719,7 +718,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
 
                 local r,g,b,id = 1,1,1,nil;
-                local Channels = Addon.CHAT:GetChannelPersistence();
+                local Channels = Addon.DB:GetPersistence().Channels;
                 if( tonumber( Channel.Id ) > 0 ) then
                     if( Channels[ Channel.Name ] and Channels[ Channel.Name ].Color ) then
                         r,g,b = unpack( Channels[ Channel.Name ].Color );

@@ -546,22 +546,22 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                             type = 'color',
                             order = Order,
                             get = function( Info )
-                                if( Addon.CHAT:GetChannelPersistence()[ Info.arg ] ~= nil and Addon.CHAT:GetChannelPersistence()[ Info.arg ].Color ~= nil ) then
-                                    return unpack( Addon.CHAT:GetChannelPersistence()[ Info.arg ].Color );
+                                if( Addon.DB:GetPersistence().Channels[ Info.arg ] ~= nil and Addon.DB:GetPersistence().Channels[ Info.arg ].Color ~= nil ) then
+                                    return unpack( Addon.DB:GetPersistence().Channels[ Info.arg ].Color );
                                 else
                                     if( Addon.DB:GetValue( 'Debug' ) ) then
                                         Addon:Dump( {
                                             Arg = Info.arg,
-                                            AllData = Addon.CHAT:GetChannelPersistence(),
-                                            MyData = Addon.CHAT:GetChannelPersistence()[ Info.arg ],
+                                            AllData = Addon.DB:GetPersistence().Channels,
+                                            MyData = Addon.DB:GetPersistence().Channels[ Info.arg ],
                                         });
-                                        Addon.FRAMES:Debug( Info.arg,'has no Addon.CHAT:GetChannelPersistence() entry' );
+                                        Addon.FRAMES:Debug( Info.arg,'has no Addon.DB:GetPersistence().Channels entry' );
                                     end
                                 end
                             end,
                             set = function( Info,R,G,B,A )
-                                if( Addon.CHAT:GetChannelPersistence()[ Info.arg ] ~= nil ) then
-                                    Addon.CHAT:GetChannelPersistence()[ Info.arg ].Color = { R,G,B,A };
+                                if( Addon.DB:GetPersistence().Channels[ Info.arg ] ~= nil ) then
+                                    Addon.DB:GetPersistence().Channels[ Info.arg ].Color = { R,G,B,A };
                                     local Community,ClubId,StreamId = unpack( Addon:Explode( Info.arg,':' ) );
                                     if( Addon:Minify( Community ) == 'community' ) then
                                         local Channel = Chat_GetCommunitiesChannel( ClubId,StreamId );
