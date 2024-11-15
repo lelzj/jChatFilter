@@ -307,7 +307,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Partial highlight
             if( Watched and ChatType ~= 'WHISPER' ) then
-                MessageText = Addon:GiSub( MessageText,Watched,CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched ) );
+                MessageText = Addon:GiSub( MessageText,Watched,CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched ) );
             end
 
             -- Always sound whispers
@@ -343,7 +343,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( Watched and Addon.APP:GetValue( 'FullHighlight' ) and ChatType ~= 'WHISPER' ) then
                 -- Append highlight
                 if( Watched ) then
-                    MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched );
+                    MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
                 end
                 return MessageText,HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a,Info.id;
             end
@@ -357,10 +357,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Append highlight
             if( Watched and ChatType ~= 'WHISPER') then
-                MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b ):WrapTextInColorCode( Watched );
+                MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
             end
 
-            return MessageText,ChannelColor.r,ChannelColor.g,ChannelColor.b,ChannelColor.a,Info.id;
+            return MessageText,ChannelColor.r,ChannelColor.g,ChannelColor.b,Info.id;
         end
 
         --
@@ -717,15 +717,15 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     ChannelLink = "|Hchannel:channel:"..Channel.Id.."|h["..Channel.Id..')'..Channel.Name.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"s
                 end
 
-                local r,g,b,id = 1,1,1,nil;
+                local r,g,b,a,id = 1,1,1,1,nil;
                 local Channels = Addon.DB:GetPersistence().Channels;
                 if( tonumber( Channel.Id ) > 0 ) then
                     if( Channels[ Channel.Name ] and Channels[ Channel.Name ].Color ) then
-                        r,g,b = unpack( Channels[ Channel.Name ].Color );
+                        r,g,b,a = unpack( Channels[ Channel.Name ].Color );
                     end
                 end
 
-                Addon.CHAT.ChatFrame:AddMessage( 'You have joined '..ChannelLink,r,g,b,id );
+                Addon.CHAT.ChatFrame:AddMessage( 'You have joined '..ChannelLink,r,g,b,a,id );
             end
 
             -- Requeue

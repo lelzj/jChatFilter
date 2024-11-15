@@ -172,6 +172,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     name = 'Alert Color',
                     desc = 'Set the color of Alerts chat',
                     arg = 'AlertColor',
+                    --hasAlpha = true,
                 };
                 Order = Order+1;
                 Settings.AlertSound = {
@@ -577,6 +578,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                             name = '['..ChannelData.Id..')'..ChannelData.LongName..']',
                             desc = 'Set the color of '..ChannelData.Name..' chat',
                             arg = ChannelData.Name,
+                            --hasAlpha = true,
                         };
                     end
                 end
@@ -743,7 +745,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     Addon.APP:SetValue( Info.arg,Value );
                 end,
                 name = 'jChat Settings',
-                desc = 'Simple chat filter',
                 childGroups = 'tab',
                 args = {
                 },
@@ -793,6 +794,8 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 order = Order,
                 args = GetGeneral(),
             };
+
+            Settings.args.profiles = LibStub( 'AceDBOptions-3.0' ):GetOptionsTable( Addon.DB.db );
 
             return Settings;
         end
