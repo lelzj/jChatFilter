@@ -767,9 +767,14 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 args = GetMentions(),
             };
 
+            local LFGEnabled;
+            if( C_LFGInfo and C_LFGInfo.IsGroupFinderEnabled ) then
+                LFGEnabled = C_LFGInfo.IsGroupFinderEnabled();
+            end
+            print( type( LFGEnabled ),LFGEnabled );
             Order = Order+1;
             Settings.args[ 'tab'..Order ] = {
-                hidden = Addon:IsRetail(),
+                hidden = Addon:IsRetail() or LFGEnabled,
                 type = 'group',
                 name = 'Dungeon Alerts',
                 width = 'full',
