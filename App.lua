@@ -761,11 +761,12 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         end
 
         local Iterator = 1;
+        local Timer = 10; if( Addon:IsRetail() ) then Timer = 15; end;
         -- todo: solve issue where we can't join channels due to IsFlying()
         -- seems rather silly that the game can't join channels when you log in while flying
         hooksecurefunc( 'ChatFrame_RegisterForChannels',function( self,...)
             if( not( Iterator > 1 ) ) then
-                C_Timer.After( 10,function()
+                C_Timer.After( Timer,function()
 
                     Addon.DB:Init();
                     --Addon.DB:Reset();
