@@ -6,94 +6,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
     if( AddonName == 'jChatFilter' ) then
 
         --
-        --  Get module defaults
-        --
-        --  @return table
-        Addon.CONFIG.GetDefaults = function( self )
-            return {
-                Font = {
-                    Family = 'ARIALN',
-                    Size = 14,
-                    Flags = 'THINOUTLINE',
-                },
-                FadeOut = false,
-                IgnoreList = {
-                    'boost',
-                },
-                MentionAlert = true,
-                MentionDrop = {
-                },
-                MentionMove = 0,
-                AliasList = {
-                },
-                ScrollBack = true,
-                QuestAlert = true,
-                ChannelColor = {
-                    254 / 255,
-                    191 / 255,
-                    191 / 255,
-                    1,
-                },
-                AlertColor = {
-                    224 / 255,
-                    157 / 255,
-                    240 / 255,
-                    1,
-                },
-                AlertSound = false,
-                AlertList = {
-                },
-                FullHighlight = true,
-                LinksEnabled = true,
-                Channels = {},
-                ChatGroups = {
-                    BATTLEGROUND = true,
-                    TRADESKILLS = false,
-                    SAY = true,
-                    EMOTE = true,
-                    YELL = true,
-                    GUILD = true,
-                    WHISPER = true,
-                    BN = true,
-                    PARTY = true,
-                    RAID = true,
-                    COMBAT = true,
-                    SKILL = true,
-                    LOOT = true,
-                    MONEY = true,
-                    OPENING = true,
-                    PET = false,
-                    ERRORS = true,
-                    IGNORED = true,
-                    CHANNEL = true,
-                },
-                ChatFilters = {
-                    PARTY = true,
-                    RAID = true,
-                    GUILD = true,
-                    YELL = true,
-                    SAY = false,
-                    CHANNEL = true,
-                    WHISPER = true,
-                },
-                showTimestamps = '%I:%M:%S %p ',
-                AutoInvite = true,
-                DungeonQueue = {
-                },
-                RaidQueue = {
-                },
-                ColorNamesByClass = true,
-                Roles = {
-                    DPS = true,
-                    HEALER = false,
-                    TANK = false,
-                },
-                WhisperMode = 'inline',
-                Debug = false,
-            };
-        end
-
-        --
         --  Get module settings
         --
         --  @return table
@@ -139,6 +51,14 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'IgnoreList',
                     width = 'full',
                 };
+
+                Order = Order+1;
+                Settings.AlertHighlights = {
+                    type = 'header',
+                    order = Order,
+                    name = 'Highlights',
+                };
+
                 Order = Order+1;
                 Settings.FullHighLight = {
                     type = 'toggle',
@@ -146,14 +66,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     name = 'Fully Highlight Message',
                     desc = 'Enable/disable highlighting entire message alerts during match',
                     arg = 'FullHighlight',
-                };
-                Order = Order+1;
-                Settings.AlertQuest = {
-                    type = 'toggle',
-                    order = Order,
-                    name = 'Quest Alert',
-                    desc = 'Enable/disable alerting if anyone mentions a quest you are on',
-                    arg = 'QuestAlert',
                 };
                 Order = Order+1;
                 Settings.AlertColor = {
@@ -174,13 +86,20 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'AlertColor',
                     --hasAlpha = true,
                 };
+
                 Order = Order+1;
-                Settings.AlertSound = {
+                Settings.AlertTypes = {
+                    type = 'header',
+                    order = Order,
+                    name = 'Types',
+                };
+                Order = Order+1;
+                Settings.AlertQuest = {
                     type = 'toggle',
                     order = Order,
-                    name = 'Sound Alert',
-                    desc = 'Enable/disable chat Alert sound',
-                    arg = 'AlertSound',
+                    name = 'Quest Alert',
+                    desc = 'Enable/disable alerting if anyone mentions a quest you are on',
+                    arg = 'QuestAlert',
                 };
                 for FilterName,FilterData in pairs( self:GetChatFilters() ) do
                     Order = Order+1;
@@ -210,6 +129,56 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         end,
                     };
                 end
+
+                Order = Order+1;
+                Settings.AlertSounds = {
+                    type = 'header',
+                    order = Order,
+                    name = 'Sounds',
+                };
+                Order = Order+1;
+                Settings.AlertSound = {
+                    type = 'toggle',
+                    order = Order,
+                    name = 'Sound Alert',
+                    desc = 'Enable/disable chat Alert sound',
+                    arg = 'AlertSound',
+                };
+                Order = Order+1;
+                Settings.AlertChannel = {
+                    type = 'select',
+                    order = Order,
+                    name = 'Sound Channel',
+                    desc = 'Alert sound channel',
+                    values = {
+                        SFX = 'SFX',
+                        Master = 'Master',
+                        Music = 'Music',
+                        Ambience = 'Ambience',
+                        Dialog = 'Dialog',
+                    },
+                    arg = 'AlertChannel',
+                };
+                Order = Order+1;
+                Settings.AlertVolume = {
+                    type = 'range',
+                    order = Order,
+                    name = 'Sound Volume',
+                    desc = 'Alert sound volume',
+                    min = 0,max = 1,step = 0.1,
+                    set = function( Info,Value )
+                        local SoundChannel = Addon.DB:GetValue( 'AlertChannel' );
+                        local CVarSetting = 'Sound_'..SoundChannel..'Volume';
+                        local SoundChannelVolume = GetCVar( CVarSetting );
+                        if( SoundChannelVolume ~= nil ) then
+                            SetCVar( CVarSetting,Value );
+                        end
+                        if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                            Addon.DB:GetPersistence()[ Info.arg ] = Value;
+                        end
+                    end,
+                    arg = 'AlertVolume',
+                };
 
                 return Settings;
             end

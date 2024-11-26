@@ -41,6 +41,8 @@ Addon.DB:SetScript( 'OnEvent',function( self,Event,AddonName )
                     1,
                 },
                 AlertSound = false,
+                AlertChannel = 'SFX',
+                AlertVolume = .5,
                 AlertList = {
                 },
                 FullHighlight = true,

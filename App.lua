@@ -341,23 +341,19 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Full highlight
             if( Watched and Addon.APP:GetValue( 'FullHighlight' ) and ChatType ~= 'WHISPER' ) then
-                -- Append highlight
-                if( Watched ) then
-                    MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
+                MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
+                if( Addon.APP:GetValue( 'AlertSound' ) ) then
+                    PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
                 end
                 return MessageText,HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a,Info.id;
             end
-            
-            -- Conditionally sound alerts
-            if( Watched ) then
-                if( Addon.APP:GetValue( 'AlertSound' ) ) then
-                    PlaySound( SOUNDKIT.TELL_MESSAGE );
-                end
-            end
 
-            -- Append highlight
+            -- Partial highlight
             if( Watched and ChatType ~= 'WHISPER') then
                 MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
+                if( Addon.APP:GetValue( 'AlertSound' ) ) then
+                    PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
+                end
             end
 
             return MessageText,ChannelColor.r,ChannelColor.g,ChannelColor.b,Info.id;
@@ -591,7 +587,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
         --
         -- @return mixed
         Addon.APP.GetValue = function( self,Index )
-            return Addon.DB:GetValue( Index,Value );
+            return Addon.DB:GetValue( Index );
         end
 
         --
