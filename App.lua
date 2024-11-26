@@ -342,18 +342,14 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Full highlight
             if( Watched and Addon.APP:GetValue( 'FullHighlight' ) and ChatType ~= 'WHISPER' ) then
                 MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
-                if( Addon.APP:GetValue( 'AlertSound' ) ) then
-                    PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
-                end
+                PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
                 return MessageText,HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a,Info.id;
             end
 
             -- Partial highlight
             if( Watched and ChatType ~= 'WHISPER') then
                 MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
-                if( Addon.APP:GetValue( 'AlertSound' ) ) then
-                    PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
-                end
+                PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
             end
 
             return MessageText,ChannelColor.r,ChannelColor.g,ChannelColor.b,Info.id;

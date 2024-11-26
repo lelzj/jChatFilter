@@ -137,14 +137,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     name = 'Sounds',
                 };
                 Order = Order+1;
-                Settings.AlertSound = {
-                    type = 'toggle',
-                    order = Order,
-                    name = 'Sound Alert',
-                    desc = 'Enable/disable chat Alert sound',
-                    arg = 'AlertSound',
-                };
-                Order = Order+1;
                 Settings.AlertChannel = {
                     type = 'select',
                     order = Order,
