@@ -322,14 +322,15 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Always sound whispers
             if ( ChatType == 'WHISPER' ) then
-                PlaySound( SOUNDKIT.TELL_MESSAGE );
+                PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
             end
 
             -- Always sound mentions
             if( Mentioned and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ~= true ) then
 
                 if( Addon.APP:GetValue( 'MentionAlert' ) ) then
-                    PlaySound( SOUNDKIT.TELL_MESSAGE );
+                    PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
+
                     local F = Addon.APP:GetMentionFrame( MessageText );
                     local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
                     if( MentionDrop.x and MentionDrop.y ) then
