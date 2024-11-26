@@ -160,6 +160,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Channel changes
+            --[[
             if( Event == 'CHAT_MSG_CHANNEL_NOTICE_USER' ) then
                 local CausedPlayer = MessageText;
                 local AffectedPlayer = ChannelNameId;
@@ -170,6 +171,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                     MessageText = CausedPlayer..' '..TypeOfEvent;
                 end
             end
+            ]]
 
             -- Class color
             if( PlayerName and Addon.APP:GetValue( 'ColorNamesByClass' ) ) then
@@ -229,6 +231,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 SetCVar( 'showTimestamps',chatTimestampFmt );
             end
 
+            TimeStamp = CreateColor( unpack( Addon.APP:GetValue( 'TimeColor' ) ) ):WrapTextInColorCode( TimeStamp );
+
             -- Channel link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
             local ChannelLink = '';
@@ -248,6 +252,10 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 ChannelLink = "|Hchannel:RAID|h[Raid Leader]|h";
             elseif( ChatType == 'GUILD' ) then
                 ChannelLink = "|Hchannel:GUILD|h[Guild]|h";
+            end
+            local TypeColor = ChatTypeInfo[ ChatType ];
+            if( TypeColor ) then
+                ChannelLink = CreateColor( TypeColor.r,TypeColor.g,TypeColor.b ):WrapTextInColorCode( ChannelLink );
             end
 
             -- Player link
@@ -270,6 +278,13 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
             ]]
 
+            -- join/leave
+            if( ( not MessageText or MessageText == '' ) and ChatType == 'CHANNEL_JOIN' ) then
+                MessageText = 'has joined the channel.';
+            elseif( ( not MessageText or MessageText == '' ) and ChatType == 'CHANNEL_LEAVE' ) then
+                MessageText = 'has left the channel.';
+            end
+
             -- Player action
             local PlayerAction = '';
             if( ChatType == 'YELL' ) then
@@ -282,13 +297,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             -- Player level
             local PlayerLevel = '';--'['..UnitLevel( PlayerId )..']';
 
-            -- Message
-            if( ( not MessageText or MessageText == '' ) and ChatType == 'CHANNEL_JOIN' ) then
-                MessageText = 'has joined the channel.';
-            elseif( ( not MessageText or MessageText == '' ) and ChatType == 'CHANNEL_LEAVE' ) then
-                MessageText = 'has left the channel.';
-            end
-            MessageText = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel..': '..MessageText;
+            -- Message Prefix
+            local MessagePrefix = TimeStamp..ChannelLink..PFlag..PlayerLink..PlayerAction..PlayerLevel;
 
             -- url copy
             if( Addon.APP:GetValue( 'LinksEnabled' ) ) then
@@ -343,7 +353,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             if( Watched and Addon.APP:GetValue( 'FullHighlight' ) and ChatType ~= 'WHISPER' ) then
                 MessageText = MessageText..' : '..CreateColor( HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a ):WrapTextInColorCode( Watched );
                 PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
-                return MessageText,HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a,Info.id;
+
+                return MessagePrefix..' '..MessageText,HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a,Info.id;
             end
 
             -- Partial highlight
@@ -352,7 +363,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
             end
 
-            return MessageText,ChannelColor.r,ChannelColor.g,ChannelColor.b,Info.id;
+            return MessagePrefix..' '..MessageText,ChannelColor.r,ChannelColor.g,ChannelColor.b,Info.id;
         end
 
         --

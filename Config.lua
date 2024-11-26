@@ -86,6 +86,25 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                     arg = 'AlertColor',
                     --hasAlpha = true,
                 };
+                Order = Order+1;
+                Settings.TimeColor = {
+                    type = 'color',
+                    order = Order,
+                    get = function( Info )
+                        if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                            return unpack( Addon.DB:GetPersistence()[ Info.arg ] );
+                        end
+                    end,
+                    set = function( Info,R,G,B,A )
+                        if( Addon.DB:GetPersistence()[ Info.arg ] ~= nil ) then
+                            Addon.DB:GetPersistence()[ Info.arg ] = { R,G,B,A };
+                        end
+                    end,
+                    name = 'Time Color',
+                    desc = 'Set the color of Timestamps',
+                    arg = 'TimeColor',
+                    --hasAlpha = true,
+                };
 
                 Order = Order+1;
                 Settings.AlertTypes = {

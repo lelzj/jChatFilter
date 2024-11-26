@@ -78,6 +78,12 @@ Addon.DB:SetScript( 'OnEvent',function( self,Event,AddonName )
                     WHISPER = true,
                 },
                 showTimestamps = '%I:%M:%S %p ',
+                TimeColor = {
+                    184 / 255,
+                    184 / 255,
+                    184 / 255,
+                    1,
+                },
                 AutoInvite = true,
                 DungeonQueue = {
                 },
