@@ -51,41 +51,7 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.APP.GetURLPatterns = function()
             return {
-                        -- X://Y url
-                    { "https?://www%.[^/]+(/v/%d+/)%w+", "%s"},
-                    { "%f[%S](%a[%w%.+-]+://%S+)", "%s"},
-                        -- www.X.Y url
-                    { "^(www%.[-%w_%%]+%.%S+)", "%s"},
-                    { "%f[%S](www%.[-%w_%%]+%.%S+)", "%s"},
-                        -- "W X"@Y.Z email (this is seriously a valid email)
-                    --{ pattern = '^(%"[^%"]+%"@[-%w_%%%.]+%.(%a%a+))', matchfunc=Link_TLD},
-                    --{ pattern = '%f[%S](%"[^%"]+%"@[-%w_%%%.]+%.(%a%a+))', matchfunc=Link_TLD},
-                        -- X@Y.Z email
-                    { "(%S+@[-%w_%%%.]+%.(%a%a+))", "%s"},
-                        -- XXX.YYY.ZZZ.WWW:VVVV/UUUUU IPv4 address with port and path
-                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d/%S+)", "%s"},
-                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d/%S+)", "%s"},
-                        -- XXX.YYY.ZZZ.WWW:VVVV IPv4 address with port (IP of ts server for example)
-                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
-                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d:[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
-                        -- XXX.YYY.ZZZ.WWW/VVVVV IPv4 address with path
-                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%/%S+)", "%s"},
-                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%/%S+)", "%s"},
-                        -- XXX.YYY.ZZZ.WWW IPv4 address
-                    { "^([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", "%s"},
-                    { "%f[%S]([0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%.[0-2]?%d?%d%)%f[%D]", "%s"},
-                        -- X.Y.Z:WWWW/VVVVV url with port and path
-                    { "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", "%s"},
-                    { "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d/%S+)", "%s"},
-                        -- X.Y.Z:WWWW url with port (ts server for example)
-                    { "^([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
-                    { "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+):[0-6]?%d?%d?%d?%d)%f[%D]", "%s"},
-                        -- X.Y.Z/WWWWW url with path
-                    { "^([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", "%s"},
-                    { "%f[%S]([-%w_%%%.]+[-%w_%%]%.(%a%a+)/%S+)", "%s"},
-                        -- X.Y.Z url
-                    --{ "^([-%w_%%]+%.[-%w_%%]+%.%S+)", "%s"},
-                    --{ "%f[%S]([-%w_%%]+%.[-%w_%%]+%.%S+)", "%s"},
+                    { '[a-z]*://[^ >,;]*','%s' },
                 };
         end
 
@@ -235,6 +201,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
             -- Channel link
             -- https://wowpedia.fandom.com/wiki/Hyperlinks
+            -- https://wowwiki-archive.fandom.com/wiki/ItemLink
+            -- Interface/AddOns/Blizzard_UIPanels_Game/Mainline/ItemRef.lua
             local ChannelLink = '';
             if( tonumber( ChannelId ) > 0 ) then
                 ChannelLink = "|Hchannel:channel:"..ChannelId.."|h["..ChannelId..')'..ChannelBaseName.."]|h"    -- "|Hchannel:channel:2|h[2. Trade - City]|h"
@@ -259,8 +227,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             end
 
             -- Player link
-            -- https://wowpedia.fandom.com/wiki/Hyperlinks
             local PlayerLink = "|Hplayer:"..PlayerRealm.."|h".."["..PlayerName.."]|h"; -- |Hplayer:Blasfemy-Grobbulus|h was here
+
+            -- Outfit link -- test code copied from reference links above
+            --local OutfitLink = '|cffff80ff|Houtfit:"a;"aA%ib"a>!.h&Ul"uH"a8"v""a@"v<"a"!!!!5o!!!!!!!!!|h[|T1598183:13:13:-1:0|tOutfit]|h|r';
+
 
             --[[
             -- todo: fix communities link
