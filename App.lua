@@ -305,13 +305,38 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
             end
 
+            -- Always sound whispers
+            if( ChatType == 'WHISPER' and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ~= true ) then
+
+                if( Addon.APP:GetValue( 'AFKAlert' ) and UnitIsAFK( 'player' ) ) then
+                    PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
+
+                    local F = Addon.APP:GetMentionFrame( MessagePrefix..' '..MessageText );
+                    local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
+                    if( MentionDrop.x and MentionDrop.y ) then
+                        F:SetPoint( MentionDrop.p,MentionDrop.x,MentionDrop.y );
+                    else
+                        F:SetPoint( 'center' );
+                    end
+
+                    F.Butt:SetScript( 'OnClick',function( self )
+                        if( Addon.APP.Notices and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ) then
+                            Addon.APP.Notices[ Addon:Minify( MessageText ) ] = nil;
+                        end
+                        self:GetParent():Hide();
+                    end );
+
+                    Addon.APP.Notices[ Addon:Minify( MessageText ) ] = true;
+                end
+            end
+
             -- Always sound mentions
             if( Mentioned and Addon.APP.Notices[ Addon:Minify( MessageText ) ] ~= true ) then
 
                 if( Addon.APP:GetValue( 'MentionAlert' ) ) then
                     PlaySound( SOUNDKIT.TELL_MESSAGE,Addon.APP:GetValue( 'AlertChannel' ) );
 
-                    local F = Addon.APP:GetMentionFrame( MessageText );
+                    local F = Addon.APP:GetMentionFrame( MessagePrefix..' '..MessageText );
                     local MentionDrop = Addon.APP:GetValue( 'MentionDrop' );
                     if( MentionDrop.x and MentionDrop.y ) then
                         F:SetPoint( MentionDrop.p,MentionDrop.x,MentionDrop.y );
@@ -452,6 +477,11 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
                 return true;
             end
 
+            -- GM check
+            if( GMFlag == 'GM' and ChatType == 'WHISPER' ) then
+                return;
+            end
+
             -- Prevent repeat messages
             local CacheKey = Addon.APP:GetCacheKey( ... );
             if( Addon.APP.Cache[ CacheKey ] ) then
@@ -558,7 +588,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             );
 
             -- Display
-            Addon.CHAT.ChatFrame:AddMessage( MessageText,r,g,b,id ); 
+            Addon.CHAT.ChatFrame:AddMessage( MessageText,r,g,b,id );
+
             return true;
         end;
 

@@ -175,6 +175,36 @@ Addon.CHAT:SetScript( 'OnEvent',function( self,Event,AddonName )
             return ChannelList;
         end
 
+        Addon.CHAT.OpenNewWindow = function( self,Name )
+            for i=1, NUM_CHAT_WINDOWS do
+                local _, _, _, _, _, _, shown = FCF_GetChatWindowInfo(i);
+                local chatFrame = _G["ChatFrame"..i];
+                local chatTab = _G["ChatFrame"..i.."Tab"];
+                local WindowName = chatFrame.name or nil;
+                if( WindowName == Name ) then
+                    --return false; -- seems like windows hang around forever
+                end
+            end
+            local NoDefaultChannels = true;
+            local ChatFrame,ChatFrameId = FCF_OpenNewWindow( Name,NoDefaultChannels );
+            return ChatFrame,ChatFrameId;
+        end
+
+        Addon.CHAT.CloseWisperWindows = function( self )
+            for i=1, NUM_CHAT_WINDOWS do
+                local _, _, _, _, _, _, shown = FCF_GetChatWindowInfo(i);
+                local chatFrame = _G["ChatFrame"..i];
+                local chatTab = _G["ChatFrame"..i.."Tab"];
+                local WindowName = chatFrame.name or nil;
+                if( WindowName and WindowName:find( ':' ) ) then
+                    local Name,Addon,Type = strsplit( ':',WindowName );
+                    if( Addon == AddonName and Type == 'whisper' ) then
+                        FCF_Close( chatFrame );
+                    end
+                end
+            end
+        end
+
         --
         --  Get club name
         --

@@ -4,7 +4,8 @@
 	<Script file="Chatframe.lua"/>
 	<Script file="Config.lua"/>
 	<Script file="Dungeons.lua"/>
-
 	<Script file="Quests.lua"/>
+	<!--<Script file="Roster.lua"/>-->
+
 	<Script file="App.lua"/>
 </Ui>

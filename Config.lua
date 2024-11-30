@@ -193,21 +193,30 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
 
                 return Settings;
             end
-            local function GetMentions()
+            local function GetMessages()
                 local Order = 1;
                 local Settings = {
                     Alerts = {
                         type = 'header',
                         order = Order,
-                        name = 'Custom Alerts',
+                        name = 'Personal Alerts',
                     },
+                };
+
+                Order = Order+1;
+                Settings.AFKAlert = {
+                    type = 'toggle',
+                    order = Order,
+                    name = 'AFK Whisper Alert',
+                    desc = 'Enable to get persistent alerts for whispers while AFK',
+                    arg = 'AFKAlert',
                 };
 
                 Order = Order+1;
                 Settings.AlertMention = {
                     type = 'toggle',
                     order = Order,
-                    name = 'Mention Alert',
+                    name = 'Personal Mention Alert',
                     desc = 'Enable/disable alerting if anyone mentions your name. Note that mentions always produce an alert sound and have the whisper color',
                     arg = 'MentionAlert',
                 };
@@ -232,8 +241,8 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 Settings.MentionMove = {
                     type = 'select',
                     order = Order,
-                    name = 'Move Mention',
-                    desc = 'Reposition Mention Alert window placement',
+                    name = 'Move Message Window',
+                    desc = 'Reposition message window',
                     values = Addon:ArrayReverse( {
                         Stop = 0,
                         Start = 1,
@@ -685,27 +694,6 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 };
 
                 Order = Order+1;
-                Settings.WhisperMode = {
-                    type = 'select',
-                    order = Order,
-                    name = 'Whisper Mode',
-                    desc = '',
-                    values = Addon:ArrayReverse( {
-                        popout = 'Pop Out',
-                        inline = 'Inline',
-                        popout_and_inline = 'Pop Out & Inline'
-                    } ),
-                    get = function( Info )
-                        local Value = Addon.APP:GetValue( Info.arg );
-                        SetCVar( Info.arg,Value );
-                        return Value;
-                    end,
-                    set = function( Info,Value )
-                        Addon.APP:SetValue( Info.arg,Value );
-                        SetCVar( Info.arg,Value );
-                    end,
-                    arg = 'WhisperMode',
-                };
                 Settings.Debug = {
                     type = 'toggle',
                     order = Order,
@@ -741,10 +729,10 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
             Order = Order+1;
             Settings.args[ 'tab'..Order ] = {
                 type = 'group',
-                name = 'Personal Mentions',
+                name = 'Personal Messages',
                 width = 'full',
                 order = Order,
-                args = GetMentions(),
+                args = GetMessages(),
             };
 
             local LFGEnabled;
@@ -1102,9 +1090,8 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 if( Addon.DB:GetValue( 'Debug' ) ) then
                     Addon.FRAMES:Debug( 'App.CONFIG','ToggleChatColorNamesByClassGroup',Checked,Group );
                 end
-            end)
+            end );
         end
-
         self:UnregisterEvent( 'ADDON_LOADED' );
     end
 end );

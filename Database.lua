@@ -20,6 +20,7 @@ Addon.DB:SetScript( 'OnEvent',function( self,Event,AddonName )
                 IgnoreList = {
                     'boost',
                 },
+                AFKAlert = true,
                 MentionAlert = true,
                 MentionDrop = {
                 },
@@ -95,7 +96,6 @@ Addon.DB:SetScript( 'OnEvent',function( self,Event,AddonName )
                     HEALER = false,
                     TANK = false,
                 },
-                WhisperMode = 'inline',
                 Debug = false,
             };
         end
