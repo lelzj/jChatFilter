@@ -124,7 +124,16 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
             elseif( Watched and ( ChatType == 'WHISPER' ) == false ) then
                 HighLightColor.r,HighLightColor.g,HighLightColor.b,HighLightColor.a = unpack( Addon.APP:GetValue( 'AlertColor' ) );
             end
-
+            ChatTypeInfo[ ChatType ] = ChatTypeInfo[ ChatType ] or {
+                r = Info.r,
+                g = Info.g,
+                b = Info.b,
+                a = 1,
+            };
+            ChatTypeInfo[ ChatType ].r,
+            ChatTypeInfo[ ChatType ].g,
+            ChatTypeInfo[ ChatType ].b,
+            ChatTypeInfo[ ChatType ].a = ChannelColor.r,ChannelColor.g,ChannelColor.b,ChannelColor.a;
             -- Channel changes
             --[[
             if( Event == 'CHAT_MSG_CHANNEL_NOTICE_USER' ) then
