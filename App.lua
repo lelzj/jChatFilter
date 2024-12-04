@@ -51,8 +51,8 @@ Addon.APP:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         Addon.APP.GetURLPatterns = function()
             return {
-                    { '[a-z]*://[^ >,;]*','%s' },
-                };
+                { '[a-z]*://[^ >,;]*','%s' },
+            };
         end
 
         --
