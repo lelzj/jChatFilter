@@ -693,24 +693,6 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                     BestLevels = {25,28},
                     PlayerLimit = {10},
                 };
-                Rules['MC'] = {
-                    Abbrevs = {
-                        'mc','moltencore',
-                    },
-                    Description = 'Molten Core',
-                    LevelBracket = {60},
-                    BestLevels = {60},
-                    PlayerLimit = {20},
-                };
-                Rules['ONY'] = {
-                    Abbrevs = {
-                        'ony','onixia',
-                    },
-                    Description = 'Onyxia\'s Lair',
-                    LevelBracket = {60},
-                    BestLevels = {60},
-                    PlayerLimit = {20,40},
-                };
             end
             return Rules;
         end
