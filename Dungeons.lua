@@ -711,16 +711,6 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
                     BestLevels = {60},
                     PlayerLimit = {20,40},
                 };
-                Rules['BWL'] = {
-                };
-                Rules['ZG'] = {
-                };
-                Rules['AQ20'] = {
-                };
-                Rules['AQ40'] = {
-                };
-                Rules['NAXX'] = {
-                };
             end
             return Rules;
         end
