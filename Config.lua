@@ -285,7 +285,7 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         name = 'Classic Dungeon Groups',
                     },
                 };
-                for Abbrev,Instance in pairs( Addon.DUNGEONS:GetDungeonsF( UnitLevel( 'player' ) ) ) do
+                for Abbrev,Instance in Addon:Sort( Addon.DUNGEONS:GetDungeonsF( UnitLevel( 'player' ) ) ) do
                     Order = Order + 1;
                     Settings[ Abbrev ] = {
                         type = 'toggle',
@@ -305,7 +305,13 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                         end,
                     };
                 end
-                for Abbrev,Instance in pairs( Addon.DUNGEONS:GetRaidsF( UnitLevel( 'player' ) ) ) do
+                Order = Order + 1;
+                Settings.RaidGroups = {
+                        type = 'header',
+                        order = Order,
+                        name = 'Classic Raid Groups',
+                };
+                for Abbrev,Instance in Addon:Sort( Addon.DUNGEONS:GetRaidsF( UnitLevel( 'player' ) ) ) do
                     Order = Order + 1;
                     Settings[ Abbrev ] = {
                         type = 'toggle',

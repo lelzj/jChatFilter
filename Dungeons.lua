@@ -699,8 +699,6 @@ Addon.DUNGEONS:SetScript( 'OnEvent',function( self,Event,AddonName )
 
         local FormatData = function( InstanceData,MyLevel,PartySize )
             local Instances = {};
-            table.sort( InstanceData );
-
             for Key,Instance in pairs( InstanceData ) do
 
                 if( Instance.LevelBracket ) then
