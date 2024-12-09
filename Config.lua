@@ -307,9 +307,9 @@ Addon.CONFIG:SetScript( 'OnEvent',function( self,Event,AddonName )
                 end
                 Order = Order + 1;
                 Settings.RaidGroups = {
-                        type = 'header',
-                        order = Order,
-                        name = 'Classic Raid Groups',
+                    type = 'header',
+                    order = Order,
+                    name = 'Classic Raid Groups',
                 };
                 for Abbrev,Instance in Addon:Sort( Addon.DUNGEONS:GetRaidsF( UnitLevel( 'player' ) ) ) do
                     Order = Order + 1;
